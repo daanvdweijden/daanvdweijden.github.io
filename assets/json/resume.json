@@ -29,93 +29,44 @@
     },
     {
       "area": "Artificial Intelligence",
-      "studyType": "MSc",
+      "studyType": "Master of Science",
       "institution": "Utrecht University",
       "location": "Utrecht",
       "startDate": "2021-09-01",
       "endDate": "2023-08-01",
-      "highlights": [
-        "GPA: 3.7/4.0",
-        "Honours Student (Graduate Honours of Interdisciplinary Seminars)",
-        "Member of Faculty Council"
-      ],
+      "score": "GPA 3.7/4.0",
       "courses": [
-        "Advanced Machine Learning",
-        "Natural Language Processing",
-        "Natural Language Generation",
-        "Machine Learning for Human Vision and Language",
-        "Human Centered Machine Learning",
-        "Data Mining",
-        "Logic and Language",
-        "Intelligent Agents",
-        "Methods in AI Research",
-        "Philosophy of AI"
+        "Honours Student (Graduate Honours of Interdisciplinary Seminars)",
+        "Member of Faculty Council",
+        "Highlighted Courses: Human Centered Machine Learning, Intelligent Agents & Natural Language Generation"
       ]
         },
     {
       "area": "Artificial Intelligence",
-      "studyType": "BSc",
+      "studyType": "Bachelor of Science",
       "institution": "Utrecht University",
       "location": "Utrecht",
       "startDate": "2019-09-01",
       "endDate": "2021-08-01",
-      "highlights": [
-        "GPA: 4.0/4.0, Graduated Cum Laude",
+      "score":"GPA: 4.0/4.0, Graduated Cum Laude",
+      "courses": [
         "Chair of Political Party VUUR ", 
         "Member of Faculty Council",
-        "Specialized in Natural Language Processing, Machine Learning and Intelligent Systems"
-      ],
-      "courses": [
-      "Introduction to Logic",
-      "Semantics",
-      "Logical grammars",
-      "Logical Complexity",
-      "Modal Logic for Al",
-      "Introduction to Cognitive Science",
-      "Experimental Psycholinguistics",
-      "Methods and Statistics",
-      "Philosophy for Al",
-      "Knowledge and Reasoning",
-      "Introduction to adaptive systems",
-      "Mathematics for Al",
-      "Modeling and programming",
-      "Datastructures and algorithms for Al",
-      "Intelligent systems",
-      "Introduction to Linguistics",
-      "Computational Linguistics"
+        "Highlighted Courses: Logical Complexity, Intelligent systems & Computational Linguistics"
       ]
-
     },
     {
       "area": "Linguistics",
-      "studyType": "BA",
+      "studyType": "Bachelor of Arts",
       "institution": "Utrecht University",
       "location": "Utrecht",
       "startDate": "2017-09-01",
       "endDate": "2021-08-01",
-      "highlights": [
-        "GPA 3.8/4.0",
-        "Chair of Linguistics Study Association", 
-        "Specialised in Computational Linguistics, Semantics and Formal Languages"
-      ],
+      "score":"GPA 3.8/4.0",
       "courses": [
-        "Introduction to Linguistics",
-        "Psychology of Language",
-        "Language Meaning and Language Use",
-        "Language Development",
-        "Sociolinguistics",
-        "Methods and Statistics 1",
-        "Speech: Production and Perception",
-        "Variation and Universality in Natural Language",
-        "Capstone Course: Research, Writing and Reflection",
-        "From Language to Languages: Language Myths",
-        "Language and Computation",
-        "Words in the Mind",
-        "Semantics and Pragmatics",
-        "Experimental Psycholinguistics",
-        "Language Acquisition and Language Structure"
+        "Chair of Linguistics Study Association", 
+        "Highlighted Courses: Language and Computation, Semantics and Pragmatics & Experimental Psycholinguistics"
       ]
-      
     }
   ],
   "work": [
@@ -125,18 +76,11 @@
       "location": "Utrecht",
       "startDate": "2022-01-01",
       "endDate": "2023-08-01",
-      "summary": "Performed Data Analysis of Twitter interactions on the topic of Datacenters in the Netherlands with, resulting in a published paper. Developed a framework and practical implementation for Dutch oversight authorities on how to oversee algorithmic systems, delivered a report and paper. Conducted research into the influences of politics on twitter and vice-versa, ongoing research",
+      "summary": "",
       "highlights": [
-        "Data Analytics",
-        "Data Visualization",
-        "Data Mining",
-        "Social Media Analysis",
-        "Python",
-        "NumPy",
-        "Pandas",
-        "Pytorch",
-        "LaTeX",
-        "Tableau"
+        "Performed Data Analysis of Twitter interactions on the topic of Datacenters in the Netherlands with, resulting in a published paper.",
+        "Developed a framework and practical implementation for Dutch oversight authorities on how to oversee algorithmic systems, delivered a report and paper.",
+        "Conducted research into the influences of politics on twitter and vice-versa, ongoing research"
       ]
     },
     {
@@ -145,19 +89,9 @@
       "location": "The Hague",
       "startDate": "2022-12-01",
       "endDate": "2023-08-01",
-      "summary": "Conducted research on different implementations of textual data augmentation methods, developing own augmentation methods for Dutch, and implementing local LLM's",
       "highlights": [
-        "Natural Language Processing",
-        "Machine Learning",
-        "Cloud Computing",
-        "Python",
-        "PyTorch",
-        "NumPy",
-        "Matplotlib",
-        "Seaborn",
-        "Pandas",
-        "Docker",
-        "LaTeX"
+        "Conducted research on different implementations of textual data augmentation methods",
+        "Developing own augmentation methods for Dutch by implementing local LLM's"
       ]
     },
     {
@@ -166,7 +100,10 @@
       "location": "Utrecht",
       "startDate": "2020-09-01",
       "endDate": "2021-04-01",
-      "summary": "Provided technical support for a platform for centralising eCommerce products. Gave walkthroughs for first time customers to the tool, guiding them through all the steps involved in linking up their accounts."
+      "highlights": [
+        "Provided technical support for a platform for centralising eCommerce products.",
+        "Gave walkthroughs for first time customers to the tool, guiding them through all the steps involved in linking up their accounts."
+      ]
     },
     {
       "position": "Teaching Assistant",
@@ -174,7 +111,7 @@
       "location": "Utrecht",
       "startDate": "2020-01-01",
       "endDate": "2022-12-31",
-      "summary": "Hosted weekly seminars for several courses, graded theoretical assignments, provided feedback on delivered code.",
+      "summary": "Hosted weekly seminars for several courses, graded theoretical assignments, provided feedback on delivered code. Courses:",
       "highlights": [
         "Machine Learning",
         "Natural and Formal Languages",
