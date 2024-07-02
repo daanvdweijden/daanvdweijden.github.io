@@ -18,26 +18,15 @@
   {
     "position": "Research Assistant",
     "organization": "Utrecht Data School",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2022-01-01",
     "endDate": "2023-08-01",
-    "summary": [
-      "Performed Data Analysis of Twitter interactions on the topic of Datacenters in the Netherlands with, resulting in a published paper",
-      "Developed a framework and practical implementation for Dutch oversight authorities on how to oversee algorithmic systems, delivered a report and paper",
-      "Conducted research into the influences of politics on twitter and vice-versa, ongoing research"
-    ],
-    "skills": {
-      "general": [
-        "Research",
+    "summary": "Performed Data Analysis of Twitter interactions on the topic of Datacenters in the Netherlands with, resulting in a published paper. Developed a framework and practical implementation for Dutch oversight authorities on how to oversee algorithmic systems, delivered a report and paper. Conducted research into the influences of politics on twitter and vice-versa, ongoing research",
+    "highlights": [
         "Data Analytics",
         "Data Visualization",
         "Data Mining",
-        "Social Media Analysis"
-      ],
-      "technical": [
+        "Social Media Analysis",
         "Python",
         "NumPy",
         "Pandas",
@@ -45,28 +34,18 @@
         "LaTeX",
         "Tableau"
       ]
-    }
   },
   {
     "position": "Research Intern",
     "organization": "TNO",
-    "location": {
-      "city": "The Hague",
-      "countryCode": "NL"
-    },
+    "location": "The Hague",
     "startDate": "2022-12-01",
     "endDate": "2023-08-01",
-    "summary": [
-      "Conducted research on different implementations of textual data augmentation methods, developing own augmentation methods for Dutch, and implementing local LLM's"
-    ],
-    "skills": {
-      "general": [
-        "Research",
+    "summary": "Conducted research on different implementations of textual data augmentation methods, developing own augmentation methods for Dutch, and implementing local LLM's",
+    "skills": [
         "Natural Language Processing",
         "Machine Learning",
-        "Cloud Computing"
-      ],
-      "technical": [
+        "Cloud Computing",
         "Python",
         "PyTorch",
         "NumPy",
@@ -76,45 +55,34 @@
         "Docker",
         "LaTeX"
       ]
-    }
   },
   {
     "position": "Technical Support",
     "organization": "Channable",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2020-09-01",
     "endDate": "2021-04-01",
-    "summary": [
-      "Provided technical support for a platform for centralising eCommerce products.",
-      "Gave walkthroughs for first time customers to the tool, guiding them through all the steps involved in linking up their accounts."
-    ]
+    "summary":  "Provided technical support for a platform for centralising eCommerce products. Gave walkthroughs for first time customers to the tool, guiding them through all the steps involved in linking up their accounts."
   },
   {
     "position": "Teaching Assistant",
     "organization": "Utrecht University",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2020-01-01",
     "endDate": "2022-12-31",
-    "summary": [
-      "Hosted weekly seminars for several courses, graded theoretical assignments, provided feedback on delivered code",
-      "Courses: Machine Learning, Natural and Formal Languages, Introduction on Logic"
-    ]
+    "summary": "Hosted weekly seminars for several courses, graded theoretical assignments, provided feedback on delivered code.",
+    "highlights": [
+          "Machine Learning",
+          "Natural and Formal Languages", 
+          "Introduction on Logic"
+        ]
   }
   ],
   "education": [
   {
     "degree": "PhD Candidate",
     "institution": "University of Zurich",
-    "location": {
-      "city": "Zurich",
-      "countryCode": "CH"
-    },
+    "location": "Zurich",
     "startDate": "2023-09-01",
     "endDate": "Present",
     "description": [
@@ -125,13 +93,10 @@
   {
     "degree": "MSc in Artificial Intelligence",
     "institution": "Utrecht University",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2021-09-01",
     "endDate": "2023-08-01",
-    "description": [
+    "highlights": [
       "GPA: 3.7/4.0",
       "Honours Student (Graduate Honours of Interdisciplinary Seminars)",
       "Courses: Advanced Machine Learning, Natural Language Processing, Natural Language Generation, Machine Learning for Human Vision and Language, Human Centered Machine Learning, Data Mining, Logic and Language, Intelligent Agents, Methods in AI Research, Philosophy of AI"
@@ -140,13 +105,10 @@
   {
     "degree": "BSc in Artificial Intelligence",
     "institution": "Utrecht University",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2019-09-01",
     "endDate": "2021-08-01",
-    "description": [
+    "highlights": [
       "GPA: 4.0/4.0, Graduated with Distinction",
       "Member of Faculty Council",
       "Specialized in Natural Language Processing, Machine Learning and Intelligent Systems"
@@ -155,13 +117,10 @@
   {
     "degree": "BA in Linguistics",
     "institution": "Utrecht University",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2017-09-01",
     "endDate": "2021-08-01",
-    "description": [
+    "highlights": [
       "GPA 3.8/4.0",
       "Chair of Linguistics Study Association, Chair of Political Party \"VUUR\" for Humanities, Member of Faculty Council",
       "Specialised in Computational Linguistics, Semantics and Formal Languages"
@@ -170,10 +129,7 @@
   {
     "degree": "BSc in Artificial Intelligence",
     "institution": "Utrecht University",
-    "location": {
-      "city": "Utrecht",
-      "countryCode": "NL"
-    },
+    "location": "Utrecht",
     "startDate": "2015-09-01",
     "endDate": "2016-07-01",
     "description": []
