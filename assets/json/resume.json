@@ -72,7 +72,7 @@
   "work": [
     {
       "position": "Research Assistant",
-      "company": "Utrecht Data School",
+      "name": "Utrecht Data School",
       "location": "Utrecht",
       "startDate": "2022-01-01",
       "endDate": "2023-08-01",
@@ -85,7 +85,7 @@
     },
     {
       "position": "Research Intern",
-      "company": "TNO",
+      "name": "TNO",
       "location": "The Hague",
       "startDate": "2022-12-01",
       "endDate": "2023-08-01",
@@ -96,7 +96,7 @@
     },
     {
       "position": "Technical Support",
-      "company": "Channable",
+      "name": "Channable",
       "location": "Utrecht",
       "startDate": "2020-09-01",
       "endDate": "2021-04-01",
@@ -107,7 +107,7 @@
     },
     {
       "position": "Teaching Assistant",
-      "company": "Utrecht University",
+      "name": "Utrecht University",
       "location": "Utrecht",
       "startDate": "2020-01-01",
       "endDate": "2022-12-31",
