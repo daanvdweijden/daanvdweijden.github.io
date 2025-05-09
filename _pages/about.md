@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>PhD Candidate, University of Zurich</a>. 
+subtitle: <a href='#'>PhD Candidate, University of Zurich</a>.
 
 profile:
   align: right

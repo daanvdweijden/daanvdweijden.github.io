@@ -40,7 +40,7 @@
         "Member of Faculty Council",
         "Highlighted Courses: Human Centered Machine Learning, Intelligent Agents & Natural Language Generation"
       ]
-        },
+    },
     {
       "area": "Artificial Intelligence",
       "studyType": "Bachelor of Science",
@@ -48,9 +48,9 @@
       "location": "Utrecht",
       "startDate": "2019-09-01",
       "endDate": "2021-08-01",
-      "score":"GPA: 4.0/4.0, Graduated Cum Laude",
+      "score": "GPA: 4.0/4.0, Graduated Cum Laude",
       "courses": [
-        "Chair of Political Party VUUR ", 
+        "Chair of Political Party VUUR ",
         "Member of Faculty Council",
         "Highlighted Courses: Logical Complexity, Intelligent systems & Computational Linguistics"
       ]
@@ -62,9 +62,9 @@
       "location": "Utrecht",
       "startDate": "2017-09-01",
       "endDate": "2021-08-01",
-      "score":"GPA 3.8/4.0",
+      "score": "GPA 3.8/4.0",
       "courses": [
-        "Chair of Linguistics Study Association", 
+        "Chair of Linguistics Study Association",
         "Highlighted Courses: Language and Computation, Semantics and Pragmatics & Experimental Psycholinguistics"
       ]
     }
@@ -120,4 +120,3 @@
     }
   ]
 }
-  
