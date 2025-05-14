@@ -24,8 +24,7 @@ My academic journey began with a Bachelor's degree in Artificial Intelligence an
 
 ## Current Work
 
-I have joined DDIS in September 2023 to work on the D3 (Digital Deliberative Democracy) project. 
 
-In 2024, I was fortunate to join the DSI PhD Excellence program as part of their 2024 cohort. 
-
-For the period of 2024-2026, I am serving on the Faculty Board and Assembly of the Faculty of Business, Economics,and Informatics. 
+* I have joined DDIS in September 2023 to work on the D3 (Digital Deliberative Democracy) project. 
+* In 2024, I was fortunate to join the DSI PhD Excellence program as part of their 2024 cohort. 
+* For the period of 2024-2026, I am serving on the Faculty Board and Assembly of the Faculty of Business, Economics,and Informatics. 
