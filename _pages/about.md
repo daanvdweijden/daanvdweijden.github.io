@@ -24,8 +24,8 @@ My academic journey began with a Bachelor's degree in Artificial Intelligence an
 
 ## Current Work
 
-I have joined DDIS in September 2023 to work on the D3 (Digital Deliberative Democracy) project. I have a background in Artificial Intelligence, more specifically Natural Language Processing and Human Centered Machine Learning.  I obtained a Master's Degree in Artificial Intelligence from Utrecht University (Utrecht, the Netherlands), where I have also received both my Bachelor Degrees in Artificial Intellgence and Linguistics. 
+I have joined DDIS in September 2023 to work on the D3 (Digital Deliberative Democracy) project. 
 
-In 2024, I was fortunate to join the DSI PhD Excellence program as part of their 2024 cohort. This program brings together selected PhD students from various disciplines to collaborate and explore the digital transformation of society.
+In 2024, I was fortunate to join the DSI PhD Excellence program as part of their 2024 cohort. 
 
-For the period of 2024-2026, I am serving on the Faculty Board and Assembly of the Faculty of Business, Economics,and Informatics. Additionally, I am the Junior Researcher Representative for the Department of Informatics. Nimra and I are available as a low-level contact point for any junior researcher. Please don't hesitate to reach out to us.
+For the period of 2024-2026, I am serving on the Faculty Board and Assembly of the Faculty of Business, Economics,and Informatics. 
