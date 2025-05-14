@@ -1,7 +1,7 @@
 ---
 layout: about
 title: about
-permalink:
+permalink: /
 subtitle: <a href='#'>PhD Candidate, University of Zurich</a>.
 
 profile:
@@ -21,3 +21,5 @@ social: true # includes social icons at the bottom of the page
 I am a computer science PhD student with a passion for using technology to improve democratic decision-making processes. My research focuses on the use of artificial intelligence and natural language processing in digital deliberative democracy, where citizens come together to discuss and make decisions through online platforms. With my expertise in these fields, I am dedicated to creating innovative solutions that can help people engage in more meaningful and effective democratic discourse.
 
 My academic journey began with a Bachelor's degree in Artificial Intelligence and Linguistics from the University of Utrecht. This laid the foundation for my master's degree in Artificial Intelligence from the same institution, where I developed a deep understanding of natural language processing and machine learning. I am currently pursuing a PhD in Computer Science with a focus on digital deliberative democracy, where I am working to push the boundaries of what is possible in this exciting field.
+
+## Testing Headers
