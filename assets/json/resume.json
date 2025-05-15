@@ -118,5 +118,40 @@
         "Introduction on Logic"
       ]
     }
+  ],
+  "awards": [
+    {
+    "title": "DSI PhD Excellence Program 2024 Cohort",
+    "date": "2024-09-01",
+    "awarder": "Digital Society Initiative",
+    "summary": "Accepted into the DSI PhD Excellence Program, a program for PhD students at the University of Zurich that aims to foster interdisciplinary research and collaboration."
+    },
+
+    {
+      "title": "Graduate Honours of Interdisciplinary Seminars",
+      "date": "2023-08-01",
+      "awarder": "Utrecht University",
+      "summary": "Awarded for completing the Graduate Honours of Interdisciplinary Seminars program, a program that aims to foster interdisciplinary research and collaboration."
+    },
+    {
+      "title": "Graduated Cum Laude",
+      "date": "2021-08-01",
+      "awarder": "Utrecht University",
+      "summary": "Graduated Cum Laude from the Bachelor of Science in Artificial Intelligence program at Utrecht University."
+    }
+  ],
+  "grants": [
+    {
+      "title": "DSI Excellence personal grant",
+      "date": "2024-09-01",
+      "awarder": "Digital Society Initiative",
+      "summary": "Awarded a personal grant (5000 CHF) to support my research in the DSI PhD Excellence Program."
+    },
+    {
+      "title": "CIRES Travel Grant",
+      "date": "2025-04-28",
+      "awarder": "CIRES",
+      "summary": "Awarded a travel grant to visit the CIRES centre at the University of Queensland in Brisbane, Australia."
+    }
   ]
 }
