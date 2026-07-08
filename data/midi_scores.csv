@@ -128,3 +128,5 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-02,23842,midi,Ian Livengood,A Little Help Here,451,7:31,100,True,1782988306,,,False,False,0,0,0,clean
 2026-07-03,23593,midi,Adrianne Baik,Fit Check,284,4:44,100,True,1783071285,,,False,False,0,0,0,clean
 2026-07-05,23550,midi,Zhou Zhang and Kevin Curry,Corner Stores,405,6:45,71,False,,,,False,False,0,0,0,clean
+2026-07-06,23835,midi,Paolo Pasco,Ozone,338,5:38,100,True,1783356496,,,True,True,0,1,0,checked
+2026-07-07,23373,midi,Ian Livengood,Flexible Performers,413,6:53,100,True,1783431812,,,True,True,0,0,0,autocheck
