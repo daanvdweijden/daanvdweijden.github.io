@@ -1,0 +1,140 @@
+---
+// A single paper's page: metadata, action buttons, the abstract (the Markdown
+// body), and a copy-able BibTeX block. One page is generated per file in the
+// `publications` collection.
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import {
+  getPublications,
+  yearOf,
+  isOwner,
+  actionLinks,
+  bibtexFor,
+  type Pub,
+} from '../../lib/pubs';
+
+export async function getStaticPaths() {
+  const pubs = await getPublications();
+  return pubs.map((pub) => ({ params: { id: pub.id }, props: { pub } }));
+}
+
+interface Props {
+  pub: Pub;
+}
+const { pub } = Astro.props;
+const { Content } = await render(pub);
+
+const links = actionLinks(pub);
+const bibtex = bibtexFor(pub);
+const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Boolean);
+---
+
+<Layout title={pub.data.title} description={`${pub.data.venue}, ${yearOf(pub)}`} active="publications">
+  <main class="wrap paper">
+    <a class="back" href={`${import.meta.env.BASE_URL}pubs/`}>← Publications</a>
+
+    <header class="head">
+      <p class="meta">{meta.join(' · ')}</p>
+      <h1>{pub.data.title}</h1>
+
+      <p class="authors">
+        {pub.data.authors.map((a, i) => (
+          <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
+        ))}
+      </p>
+
+      <p class="venue">
+        {pub.data.venue}, {yearOf(pub)}
+        {pub.data.note ? <span class="note"> · {pub.data.note}</span> : null}
+      </p>
+
+      {links.length > 0 && (
+        <div class="actions">
+          {links.map((l) => (
+            <a class="btn" href={l.href}>{l.label}</a>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <section class="abstract">
+      <h2 class="kicker">Abstract</h2>
+      <div class="prose"><Content /></div>
+    </section>
+
+    <section class="cite">
+      <div class="cite-head">
+        <h2 class="kicker">Cite</h2>
+        <button class="copy" data-copy type="button">Copy</button>
+      </div>
+      <pre id="bibtex">{bibtex}</pre>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .paper { padding: clamp(2rem, 6vw, 4rem) 0 clamp(3rem, 8vw, 6rem); max-width: 48rem; }
+
+  .back {
+    display: inline-block; margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted); text-decoration: none; transition: color .2s;
+  }
+  .back:hover { color: var(--ink); }
+
+  .head { border-bottom: 1px solid var(--line); padding-bottom: clamp(1.5rem, 4vw, 2.2rem); }
+  .meta { margin: 0 0 .9rem; font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(1.8rem, 5vw, 2.8rem); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 1rem;
+  }
+  .authors { margin: 0 0 .35rem; font-size: 1.02rem; color: var(--muted); }
+  .author.me { color: var(--ink); font-weight: 600; }
+  .venue { margin: 0; font-family: var(--mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .venue .note { text-transform: none; letter-spacing: 0; font-style: italic; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
+  .btn {
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: .5rem .85rem;
+    background: var(--surface); transition: border-color .2s, background .2s;
+  }
+  .btn:hover { border-color: var(--ink); }
+
+  .kicker { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 .9rem; font-weight: 500; }
+
+  .abstract { padding: clamp(1.8rem, 5vw, 2.6rem) 0; }
+  .prose { font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; }
+  .prose :global(p) { margin: 0 0 1rem; }
+  .prose :global(p:last-child) { margin-bottom: 0; }
+  .prose :global(a) { border-bottom: 1px solid var(--line); text-decoration: none; }
+
+  .cite { border-top: 1px solid var(--line); padding-top: clamp(1.8rem, 5vw, 2.4rem); }
+  .cite-head { display: flex; align-items: center; justify-content: space-between; }
+  .cite-head .kicker { margin-bottom: 0; }
+  .copy {
+    font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); background: transparent; border: 1px solid var(--line);
+    border-radius: 6px; padding: .3rem .6rem; cursor: pointer; transition: color .2s, border-color .2s;
+  }
+  .copy:hover { color: var(--ink); border-color: var(--ink); }
+  .cite pre {
+    margin: .9rem 0 0; padding: 1rem 1.1rem; overflow-x: auto;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    font-family: var(--mono); font-size: .74rem; line-height: 1.55; color: var(--ink);
+    white-space: pre;
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-copy]');
+  const pre = document.getElementById('bibtex');
+  btn?.addEventListener('click', async () => {
+    if (!pre?.textContent) return;
+    await navigator.clipboard.writeText(pre.textContent);
+    const prev = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => (btn.textContent = prev), 1500);
+  });
+</script>

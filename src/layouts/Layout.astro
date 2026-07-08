@@ -1,0 +1,218 @@
+---
+// Shared shell for every page: <head> + design tokens + nav bar + footer.
+// Pages provide their own <style> for page-specific layout. This keeps the
+// minimal editorial look identical across Home, Publications, etc.
+import { site } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Which internal nav item is the current page, e.g. 'publications'. */
+  active?: string;
+  /** When true, the header wordmark stays hidden while #hero-name is on screen, then fades in once it scrolls past the nav. */
+  hideMarkUntilScroll?: boolean;
+  /** Keep a page out of search engines without removing it from the site (e.g. the /puzzles/ easter egg). */
+  noindex?: boolean;
+}
+const { title, description = site.tagline, active, hideMarkUntilScroll = false, noindex = false } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : site.name;
+const year = new Date().getFullYear();
+
+// Internal sections shown in the header nav.
+const internal = [
+  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news' },
+  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications' },
+  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Resolve the theme before first paint so there's no light flash on a dark preference. -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Newsreader (editorial serif) + Hanken Grotesk (geometric body) + JetBrains Mono. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global>
+      :root {
+        color-scheme: light;
+        --bg: #fbfbfa;          /* warm bone */
+        --surface: #ffffff;
+        --ink: #1f1f1f;         /* never pure black */
+        --muted: #787774;
+        --line: #eaeaea;        /* hairline */
+        --sans: 'Hanken Grotesk', 'Helvetica Neue', sans-serif;
+        --serif: 'Newsreader', Georgia, serif;
+        --mono: 'JetBrains Mono', 'SF Mono', monospace;
+        /* washed-out pastel accents (semantic only) */
+        --p-red-bg: #fdebec;  --p-red-fg: #9f2f2d;
+        --p-blue-bg: #e1f3fe; --p-blue-fg: #1f6c9f;
+        --p-green-bg: #edf3ec;--p-green-fg: #346538;
+        --p-yellow-bg:#fbf3db;--p-yellow-fg:#956400;
+        /* heatmap intensity ramp (bucket 0 = --line, bucket 4 = --p-blue-fg) */
+        --heat-1: #dbeefc; --heat-2: #aedbf5; --heat-3: #7cc3ec;
+      }
+      /* Dark theme — same tokens, dimmed. Set via data-theme on <html> by the
+         inline head script (persisted in localStorage, defaults to OS setting). */
+      html[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #16161a;          /* deep charcoal, never pure black */
+        --surface: #1e1e22;
+        --ink: #e9e9e6;         /* never pure white */
+        --muted: #9a9a94;
+        --line: #2c2c31;        /* hairline */
+        --p-red-bg: #3a2422;  --p-red-fg: #f0a8a4;
+        --p-blue-bg: #16303c; --p-blue-fg: #8ec9ec;
+        --p-green-bg:#1e2f21; --p-green-fg:#8fca94;
+        --p-yellow-bg:#332a10;--p-yellow-fg:#e0b755;
+        --heat-1: #1e3a48; --heat-2: #295d78; --heat-3: #4a8fb5;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        transition: background-color .25s ease, color .25s ease;
+      }
+      a { color: inherit; }
+      img { max-width: 100%; height: auto; display: block; }
+
+      .wrap { max-width: 64rem; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 2rem); }
+
+      /* ---- nav ---- */
+      nav.bar {
+        border-bottom: 1px solid var(--line);
+        position: sticky; top: 0; z-index: 5;
+        background: color-mix(in srgb, var(--bg) 86%, transparent);
+        backdrop-filter: saturate(140%) blur(8px);
+      }
+      nav.bar .inner {
+        display: flex; justify-content: space-between; align-items: center;
+        height: 68px;
+      }
+      .mark { font-family: var(--serif); font-size: 1.05rem; font-weight: 500; text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; opacity: 1; transition: opacity .2s ease; }
+      .mark--pending { opacity: 0; pointer-events: none; }
+      .navlinks { display: flex; gap: clamp(.8rem, 2vw, 1.4rem); align-items: center; }
+      .navlinks a {
+        font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--muted); text-decoration: none; transition: color .2s;
+      }
+      .navlinks a:hover { color: var(--ink); }
+      .navlinks a.internal { color: var(--ink); }
+      .navlinks a.active { border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+
+      /* theme toggle — sits at the right end of the nav links */
+      .theme-toggle {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 30px; height: 30px; padding: 0; margin-left: .2rem;
+        background: none; border: 1px solid var(--line); border-radius: 7px;
+        color: var(--muted); cursor: pointer;
+        transition: color .2s, border-color .2s;
+      }
+      .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+      .theme-toggle svg { width: 16px; height: 16px; }
+      .theme-toggle .i-sun { display: none; }
+      html[data-theme='dark'] .theme-toggle .i-sun { display: block; }
+      html[data-theme='dark'] .theme-toggle .i-moon { display: none; }
+
+      /* ---- footer ---- */
+      footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; margin-top: 2rem; }
+      footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-family: var(--mono); font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+      footer a { text-decoration: none; }
+      footer a:hover { color: var(--ink); }
+      footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+      footer .egg { opacity: .25; margin-left: .5rem; transition: opacity .2s; }
+      footer .egg:hover { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <nav class="bar">
+      <div class="wrap">
+        <div class="inner">
+          <a
+            class:list={['mark', { 'mark--pending': hideMarkUntilScroll }]}
+            id="nav-mark"
+            href={import.meta.env.BASE_URL}
+          >{site.name}</a>
+          <div class="navlinks">
+            {internal.map((l) => (
+              <a class:list={['internal', { active: active === l.key }]} href={l.href}>{l.name}</a>
+            ))}
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle theme">
+              <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <slot />
+
+    <footer>
+      <div class="wrap">
+        <div class="row">
+          <span>
+            © {year} {site.name}
+            <a class="egg" href={`${import.meta.env.BASE_URL}puzzles/`} aria-label="puzzle stats" title="a small puzzle">∙</a>
+          </span>
+          <span class="flinks">
+            {site.socials.map((s) => <a href={s.url}>{s.name}</a>)}
+          </span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Theme toggle: flip data-theme on <html>, persist the choice, keep the label honest.
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+        const syncLabel = () => {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        };
+        syncLabel();
+        themeToggle.addEventListener('click', () => {
+          const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+          syncLabel();
+        });
+      }
+
+      const heroName = document.getElementById('hero-name');
+      const mark = document.getElementById('nav-mark');
+      if (heroName && mark) {
+        const nav = document.querySelector('nav.bar');
+        const navHeight = nav ? nav.getBoundingClientRect().height : 68;
+        const observer = new IntersectionObserver(
+          ([entry]) => mark.classList.toggle('mark--pending', entry.isIntersecting),
+          { rootMargin: `-${navHeight}px 0px 0px 0px` }
+        );
+        observer.observe(heroName);
+      }
+    </script>
+  </body>
+</html>

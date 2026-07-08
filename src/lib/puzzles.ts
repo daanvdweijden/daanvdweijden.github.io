@@ -1,0 +1,215 @@
+// ---------------------------------------------------------------------------
+// The "Puzzles" easter egg page. Reads the build artifacts written by
+// scripts/build_feed.py (data/activity.json), the NRC Crux fetcher
+// (data/crux_stats.json), and the raw NYT Mini fetcher CSV (data/mini_scores.csv)
+// — no live fetching, just shaping for display.
+// ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import activity from '../../data/activity.json';
+import cruxStatsData from '../../data/crux_stats.json';
+
+export interface GameMeta {
+  label: string;
+  source: 'nyt' | 'nrc';
+}
+
+export interface ActivityDay {
+  date: string; // YYYY-MM-DD
+  played: string[]; // game slugs, see GameMeta
+}
+
+export interface Activity {
+  generated: string;
+  mini_streak: number;
+  game_meta: Record<string, GameMeta>;
+  days: ActivityDay[];
+}
+
+export interface CruxStats {
+  snapshot_date: string;
+  games_played: number;
+  games_won: number;
+  win_percentage: number;
+  average_seconds: number;
+  average_time: string;
+  fastest_seconds: number;
+  fastest_time: string;
+  crux_streak_current: number;
+  crux_streak_max: number;
+}
+
+export const cruxStats = cruxStatsData as CruxStats;
+
+export function getActivity(): Activity {
+  return activity as Activity;
+}
+
+/** slug -> number of days that game was played, across all recorded history. */
+export function gameCounts(a: Activity): { slug: string; label: string; source: string; count: number }[] {
+  const counts: Record<string, number> = {};
+  for (const day of a.days) {
+    for (const slug of day.played) counts[slug] = (counts[slug] ?? 0) + 1;
+  }
+  return Object.entries(a.game_meta)
+    .map(([slug, meta]) => ({ slug, label: meta.label, source: meta.source, count: counts[slug] ?? 0 }))
+    .filter((g) => g.count > 0)
+    .sort((a, b) => b.count - a.count);
+}
+
+export function totalPuzzlesSolved(a: Activity): number {
+  return a.days.reduce((sum, d) => sum + d.played.length, 0);
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const toUTC = (iso: string) => new Date(`${iso}T00:00:00Z`);
+const fromUTC = (t: number) => new Date(t).toISOString().slice(0, 10);
+
+export interface Cell {
+  date: string;
+  count: number;
+  played: string[];
+}
+
+/**
+ * A continuous, zero-filled day-by-day array from the earliest recorded day
+ * through `a.generated` (inclusive) — the calendar needs blank days too,
+ * not just the ones with puzzles played.
+ */
+export function buildCells(a: Activity): Cell[] {
+  if (a.days.length === 0) return [];
+  const byDate = new Map(a.days.map((d) => [d.date, d.played]));
+  const earliest = a.days.reduce((min, d) => (d.date < min ? d.date : min), a.days[0].date);
+  const start = toUTC(earliest).getTime();
+  const end = toUTC(a.generated).getTime();
+  const cells: Cell[] = [];
+  for (let t = start; t <= end; t += DAY_MS) {
+    const date = fromUTC(t);
+    const played = byDate.get(date) ?? [];
+    cells.push({ date, count: played.length, played });
+  }
+  return cells;
+}
+
+export type Week = (Cell | null)[]; // always length 7, Sun..Sat; null = padding
+
+export interface Calendar {
+  weeks: Week[];
+  /** month label per week column; '' when no label belongs above that column */
+  monthLabels: string[];
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Lay a run of cells out GitHub-contributions-style: columns of weeks, Sun-first rows. */
+export function buildCalendar(cells: Cell[]): Calendar {
+  if (cells.length === 0) return { weeks: [], monthLabels: [] };
+
+  const first = toUTC(cells[0].date);
+  const leadingBlanks = first.getUTCDay(); // 0 = Sunday
+  const padded: (Cell | null)[] = [...Array(leadingBlanks).fill(null), ...cells];
+  while (padded.length % 7 !== 0) padded.push(null);
+
+  const weeks: Week[] = [];
+  for (let i = 0; i < padded.length; i += 7) weeks.push(padded.slice(i, i + 7) as Week);
+
+  // Require at least 2 columns between labels so adjacent month abbreviations
+  // (e.g. "Jun" / "Jul" one column apart on a short 7D view) never overlap.
+  let lastMonth = -1;
+  let lastLabelCol = -Infinity;
+  const monthLabels = weeks.map((week, i) => {
+    const firstReal = week.find((c): c is Cell => c !== null);
+    if (!firstReal) return '';
+    const month = toUTC(firstReal.date).getUTCMonth();
+    if (month === lastMonth) return '';
+    lastMonth = month;
+    if (i - lastLabelCol < 2) return '';
+    lastLabelCol = i;
+    return MONTHS[month];
+  });
+
+  return { weeks, monthLabels };
+}
+
+export function lastNDays(cells: Cell[], n: number): Cell[] {
+  return cells.slice(-n);
+}
+
+/** 0..4 intensity bucket for heatmap cell coloring. */
+export function bucket(count: number): number {
+  if (count <= 0) return 0;
+  if (count === 1) return 1;
+  if (count === 2) return 2;
+  if (count <= 4) return 3;
+  return 4;
+}
+
+const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export function tooltip(cell: Cell, a: Activity): string {
+  const d = toUTC(cell.date);
+  const label = `${WEEKDAY[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+  if (cell.played.length === 0) return `${label}: nothing solved`;
+  const names = cell.played.map((slug) => a.game_meta[slug]?.label ?? slug);
+  return `${label}: ${names.join(', ')}`;
+}
+
+/** 'YYYY-MM-DD' -> 'Jul 6' (or 'Jul 6, 2026' with includeYear). */
+export function formatDay(iso: string, includeYear = false): string {
+  const d = toUTC(iso);
+  const base = `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+  return includeYear ? `${base}, ${d.getUTCFullYear()}` : base;
+}
+
+/** seconds -> 'm:ss'. */
+export function formatSeconds(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function readDataCSV(name: string): Record<string, string>[] {
+  const path = fileURLToPath(new URL(`../../data/${name}`, import.meta.url));
+  const text = readFileSync(path, 'utf-8').trim();
+  const [headerLine, ...lines] = text.split('\n');
+  const headers = headerLine.split(',');
+  return lines.map((line) => {
+    const cells = line.split(',');
+    return Object.fromEntries(headers.map((h, i) => [h, cells[i] ?? '']));
+  });
+}
+
+export interface Solve {
+  date: string;
+  seconds: number;
+}
+
+/** Solved NYT Mini rows from data/mini_scores.csv, with parsed seconds. */
+export function getMiniSolves(): Solve[] {
+  return readDataCSV('mini_scores.csv')
+    .filter((r) => r.solved === 'True' && r.seconds)
+    .map((r) => ({ date: r.date, seconds: Number(r.seconds) }));
+}
+
+/** Solved NYT Midi rows from data/midi_scores.csv, with parsed seconds. */
+export function getMidiSolves(): Solve[] {
+  return readDataCSV('midi_scores.csv')
+    .filter((r) => r.solved === 'True' && r.seconds)
+    .map((r) => ({ date: r.date, seconds: Number(r.seconds) }));
+}
+
+export function averageSeconds(solves: { seconds: number }[]): number {
+  if (solves.length === 0) return 0;
+  return solves.reduce((sum, s) => sum + s.seconds, 0) / solves.length;
+}
+
+export interface DaySlot {
+  date: string;
+  seconds: number | null;
+}
+
+/** Lines up `solves` against `cells` (see buildCells) so every box on the page shares the same day-by-day x-axis. */
+export function alignSolves(cells: Cell[], solves: Solve[]): DaySlot[] {
+  const byDate = new Map(solves.map((s) => [s.date, s.seconds]));
+  return cells.map((c) => ({ date: c.date, seconds: byDate.get(c.date) ?? null }));
+}

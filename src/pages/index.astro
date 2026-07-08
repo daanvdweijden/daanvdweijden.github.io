@@ -1,0 +1,206 @@
+---
+// Home — minimalist editorial layout ("Premium Utilitarian Minimalism").
+// Warm-bone canvas, editorial serif + geometric sans, flat bento grid, 1px
+// hairline borders, muted pastel tags. No motion — static by design.
+//
+// All content is data-driven:
+//   • profile + links  → src/site.config.ts   (from the old Hugo site)
+//   • publications     → src/data/publications.bib
+//   • news             → src/content/news/*.md
+import Layout from '../layouts/Layout.astro';
+import { site } from '../site.config';
+import { getPublications, yearOf, pubHref } from '../lib/pubs';
+import { getNews, newsHref } from '../lib/news';
+
+const pubs = await getPublications();
+
+// News feed, newest first.
+const news = await getNews();
+const fmtMonth = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<Layout>
+  <header class="hero">
+    <div class="wrap">
+      <h1 class="statement">
+        Building AI tools that help democracy <span class="scale-word">scale</span> — so citizens can <span class="feat f-red">understand</span>, <span class="feat f-blue">engage</span>, and <span class="feat f-green">deliberate</span> together.
+      </h1>
+    </div>
+  </header>
+
+  <section class="bento">
+    <div class="wrap">
+      <div class="grid">
+        <article class="card c-profile">
+          <img class="avatar" src={`${import.meta.env.BASE_URL}${site.avatar}`} alt={`Portrait of ${site.name}`} />
+          <p class="name">{site.name}</p>
+          <p class="role">{site.role}</p>
+          <p class="location">{site.location}</p>
+          <div class="profile-links">
+            <a class="profile-link" href={`${import.meta.env.BASE_URL}cv/`}>CV</a>
+            {site.socials
+              .filter((s) => ['GitHub', 'Google Scholar', 'ORCID', 'Email'].includes(s.name))
+              .map((s) => <a class="profile-link" href={s.url}>{s.name}</a>)}
+            <a class="profile-link" href={`${import.meta.env.BASE_URL}puzzles/`}>Unproductivity Tracker</a>
+          </div>
+        </article>
+
+        <article class="card c-about">
+          <p class="kicker">About</p>
+          <p>
+            I'm a PhD candidate at the <a href={site.affiliation.url} class="inline-link">{site.affiliation.name}</a> group
+            at the {site.university}, working on artificial intelligence and its impact on democracy.
+          </p>
+          <p>
+            My research applies computational methods to societal problems — sometimes to understand
+            what's driving them, sometimes to build tools that help address them. I come from a background
+            spanning Linguistics (BA) and Artificial Intelligence (BSc, MSc), which led me to the
+            interdisciplinary <a href="https://d3-project.ch" class="inline-link">Digital Deliberative Democracy (D3)</a> project,
+            where I collaborate directly with PoliSci and Law fellows.
+          </p>
+          <p>
+            Beyond my research, I try to be engaged in the university as well, as the
+            <a href="https://www.ifi.uzh.ch/en/department/people/representatives.html" class="inline-link">PhD representative of the IFI department</a>
+            and as a member of the assembly of the OEC faculty. I was furthermore part of the
+            <a href="https://www.dsi.uzh.ch/en/current/news/2026/congrats-ep-2026.html" class="inline-link">DSI PhD Excellence programme</a>,
+            allowing me to meet the incredibly smart and talented people of my cohort.
+          </p>
+          <p>
+            Outside of work, I love to run next to the Limmat, swim in a Badi, hang with my two cats, or if
+            I haven't had enough of it after work, try to
+            <a href="https://www.goodreads.com/user/show/155595600-daan-van-der-weijden" class="inline-link">read a book</a>.
+            Previous obsessions include bowling, minigolf, bouldering, and DnD. Always down for a new game!
+          </p>
+          <div class="tags">
+            <span class="tag t-red">Artificial Intelligence</span>
+            <span class="tag t-blue">Digital Democracy</span>
+            <span class="tag t-green">Natural Language Processing</span>
+          </div>
+        </article>
+
+        <article class="card c-pubs">
+          <div class="card-head">
+            <p class="kicker">Publications</p>
+            <a class="see-all" href={`${import.meta.env.BASE_URL}pubs/`}>All →</a>
+          </div>
+          {pubs.slice(0, 3).map((p) => (
+            <div class="pub">
+              <a class="pt-link" href={pubHref(p)}>
+                <p class="pt">{p.data.title}</p>
+                <p class="pa">{p.data.authors.join(', ')}</p>
+                <p class="pv">{[p.data.venue, yearOf(p)].filter(Boolean).join(' · ')}</p>
+              </a>
+            </div>
+          ))}
+        </article>
+
+        <article class="card c-news">
+          <div class="card-head">
+            <p class="kicker">News</p>
+            <a class="see-all" href={`${import.meta.env.BASE_URL}news/`}>All →</a>
+          </div>
+          {news.map((n) => (
+            <a class="news-item" href={newsHref(n)}>
+              <time datetime={iso(n.data.date)}>{fmtMonth(n.data.date)}</time>
+              {n.data.title}
+            </a>
+          ))}
+        </article>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* ---- hero ---- */
+  .hero { padding: clamp(4rem, 11vw, 8rem) 0 clamp(2.5rem, 6vw, 4rem); }
+  h1.statement {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(2.3rem, 6vw, 4rem); line-height: 1.1; letter-spacing: -0.025em;
+    margin: 0; max-width: 22ch;
+  }
+  .feat { font-style: italic; }
+  .f-red { color: var(--p-red-fg); }
+  .f-blue { color: var(--p-blue-fg); }
+  .f-green { color: var(--p-green-fg); }
+  .scale-word { font-style: italic; }
+
+  /* ---- bento ---- */
+  section.bento { padding: clamp(1rem, 3vw, 2rem) 0 clamp(4rem, 9vw, 7rem); }
+  .grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: minmax(0, auto);
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: clamp(1.4rem, 3vw, 2rem);
+  }
+  .c-profile { grid-column: span 2; display: flex; flex-direction: column; }
+  .c-about { grid-column: span 4; }
+  .c-pubs { grid-column: span 4; }
+  .c-news { grid-column: span 2; }
+
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .see-all { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); text-decoration: none; transition: color .2s; }
+  .see-all:hover { color: var(--ink); }
+
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .card h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 .6rem; }
+  .card p { margin: 0 0 .6rem; }
+  .card p:last-child { margin-bottom: 0; }
+  .inline-link { border-bottom: 1px solid var(--line); text-decoration: none; }
+
+  .avatar { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; object-fit: cover; border: 1px solid var(--line); margin-bottom: 1.1rem; }
+  .c-profile .name { font-family: var(--serif); font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
+  .c-profile .role { color: var(--muted); margin: 0 0 .3rem; font-size: .95rem; }
+  .c-profile .location {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted); margin: 0 0 1.1rem;
+  }
+  .profile-links { display: flex; flex-direction: column; gap: .5rem; margin-top: auto; }
+  .profile-link {
+    font-family: var(--mono); font-size: .78rem; color: var(--muted);
+    text-decoration: none; border-bottom: 1px solid var(--line); width: fit-content;
+    transition: color .2s;
+  }
+  .profile-link:hover { color: var(--ink); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; }
+  .tag {
+    font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em;
+    padding: .28rem .6rem; border-radius: 9999px;
+  }
+  .t-red { background: var(--p-red-bg); color: var(--p-red-fg); }
+  .t-blue { background: var(--p-blue-bg); color: var(--p-blue-fg); }
+  .t-green { background: var(--p-green-bg); color: var(--p-green-fg); }
+  .t-yellow { background: var(--p-yellow-bg); color: var(--p-yellow-fg); }
+
+  .pub { padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .pub:last-child { border-bottom: 0; padding-bottom: 0; }
+  .pub:first-of-type { padding-top: 0; }
+  .pub a.pt-link { text-decoration: none; display: block; }
+  .pub .pt { font-family: var(--serif); font-size: 1.1rem; letter-spacing: -0.01em; margin: 0 0 .2rem; }
+  .pub a.pt-link:hover .pt { text-decoration: underline; text-underline-offset: 3px; }
+  .pub .pa { font-size: .9rem; color: var(--muted); margin: 0; }
+  .pub .pv { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: .35rem 0 0; text-transform: uppercase; letter-spacing: .06em; }
+
+  .news-item {
+    display: block; font-size: .92rem; padding: .85rem 0; border-bottom: 1px solid var(--line);
+    text-decoration: none; transition: color .2s;
+  }
+  .news-item:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .news-item:last-child { border-bottom: 0; padding-bottom: 0; }
+  .news-item:first-of-type { padding-top: 0; }
+  .news-item time { font-family: var(--mono); font-size: .7rem; color: var(--muted); display: block; margin-bottom: .3rem; }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .c-profile, .c-about, .c-pubs, .c-news { grid-column: span 2; grid-row: auto; }
+  }
+</style>

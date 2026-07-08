@@ -1,0 +1,116 @@
+---
+// CV — Education / Work / Awards & Grants, in a resume-style timeline.
+// All content lives in src/data/resume.json (JSON Resume schema — portable
+// to other JSON Resume themes/tools, not just this site). Edit the JSON to
+// update entries; this page only sorts and renders it.
+import Layout from '../../layouts/Layout.astro';
+import { resume, educationSorted, workSorted, awardsSorted, dateRange, formatDate, countryName } from '../../lib/resume';
+
+const sections = [
+  {
+    key: 'education',
+    label: 'Education',
+    items: educationSorted().map((e) => ({
+      when: dateRange(e.startDate, e.endDate),
+      title: `${e.studyType} in ${e.area}`,
+      org: e.institution,
+      detail: [e.score, e.summary].filter(Boolean).join(' · '),
+      note: e.courses?.join(', '),
+    })),
+  },
+  {
+    key: 'work',
+    label: 'Work Experience',
+    items: workSorted().map((w) => ({
+      when: dateRange(w.startDate, w.endDate),
+      title: w.position,
+      org: [w.name, w.location].filter(Boolean).join(', '),
+      detail: w.summary,
+    })),
+  },
+  {
+    key: 'awards',
+    label: 'Awards & Grants',
+    items: awardsSorted().map((a) => ({
+      when: formatDate(a.date),
+      title: a.title,
+      org: a.awarder,
+    })),
+  },
+];
+
+const location = [resume.basics.location.city, countryName(resume.basics.location.countryCode)]
+  .filter(Boolean)
+  .join(', ');
+---
+
+<Layout title="CV" active="cv">
+  <main class="wrap page">
+    <header class="page-head">
+      <p class="eyebrow">{location}</p>
+      <h1>Curriculum Vitae</h1>
+      <p class="lede">Education, work experience, and awards.</p>
+    </header>
+
+    {sections.map((s) => (
+      <section class="cv-section">
+        <h2 class="section-title">{s.label}</h2>
+        <ol class="entries">
+          {s.items.map((item) => (
+            <li class="entry">
+              <div class="when">{item.when}</div>
+              <div class="body">
+                <h3 class="entry-title">{item.title}</h3>
+                {item.org && <p class="org">{item.org}</p>}
+                {item.detail && <p class="detail">{item.detail}</p>}
+                {item.note && <p class="note">{item.note}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </main>
+</Layout>
+
+<style>
+  .page { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(3rem, 8vw, 6rem); }
+
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .page-head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  }
+  .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
+
+  .cv-section { padding: clamp(1.5rem, 4vw, 2.5rem) 0; border-top: 1px solid var(--line); }
+  .section-title {
+    font-family: var(--serif); font-weight: 500; font-size: 1.6rem;
+    letter-spacing: -0.02em; margin: 0 0 1.5rem;
+  }
+
+  .entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: clamp(1.4rem, 3vw, 2rem); }
+  .entry {
+    display: grid; grid-template-columns: 9rem 1fr; gap: clamp(1rem, 3vw, 2.5rem);
+  }
+  .when {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--muted); padding-top: .2rem;
+  }
+
+  .entry-title {
+    font-family: var(--serif); font-weight: 500; font-size: 1.1rem;
+    letter-spacing: -0.01em; margin: 0 0 .3rem;
+  }
+  .org { margin: 0 0 .3rem; font-size: .95rem; color: var(--ink); }
+  .detail { margin: 0 0 .3rem; font-size: .92rem; color: var(--muted); }
+  .note { margin: 0; font-size: .85rem; color: var(--muted); font-style: italic; }
+
+  @media (max-width: 680px) {
+    .entry { grid-template-columns: 1fr; gap: .4rem; }
+  }
+</style>

@@ -1,0 +1,209 @@
+---
+// The puzzle-data easter egg. Not linked from the nav — reachable only via
+// the small "∙" after the copyright in the footer. Data comes from
+// data/activity.json + data/crux_stats.json (see src/lib/puzzles.ts);
+// nothing here fetches live.
+import Layout from '../../layouts/Layout.astro';
+import Heatmap from '../../components/Heatmap.astro';
+import SolveBars from '../../components/SolveBars.astro';
+import {
+  getActivity,
+  cruxStats,
+  buildCells,
+  lastNDays,
+  gameCounts,
+  totalPuzzlesSolved,
+  formatDay,
+  getMiniSolves,
+  getMidiSolves,
+  alignSolves,
+  averageSeconds,
+  formatSeconds,
+} from '../../lib/puzzles';
+
+const a = getActivity();
+const cells = buildCells(a);
+const games = gameCounts(a);
+const totalDays = a.days.length;
+const totalPuzzles = totalPuzzlesSolved(a);
+const recent = a.days.slice(0, 14); // already newest-first
+
+// Same 90-day window as the activity heatmap, so all three boxes share an x-axis.
+const last90 = lastNDays(cells, 90);
+const miniSeries = alignSolves(last90, getMiniSolves());
+const midiSeries = alignSolves(last90, getMidiSolves());
+const hasSeconds = (s: { seconds: number | null }): s is { date: string; seconds: number } => s.seconds !== null;
+const miniAvg = averageSeconds(miniSeries.filter(hasSeconds));
+const midiAvg = averageSeconds(midiSeries.filter(hasSeconds));
+---
+
+<Layout title="Puzzles" description="A daily puzzle log — for me, mostly." noindex>
+  <main class="wrap page">
+    <header class="page-head">
+      <p class="eyebrow">Not on the CV</p>
+      <h1>Daily Puzzles</h1>
+      <p class="lede">
+        A running log of the crosswords and daily puzzles I solve before coffee.
+        Last updated {formatDay(a.generated, true)}.
+      </p>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <p class="stat-num">{a.mini_streak}</p>
+        <p class="stat-label">NYT Mini streak</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{cruxStats.crux_streak_current}</p>
+        <p class="stat-label">Crux streak · best {cruxStats.crux_streak_max}</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{cruxStats.win_percentage}%</p>
+        <p class="stat-label">Crux win rate · avg {cruxStats.average_time}</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{totalDays}</p>
+        <p class="stat-label">Days logged · {totalPuzzles} puzzles</p>
+      </div>
+    </section>
+
+    <section class="activity-row">
+      <div class="bento-card heatmap-section">
+        <div class="card-head">
+          <p class="kicker">Activity · last 90 days</p>
+        </div>
+        <div class="heatmap-wrap">
+          <Heatmap cells={last90} activity={a} />
+        </div>
+      </div>
+
+      <div class="bento-card pace-section">
+        <p class="kicker">NYT Mini finishes</p>
+        <p class="pace-num">{formatSeconds(miniAvg)}</p>
+        <p class="pace-label">average · last 90 days</p>
+        <SolveBars series={miniSeries} color="var(--p-blue-fg)" />
+      </div>
+
+      <div class="bento-card pace-section">
+        <p class="kicker">NYT Midi finishes</p>
+        <p class="pace-num">{formatSeconds(midiAvg)}</p>
+        <p class="pace-label">average · last 90 days</p>
+        <SolveBars series={midiSeries} color="var(--p-blue-fg)" />
+      </div>
+    </section>
+
+    <section class="legend">
+      <p class="kicker">Games played</p>
+      <div class="pills">
+        {games.map((g) => (
+          <span class:list={['pill', g.source === 'nyt' ? 't-blue' : 't-green']}>
+            {g.label} · {g.count}
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <section class="log">
+      <p class="kicker">Last 14 days</p>
+      <div class="log-rows">
+        {recent.map((day) => (
+          <div class="log-row">
+            <time datetime={day.date}>{formatDay(day.date)}</time>
+            <span class="log-games">
+              {day.played.length > 0
+                ? day.played.map((slug) => a.game_meta[slug]?.label ?? slug).join(', ')
+                : '—'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .page { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(3rem, 8vw, 6rem); }
+
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .page-head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  }
+  .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
+
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
+  }
+
+  /* ---- stats ---- */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin: clamp(2rem, 5vw, 3rem) 0;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
+  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+
+  /* ---- activity row: activity heatmap + two solve-time bento cards ---- */
+  .activity-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-bottom: 1.5rem; align-items: stretch;
+  }
+  .bento-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    display: flex; flex-direction: column;
+  }
+  .card-head { margin-bottom: .5rem; }
+  .card-head .kicker { margin: 0; }
+
+  .heatmap-section .heatmap-wrap { flex: 1; display: flex; align-items: center; }
+  .heatmap-section :global(.heatmap) { padding-top: 0; }
+
+  .pace-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
+  .pace-label {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0 0;
+  }
+  .pace-section :global(.solve-bars) { margin-top: auto; padding-top: 1.4rem; }
+
+  /* ---- legend ---- */
+  .legend { margin-bottom: clamp(2rem, 5vw, 3rem); }
+  .pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .pill {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .04em;
+    padding: .3rem .65rem; border-radius: 9999px;
+  }
+  .t-blue { background: var(--p-blue-bg); color: var(--p-blue-fg); }
+  .t-green { background: var(--p-green-bg); color: var(--p-green-fg); }
+
+  /* ---- log ---- */
+  .log-rows { display: flex; flex-direction: column; }
+  .log-row {
+    display: flex; justify-content: space-between; gap: 1rem;
+    padding: .7rem 0; border-bottom: 1px solid var(--line);
+  }
+  .log-row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .log-row:first-of-type { padding-top: 0; }
+  .log-row time { font-family: var(--mono); font-size: .74rem; color: var(--muted); white-space: nowrap; }
+  .log-games { font-size: .88rem; text-align: right; }
+
+  @media (max-width: 760px) {
+    .activity-row { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 680px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .card-head { flex-direction: column; align-items: flex-start; gap: .6rem; }
+    .log-row { flex-direction: column; gap: .3rem; }
+    .log-games { text-align: left; }
+  }
+</style>

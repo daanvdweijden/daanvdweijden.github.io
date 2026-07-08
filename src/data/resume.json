@@ -1,0 +1,134 @@
+{
+  "basics": {
+    "name": "Daan van der Weijden",
+    "label": "PhD Candidate",
+    "email": "weijden@ifi.uzh.ch",
+    "location": {
+      "city": "Zurich",
+      "region": "Zurich",
+      "countryCode": "CH"
+    },
+    "profiles": [
+      { "network": "GitHub", "url": "https://github.com/daanvdweijden/" },
+      { "network": "Google Scholar", "url": "https://scholar.google.com/citations?hl=nl&user=vHEl144AAAAJ" },
+      { "network": "ORCID", "url": "https://orcid.org/0000-0002-8024-7219" }
+    ]
+  },
+  "education": [
+    {
+      "institution": "University of Zurich",
+      "area": "Computer Science",
+      "studyType": "PhD",
+      "startDate": "2023-09",
+      "endDate": ""
+    },
+    {
+      "institution": "Utrecht University",
+      "area": "Artificial Intelligence",
+      "studyType": "Master of Science",
+      "startDate": "2021-09",
+      "endDate": "2023-08",
+      "score": "GPA 3.7/4.0",
+      "summary": "Honours Student; Faculty Council Member",
+      "courses": [
+        "Human Centered Machine Learning",
+        "Intelligent Agents",
+        "Natural Language Generation"
+      ]
+    },
+    {
+      "institution": "Utrecht University",
+      "area": "Artificial Intelligence",
+      "studyType": "Bachelor of Science",
+      "startDate": "2019-09",
+      "endDate": "2021-08",
+      "score": "GPA 4.0/4.0, Cum Laude",
+      "summary": "Chair of Political Party VUUR; Faculty Council Member",
+      "courses": [
+        "Logical Complexity",
+        "Intelligent Systems",
+        "Computational Linguistics"
+      ]
+    },
+    {
+      "institution": "Utrecht University",
+      "area": "Linguistics",
+      "studyType": "Bachelor of Arts",
+      "startDate": "2017-09",
+      "endDate": "2021-08",
+      "score": "GPA 3.8/4.0",
+      "summary": "Chair of Linguistics Study Association",
+      "courses": [
+        "Language and Computation",
+        "Semantics and Pragmatics",
+        "Experimental Psycholinguistics"
+      ]
+    }
+  ],
+  "work": [
+    {
+      "name": "TNO",
+      "location": "The Hague",
+      "position": "Research Intern",
+      "startDate": "2022-12",
+      "endDate": "2023-08",
+      "summary": "Researched textual data augmentation methods; developed augmentation techniques for Dutch using local LLMs."
+    },
+    {
+      "name": "Utrecht Data School",
+      "location": "Utrecht",
+      "position": "Research Assistant",
+      "startDate": "2022-01",
+      "endDate": "2023-08",
+      "summary": "Analyzed Twitter interactions regarding Dutch datacenters (published); developed an algorithmic oversight framework for authorities; conducted political influence research on social media."
+    },
+    {
+      "name": "Utrecht University",
+      "location": "",
+      "position": "Teaching Assistant",
+      "startDate": "2020-01",
+      "endDate": "2022-12",
+      "summary": "Seminars, grading, and code feedback for Machine Learning, Natural/Formal Languages, and Introduction to Logic."
+    },
+    {
+      "name": "Channable",
+      "location": "Utrecht",
+      "position": "Technical Support",
+      "startDate": "2020-09",
+      "endDate": "2021-04",
+      "summary": "Platform support for eCommerce product centralization; customer onboarding."
+    }
+  ],
+  "awards": [
+    {
+      "title": "Engagement Award for Special Commitment (Nominee)",
+      "date": "2026-06",
+      "awarder": "Faculty of Business, Economics and Informatics, UZH"
+    },
+    {
+      "title": "CIRES Travel Grant",
+      "date": "2025-04",
+      "awarder": "University of Queensland visit"
+    },
+    {
+      "title": "DSI PhD Excellence Program",
+      "date": "2024-09",
+      "awarder": "Digital Society Initiative"
+    },
+    {
+      "title": "DSI Excellence Personal Grant",
+      "date": "2024-09",
+      "awarder": "5000 CHF"
+    },
+    {
+      "title": "Graduate Honours of Interdisciplinary Seminars",
+      "date": "2023-08",
+      "awarder": ""
+    },
+    {
+      "title": "Cum Laude Distinction",
+      "date": "2021-08",
+      "awarder": ""
+    }
+  ]
+}

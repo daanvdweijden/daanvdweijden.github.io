@@ -1,0 +1,179 @@
+---
+// Publications — a year-grouped academic list. Each title links to the paper's
+// own page (/pubs/<slug>/). Data comes from the `publications` collection.
+import Layout from '../../layouts/Layout.astro';
+import {
+  getPublications,
+  groupByYear,
+  isOwner,
+  actionLinks,
+  pubHref,
+  thumbSrc,
+} from '../../lib/pubs';
+
+const groups = groupByYear(await getPublications());
+---
+
+<Layout title="Publications" active="publications">
+  <main class="wrap page">
+    <header class="page-head">
+      <p class="eyebrow">Research</p>
+      <h1>Publications</h1>
+      <p class="lede">
+        Peer-reviewed work. Follow a title for the abstract, links, and citation.
+      </p>
+    </header>
+
+    {groups.map((g) => (
+      <section class="year-row">
+        {/* The year is part of the separator: it sits at the left and the hairline
+            picks up from the title column, so the rule is aligned with the paper
+            titles rather than running the full width. */}
+        <div class="year-sep">
+          <span class="year">{g.year}</span>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <ol class="entries" role="list">
+          {g.items.map((p) => {
+            const thumb = thumbSrc(p);
+            return (
+              <li class="entry" role="listitem">
+                <div class="rail">
+                  {thumb && (
+                    <a class="thumb" href={pubHref(p)} aria-hidden="true" tabindex="-1">
+                      <img src={thumb} alt="" loading="lazy" />
+                    </a>
+                  )}
+                </div>
+
+                <div class="entry-main">
+                  {p.data.venueShort && <span class="badge">{p.data.venueShort}</span>}
+
+                  <h2 class="title">
+                    <a href={pubHref(p)}>{p.data.title}</a>
+                  </h2>
+
+                  <p class="authors">
+                    {p.data.authors.map((a, i) => (
+                      <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
+                    ))}
+                  </p>
+
+                  <p class="venue">
+                    {p.data.venue}, {g.year}
+                    {p.data.note ? <span class="note"> · {p.data.note}</span> : null}
+                  </p>
+
+                  <div class="actions">
+                    <a class="page-link" href={pubHref(p)}>Details →</a>
+                    {actionLinks(p).map((l) => (
+                      <a href={l.href}>{l.label}</a>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    ))}
+  </main>
+</Layout>
+
+<style>
+  .page { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(3rem, 8vw, 6rem); }
+
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .page-head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  }
+  .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
+
+  /* year block: a group of entries introduced by a year-plus-hairline separator. */
+  .year-row {
+    padding: clamp(2.4rem, 5vw, 3.4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+  }
+  /* The separator shares the entry grid, so the year sits in the thumbnail rail
+     column and the hairline picks up from the title column — aligning the rule
+     with the paper titles instead of running the full width. */
+  .year-sep {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    column-gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: center;
+    margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
+  }
+  .year {
+    grid-column: 1;
+    font-family: var(--serif); font-size: 1.6rem; line-height: 1;
+    color: var(--muted); letter-spacing: -0.02em;
+  }
+  .rule { grid-column: 2; height: 1px; background: var(--line); }
+
+  .entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: clamp(1.6rem, 4vw, 2.4rem); }
+
+  /* Every entry shares the same two-column grid, so the text column lines up
+     whether or not the paper has a thumbnail. The left rail holds the
+     first-page thumbnail, aligned to the top of the entry (its title). */
+  .entry {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    column-gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: start;
+  }
+  .entry-main { grid-column: 2; min-width: 0; }
+
+  .rail { grid-column: 1; }
+  .thumb {
+    display: block; width: 100%; border: 1px solid var(--line); border-radius: 6px;
+    overflow: hidden; background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .thumb:hover { border-color: var(--muted); box-shadow: 0 2px 8px rgba(0, 0, 0, .08); }
+  .thumb img {
+    width: 100%; height: auto; display: block;
+    aspect-ratio: 1 / 1.414;                /* A4-ish page proportion */
+    object-fit: cover; object-position: top center;
+  }
+
+  .badge {
+    display: inline-block; margin-bottom: .55rem;
+    font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: .2rem .5rem;
+  }
+
+  .title {
+    font-family: var(--serif); font-weight: 500; font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+    line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 .4rem;
+  }
+  .title a { text-decoration: none; transition: color .2s; }
+  .title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .authors { margin: 0 0 .25rem; font-size: .95rem; color: var(--muted); }
+  .author.me { color: var(--ink); font-weight: 600; }
+
+  .venue { margin: 0; font-family: var(--mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .venue .note { text-transform: none; letter-spacing: 0; font-style: italic; }
+
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem; margin-top: .7rem; }
+  .actions a {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); text-decoration: none; transition: color .2s;
+    border-bottom: 1px solid transparent;
+  }
+  .actions a:hover { color: var(--ink); border-bottom-color: var(--line); }
+  .actions a.page-link { color: var(--ink); }
+
+  @media (max-width: 680px) {
+    .year-row { padding-top: 1.5rem; }
+    .entry { grid-template-columns: 4.5rem 1fr; column-gap: 1rem; }
+    .year-sep { grid-template-columns: 4.5rem 1fr; column-gap: 1rem; margin-bottom: 1.5rem; }
+    .year { font-size: 1.3rem; }
+  }
+</style>

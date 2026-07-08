@@ -1,13 +1,19 @@
-_site
-.bundle
-.sass-cache
-.jekyll-cache
-.jekyll-metadata
-.DS_store
-.ruby-version
-.tweet-cache
-Gemfile.lock
-assets/libs/
+# build output
+dist/
+# generated types
+.astro/
+# dependencies
 node_modules/
-vendor
-.idea
+# logs
+npm-debug.log*
+# environment
+.env
+.env.production
+# macOS
+.DS_Store
+
+# puzzle-data pipeline: ephemeral checkouts of the two public fetcher repos,
+# never committed here — only their output (data/*.csv, data/activity.json) is
+.fetchers/
+__pycache__/
+*.pyc

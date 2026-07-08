@@ -1,0 +1,133 @@
+name: Puzzle data
+
+on:
+  schedule:
+    # 6×/day (every 4h) at :17 — :17 avoids the top-of-hour rush when GitHub
+    # delays/drops scheduled runs. Runs ~00,04,08,12,16,20 UTC.
+    - cron: "17 */4 * * *"
+  workflow_dispatch: {}      # manual "Run workflow" button
+
+permissions:
+  contents: write            # allow committing the updated CSVs/activity.json back
+  actions: write             # allow triggering the deploy workflow after a data commit
+
+# Never let two runs push at once (a scheduled run + a manual run can overlap).
+concurrency:
+  group: puzzle-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4    # this site repo
+
+      # Fetcher source, checked out fresh each run — public repos, no token
+      # needed. Nothing from these two gets committed here (see .gitignore);
+      # only their --output (data/*.csv) is kept.
+      - uses: actions/checkout@v4
+        with:
+          repository: daanvdweijden/nyt-games-tracker
+          path: .fetchers/nyt
+      - uses: actions/checkout@v4
+        with:
+          repository: daanvdweijden/nrc-puzzel-tracker
+          path: .fetchers/nrc
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r .fetchers/nyt/requirements.txt
+
+      # ---- NYT (cookie-based; will 401 when the cookie expires) ----
+      - name: NYT Mini
+        id: mini
+        continue-on-error: true
+        env:
+          NYT_S_COOKIE: ${{ secrets.NYT_S_COOKIE }}
+        run: python .fetchers/nyt/scripts/fetch_nyt_crosswords.py --type mini --start 2025-10-11 --output data/mini_scores.csv
+
+      - name: NYT Midi
+        id: midi
+        continue-on-error: true
+        env:
+          NYT_S_COOKIE: ${{ secrets.NYT_S_COOKIE }}
+        # Rolling window only catches late solves (full history is already saved).
+        # 7d keeps the run fast; bump --start for a one-off deeper backfill.
+        run: python .fetchers/nyt/scripts/fetch_nyt_crosswords.py --type midi --start "$(date -u -d '7 days ago' +%F)" --output data/midi_scores.csv
+
+      - name: NYT games (Wordle / Connections / Strands)
+        id: nytact
+        continue-on-error: true
+        env:
+          NYT_S_COOKIE: ${{ secrets.NYT_S_COOKIE }}
+        # 4-day window (script default is 14): catches late solves cheaply.
+        run: python .fetchers/nyt/scripts/fetch_nyt_games.py --start "$(date -u -d '4 days ago' +%F)" --output data/nyt_games.csv
+
+      # ---- NRC (token-based; will exit non-zero when the tokens rotate) ----
+      - name: NRC Crux
+        id: nrc
+        continue-on-error: true
+        env:
+          NRC_PLAYER_ID: ${{ secrets.NRC_PLAYER_ID }}
+          NRC_USER_ID: ${{ secrets.NRC_USER_ID }}
+        run: python .fetchers/nrc/scripts/fetch_nrc.py --output data/crux_scores.csv --stats-output data/crux_stats.json
+
+      - name: NRC other games (Vorto / Precies vier / Sudoku / etc.)
+        id: nrcgames
+        continue-on-error: true
+        env:
+          NRC_USER_ID: ${{ secrets.NRC_USER_ID }}
+        run: python .fetchers/nrc/scripts/fetch_nrc_games.py --output data/nrc_games.csv
+
+      - name: Build combined activity feed
+        run: python scripts/build_feed.py
+
+      - name: Commit updated puzzle data
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # No-op (and skip the push) when nothing changed — most runs.
+          git diff --cached --quiet && { echo "No changes to commit."; exit 0; }
+          git commit -m "Update puzzle data ($(date -u +'%F %H:%M') UTC)"
+          git pull --rebase --autostash
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # A push made with the default GITHUB_TOKEN does NOT trigger the `on: push`
+      # in deploy.yml (GitHub suppresses workflow chains from GITHUB_TOKEN pushes),
+      # so the live site would never pick up new puzzle data on its own. Kick the
+      # deploy explicitly — workflow_dispatch IS allowed from GITHUB_TOKEN. Only
+      # fires when the commit step actually pushed something.
+      - name: Trigger site deploy
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --ref main
+
+      # If the NYT cookie expired (or NYT changed the API again — see the
+      # silent-drift guard in fetch_nyt_crosswords.py), fail the job so
+      # GitHub emails you — but only ONCE a day, not on every 4-hourly run.
+      - name: Flag NYT cookie expiry / API drift
+        if: steps.mini.outcome == 'failure' || steps.midi.outcome == 'failure' || steps.nytact.outcome == 'failure'
+        run: |
+          echo "::warning::NYT fetch failed — the NYT_S_COOKIE secret has most likely expired, or NYT changed the API again. Refresh the secret (or check the step logs) if needed."
+          hour=$(date -u +%H)
+          if [ "$hour" = "08" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            exit 1   # fail loudly -> GitHub emails you (once-daily, or on a manual run)
+          fi
+          echo "Cookie looks expired; staying green this run to avoid repeat emails (daily alert fires at ~08:00 UTC)."
+
+      # If the NRC tokens rotated, same once-daily gating as the NYT alert.
+      - name: Flag NRC token expiry
+        if: steps.nrc.outcome == 'failure' || steps.nrcgames.outcome == 'failure'
+        run: |
+          echo "::warning::NRC fetch failed — the NRC_PLAYER_ID / NRC_USER_ID tokens have most likely rotated. Refresh them in repo Settings → Secrets."
+          hour=$(date -u +%H)
+          if [ "$hour" = "08" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            exit 1   # fail loudly -> GitHub emails you (once-daily, or on a manual run)
+          fi
+          echo "Tokens look rotated; staying green this run to avoid repeat emails (daily alert fires at ~08:00 UTC)."

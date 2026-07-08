@@ -1,0 +1,130 @@
+date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,solved_at,opened_at,first_typed_at,autocheck,cheated,revealed_cells,checked_cells,autochecked_cells,hint_type
+2026-02-25,23822,midi,Ian Livengood,Goldilocks Zone,196,3:16,100,True,1773918287,,,True,True,0,0,0,autocheck
+2026-02-26,23823,midi,Rena Cohen,Rainbow Sprinkles,375,6:15,100,True,1773917754,,,True,True,0,0,0,autocheck
+2026-02-27,23535,midi,Erik Agard,Thinking in Color,844,14:04,100,True,1773846325,,,True,True,0,0,0,autocheck
+2026-02-28,23426,midi,Ian Livengood,Philly Special,666,11:06,100,True,1774448064,,,True,True,0,0,0,autocheck
+2026-03-01,23614,midi,Kareem Ayas,Chew Toy,556,9:16,100,True,1773247568,,,True,True,1,0,0,revealed
+2026-03-02,23357,midi,Hanh Huynh,Nom-chalant,702,11:42,100,True,1773244866,,,True,True,1,0,0,revealed
+2026-03-03,23500,midi,Alina Abidi,Dogpile,304,5:04,100,True,1773243492,,,True,True,0,0,0,autocheck
+2026-03-04,23555,midi,Zhou Zhang and Kevin Curry,Food for Thought,393,6:33,100,True,1773233104,,,True,True,0,9,0,checked
+2026-03-05,23338,midi,Tarun Krishnamurthy,Poetry in Motion,471,7:51,100,True,1773173637,,,True,True,0,0,0,autocheck
+2026-03-06,23438,midi,Ian Livengood,Barriers to Entry,474,7:54,100,True,1773095155,,,True,True,0,0,0,autocheck
+2026-03-07,23583,midi,Tom McCoy,Per My Last Letter,605,10:05,100,True,1772916444,,,False,True,1,0,0,revealed
+2026-03-08,23366,midi,Ian Livengood,Cross-Country Meet,574,9:34,100,True,1773073959,,,True,True,0,0,0,autocheck
+2026-03-09,23573,midi,Sid Sivakumar,Run It Back,513,8:33,100,True,1773049803,,,True,True,1,0,0,revealed
+2026-03-10,23588,midi,Adrianne Baik,A Touch of Class,841,14:01,100,True,1773149406,,,True,True,0,0,0,autocheck
+2026-03-11,23371,midi,Ian Livengood,Wiggle Room,506,8:26,100,True,1773220034,,,True,True,0,1,0,checked
+2026-03-12,23559,midi,Aaron Gee and Avery Gee Katz,Songwriting,982,16:22,100,True,1773336338,,,True,True,5,0,0,revealed
+2026-03-13,23463,midi,Jeremy Newton,Chat Bubbles,704,11:44,100,True,1773391602,,,True,True,4,1,0,revealed
+2026-03-14,23386,midi,Rena Cohen,Pictures in Pictures,328,5:28,100,True,1773502853,,,False,True,0,3,0,checked
+2026-03-15,23344,midi,Ian Livengood,Beware the Ides of March,529,8:49,100,True,1773584135,,,True,True,0,0,0,autocheck
+2026-03-16,23363,midi,Ian Livengood,One Battle After Another,566,9:26,100,True,1773657284,,,True,True,0,0,0,autocheck
+2026-03-17,23598,midi,Ian Livengood,Green Day,842,14:02,100,True,1774447610,,,True,True,6,1,0,revealed
+2026-03-18,23707,midi,Paolo Pasco,A Heartbreaking Work of Staggering Genius,438,7:18,100,True,1773829051,,,True,True,0,0,0,autocheck
+2026-03-19,23353,midi,Hanh Huynh,Cross Words With Friends,626,10:26,100,True,1773914016,,,True,True,0,0,0,autocheck
+2026-03-20,23449,midi,Ian Livengood,Some Strings Attached,592,9:52,100,True,1773992866,,,True,True,0,0,0,autocheck
+2026-03-21,23569,midi,Sid Sivakumar,Above Ground,604,10:04,100,True,1774110466,,,True,True,1,0,0,revealed
+2026-03-22,23539,midi,Erik Agard,Big Books,415,6:55,100,True,1774161492,,,True,True,2,0,0,revealed
+2026-03-23,23795,midi,Ian Livengood,Victory Formation,620,10:20,100,True,1774265247,,,True,True,4,0,0,revealed
+2026-03-24,23341,midi,Tarun Krishnamurthy,Why Are You Here?,399,6:39,100,True,1774352434,,,False,True,0,1,0,checked
+2026-03-25,23465,midi,Jeremy Newton,Leaders in Tech,392,6:32,100,True,1774431864,,,True,True,0,1,0,checked
+2026-03-26,23568,midi,Ian Livengood,Automates,301,5:01,100,True,1774511968,,,True,True,0,0,0,autocheck
+2026-03-27,23526,midi,Ian Livengood,Water Under the Bridge,905,15:05,100,True,1774609032,,,True,True,2,0,0,revealed
+2026-03-28,23824,midi,Kareem Ayas,This Blows!,636,10:36,100,True,1774718499,,,True,True,0,0,0,autocheck
+2026-03-29,23581,midi,Tom McCoy,Squaring Off,483,8:03,100,True,1774791762,,,True,True,0,0,0,autocheck
+2026-03-30,23567,midi,Aaron Gee and Avery Gee Katz,De-tails,587,9:47,100,True,1774876313,,,True,True,0,0,0,autocheck
+2026-03-31,23255,midi,Ian Livengood,Five in a Row,668,11:08,100,True,1774941646,,,True,True,0,0,0,autocheck
+2026-04-01,23499,midi,Alina Abidi,Again and Again and Again,308,5:08,100,True,1775029297,,,True,True,0,1,0,checked
+2026-04-02,23552,midi,Zhou Zhang and Kevin Curry,In It to Win It,797,13:17,100,True,1775148938,,,True,True,0,0,0,autocheck
+2026-04-03,23618,midi,Ian Livengood,In All Directions,440,7:20,100,True,1775194923,,,True,True,1,0,0,revealed
+2026-04-04,23597,midi,Adrianne Baik,Work Out the Bugs,603,10:03,100,True,1775290373,,,True,True,3,0,0,revealed
+2026-04-05,23491,midi,Ian Livengood,Slanted Views,541,9:01,100,True,1775379572,,,True,True,0,0,0,autocheck
+2026-04-06,23279,midi,Ian Livengood,Language of Origin,646,10:46,100,True,1775479010,,,True,True,3,0,0,revealed
+2026-04-07,23571,midi,Sid Sivakumar,Heart of the Matter,220,3:40,100,True,1775540098,,,False,False,0,0,0,clean
+2026-04-08,23440,midi,Ian Livengood,Three Levels of Difficulty,604,10:04,100,True,1775631479,,,True,True,1,0,0,revealed
+2026-04-09,23361,midi,Hanh Huynh,You Got It!,339,5:39,100,True,1775735575,,,True,True,0,0,0,autocheck
+2026-04-10,23669,midi,Joel Fagliano,Xbox,3162,52:42,100,True,1775824135,,,True,True,0,29,0,checked
+2026-04-11,23711,midi,Paolo Pasco,Art Retrospectives,804,13:24,100,True,1775907879,,,True,True,2,0,0,revealed
+2026-04-12,23435,midi,Ian Livengood,Day by Day,826,13:46,100,True,1776062186,,,True,True,2,0,0,revealed
+2026-04-13,23740,midi,Ian Livengood,GO ON AHEAD!,584,9:44,100,True,1776069714,,,True,True,0,0,0,autocheck
+2026-04-14,23382,midi,Rena Cohen,The Cha Cha Slide,405,6:45,100,True,1776149692,,,True,True,0,0,0,autocheck
+2026-04-15,23562,midi,Aaron Gee and Avery Gee Katz,Oohs and Aahs,439,7:19,100,True,1776240055,,,True,True,0,24,0,checked
+2026-04-16,23617,midi,Ian Livengood,It's a Real Mystery,517,8:37,100,True,1776340089,,,True,True,2,0,0,revealed
+2026-04-17,23584,midi,Tom McCoy,Relative Frequency,1063,17:43,100,True,1778759531,,,True,True,0,0,0,autocheck
+2026-04-18,23532,midi,Erik Agard,Zero-Part Harmony,678,11:18,100,True,1776589729,,,True,True,0,0,0,autocheck
+2026-04-19,23655,midi,Ian Livengood,Into Thin Air,399,6:39,100,True,1776598531,,,True,True,0,0,0,autocheck
+2026-04-20,23339,midi,Tarun Krishnamurthy,Has the Last Laugh,163,2:43,56,False,1776677419,,,False,True,0,0,0,autocheck
+2026-04-21,23758,midi,Ian Livengood,The Odd Couple,656,10:56,100,True,1776755327,,,False,False,0,0,0,clean
+2026-04-22,23460,midi,Jeremy Newton,Report Card,433,7:13,100,True,1776855174,,,False,True,0,3,0,checked
+2026-04-23,23595,midi,Adrianne Baik,Salty Language,721,12:01,100,True,1776940012,,,True,True,0,0,0,autocheck
+2026-04-24,23825,midi,Ian Livengood,Hide Your Tears,635,10:35,100,True,1777127771,,,True,True,0,0,0,autocheck
+2026-04-25,23610,midi,Kareem Ayas,Shot in the Dark,475,7:55,100,True,1777218992,,,True,True,1,0,0,revealed
+2026-04-26,23395,midi,Ian Livengood,Bye-Bye!,407,6:47,100,True,1777219932,,,True,True,6,0,0,revealed
+2026-04-27,23501,midi,Alina Abidi,Keep it Moving,414,6:54,100,True,1777298985,,,True,True,0,0,0,autocheck
+2026-04-28,23524,midi,Ian Livengood,Money Talks,593,9:53,100,True,1777445450,,,True,True,4,0,0,revealed
+2026-04-29,23331,midi,Ian Livengood,Getting in Shape,246,4:06,100,True,1777451163,,,True,True,0,1,0,checked
+2026-04-30,23355,midi,Hanh Huynh,Genetic Mutation,346,5:46,100,True,1777539206,,,True,True,0,0,0,autocheck
+2026-05-01,23548,midi,Zhou Zhang and Kevin Curry,April Showers Bring ...,409,6:49,100,True,1777826353,,,True,True,0,0,0,autocheck
+2026-05-02,23345,midi,Ian Livengood,Grindhouse Film,796,13:16,100,True,1777977181,,,True,True,3,0,0,revealed
+2026-05-03,23779,midi,Paolo Pasco,Pivoting to Video,394,6:34,100,True,1777977316,,,True,True,0,0,0,autocheck
+2026-05-04,23444,midi,Ian Livengood,The Call of the Wild,338,5:38,100,True,1777987355,,,True,True,2,0,0,revealed
+2026-05-05,23558,midi,Aaron Gee and Avery Gee Katz,Waterfront,342,5:42,100,True,1777987704,,,True,True,0,0,0,autocheck
+2026-05-06,23374,midi,Ian Livengood,Wine Pairing,623,10:23,100,True,1778053837,,,True,True,0,0,0,autocheck
+2026-05-07,23606,midi,Kareem Ayas,Mother of All Things,871,14:31,100,True,1778229380,,,True,True,3,2,0,revealed
+2026-05-08,23814,midi,Ian Livengood,Going Down Stairs,470,7:50,100,True,1778241667,,,True,True,0,1,0,checked
+2026-05-09,23576,midi,Sid Sivakumar,Initial Remarks,375,6:15,100,True,1778343235,,,False,False,0,0,0,clean
+2026-05-10,23653,midi,Joel Fagliano,Born in the U.S.A.,778,12:58,100,True,1778408173,,,True,True,0,2,0,checked
+2026-05-11,23587,midi,Tom McCoy,Early Birds,923,15:23,100,True,1778575219,,,True,True,1,0,0,revealed
+2026-05-12,23489,midi,Ian Livengood,Parting Thoughts,429,7:09,100,True,1778575978,,,False,True,0,0,0,autocheck
+2026-05-13,23335,midi,Tarun Krishnamurthy,A Tribute to Super Mario Bros.,188,3:08,100,True,1778654355,,,False,False,0,0,0,clean
+2026-05-14,23346,midi,Ian Livengood,Pro Tips,429,7:09,100,True,1778751241,,,True,True,2,0,0,revealed
+2026-05-15,23815,midi,Ian Livengood,Full of Life,669,11:09,100,True,1779034733,,,True,True,0,0,0,autocheck
+2026-05-16,23464,midi,Jeremy Newton,Sign of the Times,414,6:54,100,True,1779035714,,,True,True,0,0,0,autocheck
+2026-05-17,23387,midi,Rena Cohen,"Sunrise, Sunset",649,10:49,100,True,1779036375,,,True,True,0,0,0,autocheck
+2026-05-18,23839,midi,Adrianne Baik,Power Couples,261,4:21,100,True,1779224228,,,False,False,0,0,0,clean
+2026-05-19,23531,midi,Erik Agard,Let's Get Together,531,8:51,100,True,1779294805,,,True,True,0,0,0,autocheck
+2026-05-20,23847,midi,Ian Livengood,Plot Twists,490,8:10,100,True,1779312221,,,True,True,0,0,0,autocheck
+2026-05-21,23836,midi,Ian Livengood,Creeping Along,355,5:55,100,True,1779374894,,,False,False,0,0,0,clean
+2026-05-22,23600,midi,Alina Abidi,Happy Little Trees,364,6:04,100,True,1779865610,,,True,True,2,0,0,revealed
+2026-05-23,23553,midi,Zhou Zhang and Kevin Curry,You Can Call Me ...,521,8:41,100,True,1779948866,,,True,True,1,0,0,revealed
+2026-05-24,23856,midi,Ian Livengood,Sweet Deceit,625,10:25,100,True,1779952253,,,True,True,1,0,0,revealed
+2026-05-25,23450,midi,Ian Livengood,Beachcombing 101,366,6:06,100,True,1779801995,,,True,True,1,0,0,revealed
+2026-05-26,23360,midi,Hanh Huynh,Par-Core!,443,7:23,100,True,1779795164,,,True,True,3,3,0,revealed
+2026-05-27,23884,midi,Ian Livengood,I'm Here 4 U,494,8:14,100,True,1779873907,,,True,True,0,5,0,checked
+2026-05-28,23821,midi,Avery Gee Katz and Aaron Gee,Steak Night,967,16:07,100,True,1779948852,,,True,True,1,0,0,revealed
+2026-05-29,23652,midi,Ian Livengood,Seen But Not Heard,725,12:05,100,True,1780046053,,,True,True,2,0,0,revealed
+2026-05-30,23605,midi,Kareem Ayas,Dream Scenario,212,3:32,100,True,1780158458,,,False,False,0,0,0,clean
+2026-05-31,23776,midi,Paolo Pasco,Is This a Joke to You?,215,3:35,100,True,1780231956,,,True,True,0,0,0,autocheck
+2026-06-01,23906,midi,Ian Livengood,The Perfect Score Doesn't Exi—,483,8:03,100,True,1780302469,,,True,True,0,0,0,autocheck
+2026-06-02,23458,midi,Jeremy Newton,Friendly Game of Chess,74,1:14,31,False,1780391766,,,False,False,0,0,0,clean
+2026-06-03,23332,midi,Tarun Krishnamurthy,Court Appearances,521,8:41,100,True,1780554724,,,True,True,1,0,0,revealed
+2026-06-04,23885,midi,Ian Livengood,Time to Get Up,271,4:31,100,True,1780555307,,,False,False,0,0,0,clean
+2026-06-05,23388,midi,Rena Cohen,The Friend Zone,338,5:38,100,True,1780638458,,,True,True,0,0,0,autocheck
+2026-06-06,23635,midi,Ian Livengood,Fun With Numbers and Letters,561,9:21,100,True,1780856976,,,True,True,1,0,0,revealed
+2026-06-07,23570,midi,Sid Sivakumar,Color Codes,553,9:13,100,True,1780860167,,,True,True,2,0,0,revealed
+2026-06-08,23837,midi,Ian Livengood,Adieu AEIOU,119,1:59,100,True,1780907467,,,True,True,0,0,0,autocheck
+2026-06-09,23582,midi,Tom McCoy,Put It in Reverse,701,11:41,100,True,1780986531,,,False,True,0,1,0,checked
+2026-06-10,23592,midi,Adrianne Baik,Movie Marathon,413,6:53,100,True,1781079598,,,True,True,1,0,0,revealed
+2026-06-11,23910,midi,Ian Livengood,Let the Games Begin,771,12:51,69,False,,,,True,False,0,7,0,checked
+2026-06-12,23602,midi,Alina Abidi,Step Up to the Plate,726,12:06,100,True,1781356638,,,True,True,4,0,0,revealed
+2026-06-13,23557,midi,Zhou Zhang and Kevin Curry,They're Lit!,728,12:08,100,True,1781355104,,,True,True,1,0,0,revealed
+2026-06-14,23890,midi,Ian Livengood,Act on a Hunch,224,3:44,100,True,1781441159,,,False,False,0,0,0,clean
+2026-06-15,23561,midi,Aaron Gee and Avery Gee Katz,Record Labels,795,13:15,100,True,1781516969,,,True,True,2,0,0,revealed
+2026-06-16,23817,midi,Ian Livengood,Stock Characters,387,6:27,100,True,1781594430,,,True,True,1,0,0,revealed
+2026-06-17,23654,midi,Joel Fagliano,Now You Know!,427,7:07,100,True,1781688048,,,True,True,0,0,0,autocheck
+2026-06-18,23533,midi,Erik Agard,Continuous Wave,360,6:00,100,True,1781865667,,,True,True,0,0,0,autocheck
+2026-06-19,23777,midi,Paolo Pasco,Block Party,358,5:58,100,True,1781881098,,,True,True,2,1,0,revealed
+2026-06-20,23359,midi,Hanh Huynh,Devil in Disguise,718,11:58,100,True,1781989071,,,True,True,0,0,0,autocheck
+2026-06-21,23624,midi,Ian Livengood,Dad Jokes,424,7:04,100,True,1782050898,,,True,True,1,8,0,revealed
+2026-06-22,23607,midi,Kareem Ayas,Seedy Business,371,6:11,100,True,1782113838,,,True,True,0,0,0,autocheck
+2026-06-23,23854,midi,Ian Livengood,Big Red,855,14:15,88,False,,,,True,True,0,11,0,checked
+2026-06-24,23391,midi,Rena Cohen,Order in the Court,227,3:47,100,True,1782288777,,,False,False,0,0,0,clean
+2026-06-25,23972,midi,Ian Livengood,Open and Shut Case,200,3:20,48,False,,,,False,False,0,0,0,clean
+2026-06-26,23340,midi,Tarun Krishnamurthy,Keep It on the DL,313,5:13,100,True,1782476474,,,False,False,0,0,0,clean
+2026-06-28,23459,midi,Jeremy Newton,Falling Feline,208,3:28,100,True,1782657727,,,False,False,0,0,0,clean
+2026-06-29,23601,midi,Alina Abidi,Rosetta Stone,252,4:12,100,True,1782725268,,,False,False,0,0,0,clean
+2026-06-30,23996,midi,Ian Livengood,Pieces of Work,130,2:10,100,True,1782807233,,,False,False,0,0,0,clean
+2026-07-01,23574,midi,Sid Sivakumar,Compliments to the Chef,406,6:46,100,True,1782937530,,,False,False,0,0,0,clean
+2026-07-02,23842,midi,Ian Livengood,A Little Help Here,451,7:31,100,True,1782988306,,,False,False,0,0,0,clean
+2026-07-03,23593,midi,Adrianne Baik,Fit Check,284,4:44,100,True,1783071285,,,False,False,0,0,0,clean
+2026-07-05,23550,midi,Zhou Zhang and Kevin Curry,Corner Stores,405,6:45,71,False,,,,False,False,0,0,0,clean

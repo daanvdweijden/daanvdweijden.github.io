@@ -1,0 +1,69 @@
+---
+// A single news item's page: date, tag, and the Markdown body. One page is
+// generated per file in the `news` collection.
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { getNews, yearOf, type NewsItem } from '../../lib/news';
+
+export async function getStaticPaths() {
+  const items = await getNews();
+  return items.map((item) => ({ params: { id: item.id }, props: { item } }));
+}
+
+interface Props {
+  item: NewsItem;
+}
+const { item } = Astro.props;
+const { Content } = await render(item);
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<Layout title={item.data.title} description={`${fmtDate(item.data.date)}`} active="news">
+  <main class="wrap post">
+    <a class="back" href={`${import.meta.env.BASE_URL}news/`}>← News</a>
+
+    <header class="head">
+      <p class="meta">
+        <time datetime={iso(item.data.date)}>{fmtDate(item.data.date)}</time>
+        {item.data.tag && <span class="badge">{item.data.tag}</span>}
+      </p>
+      <h1>{item.data.title}</h1>
+    </header>
+
+    <div class="prose"><Content /></div>
+  </main>
+</Layout>
+
+<style>
+  .post { padding: clamp(2rem, 6vw, 4rem) 0 clamp(3rem, 8vw, 6rem); max-width: 42rem; }
+
+  .back {
+    display: inline-block; margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted); text-decoration: none; transition: color .2s;
+  }
+  .back:hover { color: var(--ink); }
+
+  .head { border-bottom: 1px solid var(--line); padding-bottom: clamp(1.5rem, 4vw, 2.2rem); margin-bottom: clamp(1.8rem, 5vw, 2.6rem); }
+  .meta { display: flex; align-items: center; gap: .6rem; margin: 0 0 .9rem; }
+  .meta time {
+    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted);
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: .2rem .5rem;
+  }
+  .head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.15; letter-spacing: -0.02em; margin: 0;
+  }
+
+  .prose { font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; }
+  .prose :global(p) { margin: 0 0 1rem; }
+  .prose :global(p:last-child) { margin-bottom: 0; }
+  .prose :global(a) { border-bottom: 1px solid var(--line); text-decoration: none; }
+</style>
