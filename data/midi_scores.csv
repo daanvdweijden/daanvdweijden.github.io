@@ -130,3 +130,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-05,23550,midi,Zhou Zhang and Kevin Curry,Corner Stores,405,6:45,71,False,,,,False,False,0,0,0,clean
 2026-07-06,23835,midi,Paolo Pasco,Ozone,338,5:38,100,True,1783356496,,,True,True,0,1,0,checked
 2026-07-07,23373,midi,Ian Livengood,Flexible Performers,413,6:53,100,True,1783431812,,,True,True,0,0,0,autocheck
+2026-07-08,23585,midi,Tom McCoy,Meet Me in the Middle,333,5:33,100,True,1783539502,,,False,False,0,0,0,clean
