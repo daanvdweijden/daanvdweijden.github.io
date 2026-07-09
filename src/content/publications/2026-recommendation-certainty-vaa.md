@@ -9,6 +9,7 @@ date: 2026-01-21
 venue: "Politics and Governance"
 venueShort: "P&G"
 type: Journal article
+file: 2026-recommendation-certainty-vaa.pdf
 links:
   doi: 10.17645/pag.11256
   url: https://www.cogitatiopress.com/politicsandgovernance/article/view/11256

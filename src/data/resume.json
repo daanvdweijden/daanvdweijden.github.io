@@ -11,7 +11,8 @@
     "profiles": [
       { "network": "GitHub", "url": "https://github.com/daanvdweijden/" },
       { "network": "Google Scholar", "url": "https://scholar.google.com/citations?hl=nl&user=vHEl144AAAAJ" },
-      { "network": "ORCID", "url": "https://orcid.org/0000-0002-8024-7219" }
+      { "network": "ORCID", "url": "https://orcid.org/0000-0002-8024-7219" },
+      { "network": "LinkedIn", "url": "https://www.linkedin.com/in/d-j-van-der-weijden/" }
     ]
   },
   "education": [

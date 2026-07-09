@@ -10,6 +10,7 @@ venue: "Benelux Conference on Artificial Intelligence"
 venueShort: "BNAIC '22"
 type: Preprint
 note: "Presented at BNAIC/BeNeLearn 2022"
+file: 2022-bursting-burden-bubble.pdf
 links:
   arxiv: https://arxiv.org/abs/2211.11512
   pdf: https://arxiv.org/pdf/2211.11512

@@ -41,7 +41,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
           <div class="profile-links">
             <a class="profile-link" href={`${import.meta.env.BASE_URL}cv/`}>CV</a>
             {site.socials
-              .filter((s) => ['GitHub', 'Google Scholar', 'ORCID', 'Email'].includes(s.name))
+              .filter((s) => ['GitHub', 'Google Scholar', 'ORCID', 'LinkedIn', 'Email'].includes(s.name))
               .map((s) => <a class="profile-link" href={s.url}>{s.name}</a>)}
             <a class="profile-link" href={`${import.meta.env.BASE_URL}puzzles/`}>Unproductivity Tracker</a>
           </div>

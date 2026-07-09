@@ -10,6 +10,7 @@ date: 2024-04-29
 venue: "Utrecht University"
 venueShort: Report
 type: Research report
+file: 2024-playing-with-fire.pdf
 links:
   pdf: https://research-portal.uu.nl/files/253825703/Playing_With_Fire_research_report_29-04-24.pdf
   url: https://dataschool.nl/en/news/playing-with-fire/

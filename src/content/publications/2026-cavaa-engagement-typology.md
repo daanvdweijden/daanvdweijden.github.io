@@ -9,11 +9,10 @@ venue: "ACM Conference on Conversational User Interfaces (CUI '26), Bremen, Germ
 venueShort: "CUI '26"
 type: Conference paper
 note: "To appear"
-# No public links yet — the DOI does not resolve until the conference.
-# When it's live, uncomment and fill these in:
+file: 2026-cavaa-engagement-typology.pdf
+# DOI does not resolve until the conference. When it's live, uncomment:
 # links:
 #   doi: 10.1145/3816046.3816272
-#   pdf: /papers/2026-cavaa-engagement-typology.pdf   # drop the file in site/public/papers/
 bibtex: |
   @inproceedings{vanderweijden2026towards,
     title={Towards a Typology of User Engagement in Conversational Agent Voting Advice Applications},

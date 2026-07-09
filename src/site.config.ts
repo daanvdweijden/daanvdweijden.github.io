@@ -23,6 +23,7 @@ export const site = {
     { name: 'GitHub', url: 'https://github.com/daanvdweijden/' },
     { name: 'Google Scholar', url: 'https://scholar.google.com/citations?hl=nl&user=vHEl144AAAAJ' },
     { name: 'ORCID', url: 'https://orcid.org/0000-0002-8024-7219' },
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/d-j-van-der-weijden/' },
     { name: 'Group Card', url: 'https://www.ifi.uzh.ch/en/ddis/people/weijden.html' },
     { name: 'Email', url: 'mailto:weijden@ifi.uzh.ch' },
   ],
