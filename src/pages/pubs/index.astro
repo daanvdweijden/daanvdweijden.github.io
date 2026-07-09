@@ -81,7 +81,9 @@ const groups = groupByYear(await getPublications());
 </Layout>
 
 <style>
-  .page { padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(3rem, 8vw, 6rem); }
+  /* Only set vertical padding -- the `padding` shorthand would zero out the
+     horizontal padding `.wrap` provides, pulling content outside the header. */
+  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
 
   .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   .eyebrow {
