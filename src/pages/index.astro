@@ -145,16 +145,27 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 
   .card-head { display: flex; justify-content: space-between; align-items: baseline; }
   .see-all { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); text-decoration: none; transition: color .2s; }
-  .see-all:hover { color: var(--ink); }
+  .see-all:hover { color: var(--accent, var(--ink)); }
 
   .kicker {
+    display: inline-flex; align-items: center; gap: .5rem;
     font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
     letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
   }
+  /* Each card carries an accent color: the leading kicker dot below, plus the
+     link-hover hint within that card. */
+  .kicker::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
+    background: var(--accent, var(--muted));
+  }
+  .c-about { --accent: var(--p-red-fg); }
+  .c-pubs  { --accent: var(--p-blue-fg); }
+  .c-news  { --accent: var(--p-green-fg); }
   .card h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 .6rem; }
   .card p { margin: 0 0 .6rem; }
   .card p:last-child { margin-bottom: 0; }
-  .inline-link { border-bottom: 1px solid var(--line); text-decoration: none; }
+  .inline-link { border-bottom: 1px solid var(--line); text-decoration: none; transition: color .2s, border-color .2s; }
+  .inline-link:hover { color: var(--accent, var(--ink)); border-bottom-color: var(--accent, var(--muted)); }
 
   .avatar { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; object-fit: cover; border: 1px solid var(--line); margin-bottom: 1.1rem; }
   .c-profile .name { font-family: var(--serif); font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
@@ -185,8 +196,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .pub:last-child { border-bottom: 0; padding-bottom: 0; }
   .pub:first-of-type { padding-top: 0; }
   .pub a.pt-link { text-decoration: none; display: block; }
-  .pub .pt { font-family: var(--serif); font-size: 1.1rem; letter-spacing: -0.01em; margin: 0 0 .2rem; }
-  .pub a.pt-link:hover .pt { text-decoration: underline; text-underline-offset: 3px; }
+  .pub .pt { font-family: var(--serif); font-size: 1.1rem; letter-spacing: -0.01em; margin: 0 0 .2rem; transition: color .2s; }
+  .pub a.pt-link:hover .pt { color: var(--accent, var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
   .pub .pa { font-size: .9rem; color: var(--muted); margin: 0; }
   .pub .pv { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: .35rem 0 0; text-transform: uppercase; letter-spacing: .06em; }
 
@@ -194,7 +205,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
     display: block; font-size: .92rem; padding: .85rem 0; border-bottom: 1px solid var(--line);
     text-decoration: none; transition: color .2s;
   }
-  .news-item:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .news-item:hover { color: var(--accent, var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
   .news-item:last-child { border-bottom: 0; padding-bottom: 0; }
   .news-item:first-of-type { padding-top: 0; }
   .news-item time { font-family: var(--mono); font-size: .7rem; color: var(--muted); display: block; margin-bottom: .3rem; }
@@ -202,5 +213,31 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   @media (max-width: 760px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
     .c-profile, .c-about, .c-pubs, .c-news { grid-column: span 2; grid-row: auto; }
+
+    /* Stacked full-width: a square avatar would swallow the viewport. Reflow the
+       profile card so the text (name, role, location, links) leads on the left
+       and the avatar shrinks to a small square on the right — the card stays
+       compact and the bio below is easy to reach. */
+    .c-profile {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(96px, 26vw, 148px);
+      /* The avatar spans all rows; a flexible bottom row soaks up any height it
+         has beyond the text, so name/role/location stay tightly grouped at the
+         top instead of being spread out to match the avatar's square. */
+      grid-template-rows: auto auto auto 1fr;
+      grid-template-areas:
+        "name  img"
+        "role  img"
+        "loc   img"
+        ".     img";
+      column-gap: 1.25rem;
+      align-items: start;
+    }
+    .c-profile .avatar { grid-area: img; width: 100%; margin: 0; align-self: start; }
+    .c-profile .name { grid-area: name; }
+    .c-profile .role { grid-area: role; }
+    .c-profile .location { grid-area: loc; margin-bottom: 0; }
+    /* Links live in the footer too — drop them here to keep the stacked card compact. */
+    .c-profile .profile-links { display: none; }
   }
 </style>

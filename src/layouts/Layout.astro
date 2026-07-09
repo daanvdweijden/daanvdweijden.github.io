@@ -18,11 +18,13 @@ const { title, description = site.tagline, active, hideMarkUntilScroll = false, 
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
 const year = new Date().getFullYear();
 
-// Internal sections shown in the header nav.
+// Internal sections shown in the header nav. Each carries the same accent color
+// as its section elsewhere on the site (kicker dots, eyebrows), so the active
+// nav item is marked with a colored dot + matching text/underline.
 const internal = [
-  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news' },
-  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications' },
-  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv' },
+  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news', accent: 'var(--p-green-fg)' },
+  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications', accent: 'var(--p-blue-fg)' },
+  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv', accent: 'var(--p-red-fg)' },
 ];
 ---
 
@@ -121,7 +123,69 @@ const internal = [
       }
       .navlinks a:hover { color: var(--ink); }
       .navlinks a.internal { color: var(--ink); }
-      .navlinks a.active { border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+      /* Active section: swap the neutral underline for the section's own accent —
+         a colored leading dot plus matching text and underline. */
+      .navlinks a.active {
+        display: inline-flex; align-items: center; gap: .4rem;
+        color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 2px;
+      }
+      .navlinks a.active:hover { color: var(--accent); }
+      .navlinks a.active::before {
+        content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
+        background: var(--accent);
+      }
+
+      /* ---- responsive nav (hamburger via native <details>) ----
+         Wide screens: the disclosure is a transparent passthrough — its box is
+         removed with display:contents so the links render inline, and the
+         summary/hamburger is hidden. Narrow screens (below): the disclosure box
+         returns, so the native <details> open/closed behavior shows or hides the
+         dropdown with no JS. */
+      .nav-menu { display: contents; }
+      .nav-menu > summary { display: none; }
+      .nav-items { display: flex; gap: clamp(.8rem, 2vw, 1.4rem); align-items: center; }
+      /* Modern engines wrap a closed <details>'s content in a ::details-content
+         pseudo with content-visibility:hidden — and display:contents above does
+         NOT defeat it. On wide screens the links must always show (the disclosure
+         is only a passthrough), so force the pseudo visible. On narrow screens the
+         dropdown's show/hide is driven explicitly by .nav-items display below, so
+         this override is harmless there. */
+      .nav-menu::details-content { content-visibility: visible; }
+
+      @media (max-width: 620px) {
+        .nav-menu { display: block; position: relative; }
+        /* hamburger — styled to match the theme toggle */
+        .nav-menu > summary {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 30px; height: 30px; list-style: none; cursor: pointer;
+          border: 1px solid var(--line); border-radius: 7px; color: var(--muted);
+          transition: color .2s, border-color .2s;
+        }
+        .nav-menu > summary::-webkit-details-marker { display: none; }
+        .nav-menu > summary:hover,
+        .nav-menu[open] > summary { color: var(--ink); border-color: var(--muted); }
+        .nav-menu > summary svg { width: 18px; height: 18px; }
+        /* swap hamburger ↔ close glyph on open */
+        .nav-menu .i-close { display: none; }
+        .nav-menu[open] .i-menu { display: none; }
+        .nav-menu[open] .i-close { display: block; }
+        /* dropdown panel — hidden until the disclosure is open. Explicit display
+           control (rather than leaning on the UA's closed-<details> hiding, which
+           our base .nav-items{display:flex} would override). */
+        .nav-items {
+          display: none;
+          position: absolute; top: calc(100% + .55rem); right: 0;
+          flex-direction: column; align-items: stretch; gap: .1rem;
+          min-width: 10rem; padding: .3rem;
+          background: var(--surface); border: 1px solid var(--line);
+          border-radius: 10px; box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+        }
+        .nav-menu[open] .nav-items { display: flex; }
+        .nav-items a { padding: .55rem .7rem; border-radius: 7px; }
+        .nav-items a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+        /* active item: drop the underline in the panel, keep the accent dot + color */
+        .nav-items a.active { border-bottom: none; padding-bottom: .55rem; }
+      }
 
       /* theme toggle — sits at the right end of the nav links */
       .theme-toggle {
@@ -157,9 +221,21 @@ const internal = [
             href={import.meta.env.BASE_URL}
           >{site.name}</a>
           <div class="navlinks">
-            {internal.map((l) => (
-              <a class:list={['internal', { active: active === l.key }]} href={l.href}>{l.name}</a>
-            ))}
+            <details class="nav-menu">
+              <summary class="hamburger" aria-label="Open menu" title="Menu">
+                <svg class="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </summary>
+              <div class="nav-items">
+                {internal.map((l) => (
+                  <a
+                    class:list={['internal', { active: active === l.key }]}
+                    href={l.href}
+                    style={active === l.key ? `--accent: ${l.accent}` : undefined}
+                  >{l.name}</a>
+                ))}
+              </div>
+            </details>
             <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle theme">
               <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
               <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
