@@ -1,0 +1,8 @@
+# Treat binary assets as binary so git never applies text/EOL filters to them.
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
