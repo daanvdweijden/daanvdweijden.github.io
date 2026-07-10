@@ -20,7 +20,8 @@ import {
   miniMonthlyAvg,
   hourHistogram,
   weekdayMiniAvg,
-  cleanSplit,
+  hintBreakdown,
+  hintTotal,
   solveTimesByDate,
   formatSeconds,
   formatDay,
@@ -36,13 +37,17 @@ const monthly = miniMonthlyAvg();
 const thisMonthAvg = monthly[monthly.length - 1]?.avg ?? 0;
 const hist = hourHistogram();
 const weekday = weekdayMiniAvg();
-const miniSplit = cleanSplit('mini_scores.csv');
-const midiSplit = cleanSplit('midi_scores.csv');
+const miniSplit = hintBreakdown('mini_scores.csv');
+const midiSplit = hintBreakdown('midi_scores.csv');
 const solveTimes = solveTimesByDate();
 const todayDay = today(a);
 
-const pct = (s: { clean: number; assisted: number }) =>
-  Math.round((s.clean / Math.max(s.clean + s.assisted, 1)) * 100);
+// % of solves in a given bucket, rounded — used for the "% clean" headline.
+const share = (slices: { key: string; count: number }[], key: string) => {
+  const total = hintTotal(slices);
+  const hit = slices.find((s) => s.key === key)?.count ?? 0;
+  return total ? Math.round((hit / total) * 100) : 0;
+};
 ---
 
 <Layout title="Puzzles" description="A daily puzzle log — for me, mostly." noindex>
@@ -104,18 +109,33 @@ const pct = (s: { clean: number; assisted: number }) =>
         <WeekdayBars data={weekday} />
       </div>
       <div class="bento-card">
-        <p class="kicker">Clean vs. autocheck</p>
+        <p class="kicker">How I solve · clean vs. cheats</p>
         <div class="splits">
-          <div class="split-block">
-            <p class="split-head">Mini — {pct(miniSplit)}% clean</p>
-            <div class="split"><span class="a" style={`width:${pct(miniSplit)}%`}></span></div>
-            <div class="split-legend"><span>clean {miniSplit.clean}</span><span>assisted {miniSplit.assisted}</span></div>
-          </div>
-          <div class="split-block">
-            <p class="split-head">Midi — {pct(midiSplit)}% clean</p>
-            <div class="split"><span class="a" style={`width:${pct(midiSplit)}%`}></span></div>
-            <div class="split-legend"><span>clean {midiSplit.clean}</span><span>assisted {midiSplit.assisted}</span></div>
-          </div>
+          {[
+            { name: 'Mini', slices: miniSplit },
+            { name: 'Midi', slices: midiSplit },
+          ].map(({ name, slices }) => {
+            const total = hintTotal(slices);
+            return (
+              <div class="split-block">
+                <p class="split-head">{name} — {share(slices, 'clean')}% clean</p>
+                <div class="split">
+                  {slices.map((s) => (
+                    <span
+                      class={`seg ${s.key}`}
+                      style={`width:${(s.count / total) * 100}%`}
+                      data-tip={`${s.label}: ${s.count} (${Math.round((s.count / total) * 100)}%)`}
+                    ></span>
+                  ))}
+                </div>
+                <div class="split-legend">
+                  {slices.map((s) => (
+                    <span class="lg"><i class={`dot ${s.key}`}></i>{s.label} {s.count}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -203,14 +223,28 @@ const pct = (s: { clean: number; assisted: number }) =>
   .hm-wrap { flex: 1; display: flex; align-items: center; min-width: 0; }
   .hm-wrap :global(.heatmap) { width: 100%; }
 
-  /* ---- clean vs assisted ---- */
+  /* ---- clean vs assisted breakdown ---- */
   .splits { display: flex; flex-direction: column; gap: 1.4rem; margin-top: .2rem; }
   .split-head { font-size: .9rem; margin: 0 0 .5rem; }
-  .split { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden; }
-  .split .a { display: block; height: 100%; background: var(--p-green-fg); }
+  .split {
+    display: flex; height: 12px; border-radius: 6px;
+    background: var(--line); overflow: hidden;
+  }
+  .split .seg { height: 100%; }
+  /* clean → checked → autocheck → revealed, greenest (unaided) to reddest (revealed) */
+  .seg.clean, .dot.clean { background: var(--p-green-fg); }
+  .seg.checked, .dot.checked { background: var(--p-blue-fg); }
+  .seg.autocheck, .dot.autocheck { background: var(--p-yellow-fg); }
+  .seg.revealed, .dot.revealed { background: var(--p-red-fg); }
+  .seg { background: var(--muted); } /* fallback for any unexpected hint_type */
   .split-legend {
-    display: flex; justify-content: space-between; margin-top: .4rem;
+    display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin-top: .5rem;
     font-family: var(--mono); font-size: .68rem; color: var(--muted);
+  }
+  .split-legend .lg { display: inline-flex; align-items: center; gap: .34rem; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 2px; flex: none;
+    background: var(--muted); /* fallback */
   }
 
   @media (max-width: 760px) {
