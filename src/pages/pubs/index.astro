@@ -1,6 +1,4 @@
 ---
-// Publications — a year-grouped academic list. Each title links to the paper's
-// own page (/pubs/<slug>/). Data comes from the `publications` collection.
 import Layout from '../../layouts/Layout.astro';
 import {
   getPublications,
@@ -9,9 +7,17 @@ import {
   actionLinks,
   pubHref,
   thumbSrc,
+  yearOf,
 } from '../../lib/pubs';
 
-const groups = groupByYear(await getPublications());
+const pubs = await getPublications();
+const groups = groupByYear(pubs);
+
+const formatDate = (dateStr: Date | string | null) => {
+  if (!dateStr) return 'Unknown';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
 ---
 
 <Layout title="Publications" active="publications">
@@ -20,15 +26,57 @@ const groups = groupByYear(await getPublications());
       <p class="eyebrow">Research</p>
       <h1>Publications</h1>
       <p class="lede">
-        Peer-reviewed work. Follow a title for the abstract, links, and citation.
+        Peer-reviewed work. Hover over a paper for details, or follow a title for links and citation.
       </p>
     </header>
 
+    <section class="pubs-section">
+      <div class="bento-card">
+        <div class="pub-grid">
+          {pubs.map((p, index) => {
+            const year = yearOf(p);
+            const prevPub = index > 0 ? pubs[index - 1] : null;
+            const prevYear = prevPub ? yearOf(prevPub) : year;
+            const yearChanged = index === 0 || year !== prevYear;
+            const thumb = thumbSrc(p);
+
+            return (
+              <>
+                {yearChanged && (
+                  <div class="year-divider">
+                    <span class="year-text">{year}</span>
+                  </div>
+                )}
+                <div 
+                  class="pub-card" 
+                  tabindex="0"
+                  data-title={p.data.title}
+                  data-authors-html={p.data.authors.map(a => `<span class="author ${isOwner(a) ? 'me' : ''}">${a}</span>`).join(', ')}
+                  data-venue={p.data.venueShort || p.data.venue}
+                  data-date={formatDate(p.data.date)}
+                  data-href={pubHref(p)}
+                >
+                  <div class="cover-wrapper">
+                    {thumb ? (
+                      <img src={thumb} alt={`Thumbnail of ${p.data.title}`} loading={index < 5 ? "eager" : "lazy"} />
+                    ) : (
+                      <div class="no-cover">
+                        <span class="no-cover-title">{p.data.title}</span>
+                        {p.data.venueShort && <span class="no-cover-badge">{p.data.venueShort}</span>}
+                      </div>
+                    )}
+                    <div class="spine-highlight"></div>
+                  </div>
+                </div>
+              </>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
     {groups.map((g) => (
       <section class="year-row">
-        {/* The year is part of the separator: it sits at the left and the hairline
-            picks up from the title column, so the rule is aligned with the paper
-            titles rather than running the full width. */}
         <div class="year-sep">
           <span class="year">{g.year}</span>
           <span class="rule" aria-hidden="true"></span>
@@ -77,16 +125,110 @@ const groups = groupByYear(await getPublications());
         </ol>
       </section>
     ))}
+    
+    <div id="pub-tip" class="pub-tip" role="tooltip">
+      <div class="tip-head">
+        <h3 id="tip-title">Title</h3>
+        <span id="tip-venue" class="tip-venue badge"></span>
+      </div>
+      <p id="tip-authors" class="tip-authors">Authors</p>
+      <p id="tip-date" class="tip-date">Date</p>
+    </div>
   </main>
 </Layout>
 
+<script>
+  const tip = document.getElementById('pub-tip');
+  const tipTitle = document.getElementById('tip-title');
+  const tipAuthors = document.getElementById('tip-authors');
+  const tipDate = document.getElementById('tip-date');
+  const tipVenue = document.getElementById('tip-venue');
+
+  if (tip && tipTitle && tipAuthors && tipDate && tipVenue) {
+    const show = (el: Element) => {
+      const data = (el as HTMLElement).dataset;
+      
+      tipTitle.textContent = data.title || '';
+      tipAuthors.innerHTML = data.authorsHtml || '';
+      tipDate.textContent = `Published: ${data.date || ''}`;
+      
+      const venue = data.venue || '';
+      if (venue) {
+        tipVenue.textContent = venue;
+        tipVenue.style.display = 'inline-block';
+      } else {
+        tipVenue.style.display = 'none';
+      }
+
+      tip.style.opacity = '1';
+      tip.style.pointerEvents = 'auto'; 
+      
+      const r = el.getBoundingClientRect();
+      const tw = tip.offsetWidth;
+      let left = r.left + r.width / 2 - tw / 2;
+      left = Math.max(16, Math.min(left, window.innerWidth - tw - 16));
+      tip.style.left = left + 'px';
+      
+      // try placing above
+      let top = window.scrollY + r.top - tip.offsetHeight - 12;
+      // if too high, place below
+      if (r.top - tip.offsetHeight - 12 < 0) {
+        top = window.scrollY + r.bottom + 12;
+      }
+      tip.style.top = top + 'px';
+    };
+    
+    const hide = () => { 
+      tip.style.opacity = '0'; 
+      tip.style.pointerEvents = 'none';
+    };
+
+    let hideTimeout: number;
+
+    const startHide = () => {
+      clearTimeout(hideTimeout);
+      hideTimeout = window.setTimeout(hide, 250);
+    };
+
+    document.addEventListener('mouseover', (e) => {
+      const target = (e.target as Element).closest('.pub-card');
+      if (target) {
+        clearTimeout(hideTimeout);
+        show(target);
+      } else if (!(e.target as Element).closest('.pub-tip')) {
+        startHide();
+      }
+    });
+
+    tip.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimeout);
+    });
+    
+    tip.addEventListener('mouseleave', () => {
+      startHide();
+    });
+
+    document.addEventListener('focusin', (e) => {
+      const target = (e.target as Element).closest('.pub-card');
+      if (target) show(target);
+    });
+    document.addEventListener('focusout', hide);
+    
+    // allow clicking on the card to navigate
+    document.addEventListener('click', (e) => {
+      const target = (e.target as Element).closest('.pub-card');
+      if (target) {
+        const href = (target as HTMLElement).dataset.href;
+        if (href) window.location.href = href;
+      }
+    });
+  }
+</script>
+
 <style>
-  /* Only set vertical padding -- the `padding` shorthand would zero out the
-     horizontal padding `.wrap` provides, pulling content outside the header. */
   .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
 
-  .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
-  /* Accent dot echoes the homepage kicker index (Publications = blue). */
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
   .eyebrow {
     display: inline-flex; align-items: center; gap: .5rem;
     font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
@@ -102,53 +244,114 @@ const groups = groupByYear(await getPublications());
   }
   .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
 
-  /* year block: a group of entries introduced by a year-plus-hairline separator. */
-  .year-row {
-    padding: clamp(2.4rem, 5vw, 3.4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 1.5rem;
   }
-  /* The separator shares the entry grid, so the year sits in the thumbnail rail
-     column and the hairline picks up from the title column — aligning the rule
-     with the paper titles instead of running the full width. */
-  .year-sep {
-    display: grid;
-    grid-template-columns: 7rem 1fr;
-    column-gap: clamp(1rem, 3vw, 2.5rem);
+
+  /* ---- shared card ---- */
+  .bento-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: clamp(1.4rem, 3vw, 1.9rem);
+    display: flex; flex-direction: column;
+  }
+
+  /* ---- pubs grid (carousel) ---- */
+  .pubs-section { margin-bottom: 2.5rem; }
+  
+  .pub-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    padding-top: 16px;
+    padding-bottom: 24px;
+    margin-top: -16px;
+    margin-bottom: -12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) transparent;
     align-items: center;
-    margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
   }
-  .year {
-    grid-column: 1;
-    font-family: var(--serif); font-size: 1.6rem; line-height: 1;
-    color: var(--muted); letter-spacing: -0.02em;
+  
+  .pub-grid::-webkit-scrollbar { height: 8px; }
+  .pub-grid::-webkit-scrollbar-track { background: transparent; }
+  .pub-grid::-webkit-scrollbar-thumb { background-color: var(--muted); border-radius: 4px; }
+
+  .year-divider {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 220px; padding: 0 4px; flex-shrink: 0;
   }
+  .year-divider::before, .year-divider::after { content: ''; width: 1px; flex: 1; background: var(--line); }
+  .year-text { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; padding: 12px 0; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+  .pub-card { width: 160px; flex-shrink: 0; cursor: pointer; outline: none; position: relative; }
+  .pub-card:hover, .pub-card:focus-visible { z-index: 10; }
+
+  .cover-wrapper {
+    position: relative; width: 100%; aspect-ratio: 1 / 1.414; border-radius: 4px 8px 8px 4px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2), 3px 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden; background: var(--surface); border: 1px solid var(--line);
+    transform-origin: left center; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .pub-card:hover .cover-wrapper, .pub-card:focus-visible .cover-wrapper {
+    transform: translateY(-8px) scale(1.05); box-shadow: -3px 0 8px rgba(0,0,0,0.25), 6px 12px 20px rgba(0,0,0,0.2); border-color: var(--muted);
+  }
+  .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+  .spine-highlight {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+    background: linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    z-index: 2; border-radius: 4px 0 0 4px;
+  }
+
+  .no-cover {
+    width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--surface), var(--line)); padding: 12px; text-align: center;
+  }
+  .no-cover-title { font-family: var(--serif); font-size: 0.8rem; font-weight: 500; color: var(--ink); line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.5rem; }
+  .no-cover-badge { font-family: var(--mono); font-size: .55rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--muted); border-radius: 4px; padding: .1rem .3rem; }
+
+  /* ---- tooltip ---- */
+  .pub-tip {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 25%, transparent);
+    padding: 1.2rem; width: max-content; max-width: 380px;
+    opacity: 0; transition: opacity .15s ease;
+  }
+
+  .tip-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .tip-head h3 { font-family: var(--serif); font-size: 1.1rem; margin: 0; line-height: 1.25; }
+
+  .tip-venue.badge { margin-bottom: 0; }
+
+  .tip-authors { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin: 0 0 4px; line-height: 1.3; }
+  .tip-authors :global(.author.me) { color: var(--ink); font-weight: 600; }
+  .tip-date { font-size: 0.75rem; color: var(--muted); margin: 0; }
+
+  /* ---- list view ---- */
+  .year-row { padding: clamp(2.4rem, 5vw, 3.4rem) 0 clamp(1.5rem, 4vw, 2.5rem); }
+  .year-sep {
+    display: grid; grid-template-columns: 7rem 1fr; column-gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: center; margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
+  }
+  .year { grid-column: 1; font-family: var(--serif); font-size: 1.6rem; line-height: 1; color: var(--muted); letter-spacing: -0.02em; }
   .rule { grid-column: 2; height: 1px; background: var(--line); }
 
   .entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: clamp(1.6rem, 4vw, 2.4rem); }
 
-  /* Every entry shares the same two-column grid, so the text column lines up
-     whether or not the paper has a thumbnail. The left rail holds the
-     first-page thumbnail, aligned to the top of the entry (its title). */
-  .entry {
-    display: grid;
-    grid-template-columns: 7rem 1fr;
-    column-gap: clamp(1rem, 3vw, 2.5rem);
-    align-items: start;
-  }
+  .entry { display: grid; grid-template-columns: 7rem 1fr; column-gap: clamp(1rem, 3vw, 2.5rem); align-items: start; }
   .entry-main { grid-column: 2; min-width: 0; }
 
   .rail { grid-column: 1; }
   .thumb {
     display: block; width: 100%; border: 1px solid var(--line); border-radius: 6px;
-    overflow: hidden; background: var(--surface);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
-    transition: border-color .2s, box-shadow .2s;
+    overflow: hidden; background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .05); transition: border-color .2s, box-shadow .2s;
   }
   .thumb:hover { border-color: var(--muted); box-shadow: 0 2px 8px rgba(0, 0, 0, .08); }
-  .thumb img {
-    width: 100%; height: auto; display: block;
-    aspect-ratio: 1 / 1.414;                /* A4-ish page proportion */
-    object-fit: cover; object-position: top center;
-  }
+  .thumb img { width: 100%; height: auto; display: block; aspect-ratio: 1 / 1.414; object-fit: cover; object-position: top center; }
 
   .badge {
     display: inline-block; margin-bottom: .55rem;
@@ -156,10 +359,7 @@ const groups = groupByYear(await getPublications());
     color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: .2rem .5rem;
   }
 
-  .title {
-    font-family: var(--serif); font-weight: 500; font-size: clamp(1.15rem, 2.5vw, 1.4rem);
-    line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 .4rem;
-  }
+  .title { font-family: var(--serif); font-weight: 500; font-size: clamp(1.15rem, 2.5vw, 1.4rem); line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 .4rem; }
   .title a { text-decoration: none; transition: color .2s; }
   .title a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -172,13 +372,15 @@ const groups = groupByYear(await getPublications());
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem; margin-top: .7rem; }
   .actions a {
     font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
-    color: var(--muted); text-decoration: none; transition: color .2s;
-    border-bottom: 1px solid transparent;
+    color: var(--muted); text-decoration: none; transition: color .2s; border-bottom: 1px solid transparent;
   }
   .actions a:hover { color: var(--ink); border-bottom-color: var(--line); }
   .actions a.page-link { color: var(--ink); }
 
   @media (max-width: 680px) {
+    .pub-card { width: 120px; }
+    .pub-tip { max-width: 280px; padding: 1rem; }
+    
     .year-row { padding-top: 1.5rem; }
     .entry { grid-template-columns: 4.5rem 1fr; column-gap: 1rem; }
     .year-sep { grid-template-columns: 4.5rem 1fr; column-gap: 1rem; margin-bottom: 1.5rem; }
