@@ -168,13 +168,38 @@ export function formatSeconds(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Minimal CSV field splitter: handles double-quoted fields containing commas
+// (e.g. a puzzle title like "Sunrise, Sunset") so the trailing columns don't
+// shift. Doesn't need to cover escaped quotes/newlines — the fetcher CSVs stay
+// simple, but a comma in a title is common enough to get right.
+function parseCSVLine(line: string): string[] {
+  const cells: string[] = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      cells.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  cells.push(cur);
+  return cells;
+}
+
 function readDataCSV(name: string): Record<string, string>[] {
   const path = fileURLToPath(new URL(`../../data/${name}`, import.meta.url));
   const text = readFileSync(path, 'utf-8').trim();
-  const [headerLine, ...lines] = text.split('\n');
-  const headers = headerLine.split(',');
+  // Split on \r?\n — mini_scores.csv ships with CRLF endings, and a stray \r on
+  // the last column would silently corrupt the trailing field (e.g. hint_type).
+  const [headerLine, ...lines] = text.split(/\r?\n/);
+  const headers = parseCSVLine(headerLine);
   return lines.map((line) => {
-    const cells = line.split(',');
+    const cells = parseCSVLine(line);
     return Object.fromEntries(headers.map((h, i) => [h, cells[i] ?? '']));
   });
 }
@@ -345,11 +370,46 @@ export function weekdayMiniAvg(): { day: string; avg: number }[] {
   return labels.map((day, i) => ({ day, avg: n[i] ? Math.round(sum[i] / n[i]) : 0 }));
 }
 
-/** Clean-vs-assisted split for a game (Mini is almost all clean; Midi autochecks). */
-export function cleanSplit(name: string): { clean: number; assisted: number } {
-  const rows = getSolveRows(name);
-  const clean = rows.filter((r) => r.clean).length;
-  return { clean, assisted: rows.length - clean };
+export interface HintSlice {
+  key: string;
+  label: string;
+  count: number;
+}
+
+// Ordered least- to most-assisted. `hint_type` is precomputed per solve in the
+// fetcher CSVs: clean (unaided), checked (used "check"), autocheck (autocheck
+// on), revealed (asked for a letter/answer).
+const HINT_ORDER = ['clean', 'checked', 'autocheck', 'revealed'] as const;
+const HINT_LABELS: Record<string, string> = {
+  clean: 'clean',
+  checked: 'checked',
+  autocheck: 'autocheck',
+  revealed: 'revealed',
+};
+
+/**
+ * How a game's solves break down by assist level (see HINT_ORDER), ordered
+ * clean-first and dropping empty buckets. Falls back to `clean` for rows with
+ * no recorded hint_type, and appends any unexpected categories at the end.
+ */
+export function hintBreakdown(name: string): HintSlice[] {
+  const counts: Record<string, number> = {};
+  for (const r of readDataCSV(name)) {
+    if (r.solved !== 'True') continue;
+    const key = r.hint_type || 'clean';
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  const ordered = HINT_ORDER.map((key) => ({ key, label: HINT_LABELS[key], count: counts[key] ?? 0 }));
+  const extras = Object.keys(counts)
+    .filter((k) => !HINT_ORDER.includes(k as (typeof HINT_ORDER)[number]))
+    .sort()
+    .map((key) => ({ key, label: key, count: counts[key] }));
+  return [...ordered, ...extras].filter((s) => s.count > 0);
+}
+
+/** Total solves across a breakdown, for computing segment widths / percentages. */
+export function hintTotal(slices: HintSlice[]): number {
+  return slices.reduce((sum, s) => sum + s.count, 0);
 }
 
 /** date -> { slug: 'm:ss' } for games with a recorded time, for heatmap tooltips. */
