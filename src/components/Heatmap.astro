@@ -1,60 +1,176 @@
 ---
-// GitHub-contributions-style calendar. Renders one continuous run of `cells`
-// (see src/lib/puzzles.ts) as week columns, Sunday-first, with month labels
-// on top and a sparse weekday rail on the left. Colors run on a single hue
-// so it reads as "how much", not "which game" — that's what the legend and
-// per-cell tooltip are for.
-import { buildCalendar, bucket, tooltip, type Cell, type Activity } from '../lib/puzzles';
+// Responsive contribution calendar. Unlike a fixed GitHub grid, this fills its
+// container and drops the OLDEST week-columns when the box is too narrow —
+// never scrolls sideways. Each day has a rich hover/focus tooltip (games +
+// solve times); the live streak run is ringed. All client-side layout reads a
+// JSON island so the markup stays tiny.
+import { GAME_COLORS, formatDay, type Cell, type Activity } from '../lib/puzzles';
 
 interface Props {
-  cells: Cell[];
+  cells: Cell[]; // continuous, oldest-first
   activity: Activity;
+  streakDates: Set<string>;
+  solveTimes: Record<string, Record<string, string>>; // date -> {slug: 'm:ss'}
 }
-const { cells, activity } = Astro.props;
-const { weeks, monthLabels } = buildCalendar(cells);
-const WEEKDAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+const { cells, activity, streakDates, solveTimes } = Astro.props;
+
+const bucket = (c: number) => (c <= 0 ? 0 : c === 1 ? 1 : c === 2 ? 2 : c <= 4 ? 3 : 4);
+
+// Pre-shape everything the client needs so the browser only does layout.
+const days = cells.map((c) => ({
+  d: c.date,
+  label: formatDay(c.date, true),
+  b: bucket(c.count),
+  streak: streakDates.has(c.date),
+  items: c.played.map((slug) => ({
+    n: activity.game_meta[slug]?.label ?? slug,
+    c: GAME_COLORS[slug] ?? '#8a8f98',
+    t: solveTimes[c.date]?.[slug] ?? null,
+  })),
+}));
+const payload = JSON.stringify(days);
 ---
 
 <div class="heatmap">
-  <div class="months" aria-hidden="true">
-    {monthLabels.map((m) => <span class="month">{m}</span>)}
-  </div>
-  <div class="body">
-    <div class="weekdays" aria-hidden="true">
-      {WEEKDAY_LABELS.map((w) => <span class="wd">{w}</span>)}
-    </div>
-    <div class="cal">
-      {weeks.map((week) => (
-        <div class="week">
-          {week.map((cell) =>
-            cell ? (
-              <span class="cell" data-bucket={bucket(cell.count)} title={tooltip(cell, activity)} />
-            ) : (
-              <span class="cell cell--pad" aria-hidden="true" />
-            )
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
+  <div class="cal" id="heatmap-cal" aria-label="Puzzle activity calendar"></div>
+  <script type="application/json" id="heatmap-data" set:html={payload}></script>
 </div>
 
-<style>
-  .heatmap { overflow-x: auto; width: 100%; padding-bottom: .25rem; }
-  .months { display: flex; gap: 4px; padding-left: 30px; margin-bottom: 6px; height: 14px; }
-  .month {
-    width: 15px; flex: 0 0 15px; font-family: var(--mono); font-size: .66rem;
-    color: var(--muted); white-space: nowrap; overflow: visible;
+<script>
+  interface Item { n: string; c: string; t: string | null }
+  interface Day { d: string; label: string; b: number; streak: boolean; items: Item[] }
+
+  const GAP = 3, MIN_CELL = 13, MAX_CELL = 18; // px
+
+  function build(root: HTMLElement, days: Day[]) {
+    // Pad the front so the first day sits under its weekday, then chunk to weeks.
+    const lead = new Date(days[0].d + 'T00:00:00Z').getUTCDay(); // 0 = Sun
+    const padded: (Day | null)[] = new Array(lead).fill(null).concat(days);
+    const weeks: (Day | null)[][] = [];
+    for (let i = 0; i < padded.length; i += 7) weeks.push(padded.slice(i, i + 7));
+    if (weeks.length && weeks[weeks.length - 1].length < 7) {
+      weeks[weeks.length - 1] = weeks[weeks.length - 1].concat(
+        new Array(7 - weeks[weeks.length - 1].length).fill(null),
+      );
+    }
+
+    const render = () => {
+      const width = root.clientWidth;
+      if (!width) return;
+      // How many whole week-columns fit at a legible min size, then size each
+      // cell to fill the width exactly. Fewer columns when the box is narrow —
+      // the OLDEST weeks drop off; we never scroll sideways.
+      let fit = Math.max(4, Math.floor((width + GAP) / (MIN_CELL + GAP)));
+      fit = Math.min(fit, weeks.length);
+      let cell = (width - (fit - 1) * GAP) / fit;
+      if (cell > MAX_CELL) cell = MAX_CELL; // don't balloon when only a few weeks exist
+      const shown = weeks.slice(-fit); // keep the NEWEST columns
+      root.replaceChildren();
+      for (const week of shown) {
+        const col = document.createElement('div');
+        col.className = 'wk';
+        for (const day of week) {
+          const c = document.createElement('span');
+          c.className = 'cell' + (day ? '' : ' pad') + (day?.streak ? ' streak' : '');
+          c.style.width = c.style.height = cell.toFixed(2) + 'px';
+          if (day) {
+            c.dataset.b = String(day.b);
+            (c as any)._day = day;
+            c.tabIndex = 0;
+          } else {
+            c.setAttribute('aria-hidden', 'true');
+          }
+          col.appendChild(c);
+        }
+        root.appendChild(col);
+      }
+    };
+
+    // Debounce with setTimeout, not requestAnimationFrame — rAF is paused in a
+    // backgrounded tab, which would freeze the responsive re-layout.
+    let timer = 0;
+    const schedule = () => { clearTimeout(timer); timer = window.setTimeout(render, 60); };
+    render();
+    // ResizeObserver catches container-only changes; the window listener is a
+    // belt-and-suspenders for viewport resizes (and fires even when a RO frame
+    // is deferred, e.g. a backgrounded tab).
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(schedule).observe(root);
+    window.addEventListener('resize', schedule);
+    // If the first render ran before fonts/layout settled, re-measure on load.
+    if (document.readyState !== 'complete') window.addEventListener('load', schedule);
+
+    // Shared tooltip.
+    const tip = document.createElement('div');
+    tip.className = 'heatmap-tip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    const showFor = (cell: HTMLElement) => {
+      const day: Day = (cell as any)._day;
+      if (!day) return;
+      let html = `<div class="t-date">${day.label}</div>`;
+      if (day.items.length === 0) {
+        html += '<div class="t-empty">nothing solved</div>';
+      } else {
+        html += day.items
+          .map((it) => `<div class="t-row"><span class="t-dot" style="background:${it.c}"></span>${it.n}${it.t ? ` · ${it.t}` : ''}</div>`)
+          .join('');
+      }
+      if (day.streak) html += '<div class="t-streak">· on streak</div>';
+      tip.innerHTML = html;
+      tip.style.opacity = '1';
+      const r = cell.getBoundingClientRect();
+      const tw = tip.offsetWidth;
+      let left = r.left + r.width / 2 - tw / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+      tip.style.left = left + 'px';
+      tip.style.top = window.scrollY + r.bottom + 8 + 'px';
+    };
+    const hide = () => { tip.style.opacity = '0'; };
+
+    root.addEventListener('mouseover', (e) => {
+      const cell = (e.target as HTMLElement).closest('.cell:not(.pad)') as HTMLElement;
+      if (cell) showFor(cell);
+    });
+    root.addEventListener('mouseout', hide);
+    root.addEventListener('focusin', (e) => showFor(e.target as HTMLElement));
+    root.addEventListener('focusout', hide);
   }
-  .body { display: flex; gap: 8px; }
-  .weekdays { display: flex; flex-direction: column; gap: 4px; width: 24px; flex: 0 0 24px; }
-  .wd { height: 15px; line-height: 15px; font-family: var(--mono); font-size: .66rem; color: var(--muted); }
-  .cal { display: flex; gap: 4px; }
-  .week { display: flex; flex-direction: column; gap: 4px; }
-  .cell { width: 15px; height: 15px; border-radius: 3px; background: var(--line); }
-  .cell--pad { background: transparent; }
-  .cell[data-bucket="1"] { background: var(--heat-1); }
-  .cell[data-bucket="2"] { background: var(--heat-2); }
-  .cell[data-bucket="3"] { background: var(--heat-3); }
-  .cell[data-bucket="4"] { background: var(--p-blue-fg); }
+
+  const el = document.getElementById('heatmap-cal');
+  const data = document.getElementById('heatmap-data');
+  if (el && data) build(el, JSON.parse(data.textContent || '[]'));
+</script>
+
+<style>
+  /* The week columns and cells are created in the client script, so they never
+     receive Astro's scoped-style attribute — style them via :global(), kept
+     under .heatmap so nothing leaks. */
+  .heatmap { width: 100%; }
+  .heatmap :global(.cal) { display: flex; gap: 3px; justify-content: flex-start; }
+  .heatmap :global(.wk) { display: flex; flex-direction: column; gap: 3px; }
+  .heatmap :global(.cell) {
+    border-radius: 3px; background: var(--line); cursor: default; flex: 0 0 auto;
+  }
+  .heatmap :global(.cell.pad) { background: transparent; }
+  .heatmap :global(.cell[data-b='1']) { background: var(--heat-1); }
+  .heatmap :global(.cell[data-b='2']) { background: var(--heat-2); }
+  .heatmap :global(.cell[data-b='3']) { background: var(--heat-3); }
+  .heatmap :global(.cell[data-b='4']) { background: var(--p-blue-fg); }
+  .heatmap :global(.cell.streak) { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent); }
+  .heatmap :global(.cell:focus-visible) { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  :global(.heatmap-tip) {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 9px;
+    box-shadow: 0 6px 22px color-mix(in srgb, var(--ink) 14%, transparent);
+    padding: .5rem .6rem; font-size: .78rem; max-width: 220px;
+    opacity: 0; transition: opacity .12s ease;
+  }
+  :global(.heatmap-tip .t-date) { font-family: var(--mono); font-size: .66rem; color: var(--muted); margin-bottom: .35rem; }
+  :global(.heatmap-tip .t-row) { display: flex; align-items: center; gap: .4rem; margin: .12rem 0; }
+  :global(.heatmap-tip .t-dot) { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+  :global(.heatmap-tip .t-empty) { color: var(--muted); }
+  :global(.heatmap-tip .t-streak) { font-family: var(--mono); font-size: .62rem; color: var(--muted); margin-top: .35rem; }
 </style>

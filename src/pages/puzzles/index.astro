@@ -1,40 +1,54 @@
 ---
-// The puzzle-data easter egg. Not linked from the nav — reachable only via
-// the small "∙" after the copyright in the footer. Data comes from
-// data/activity.json + data/crux_stats.json (see src/lib/puzzles.ts);
-// nothing here fetches live.
+// The puzzle-data easter egg. Not linked from the nav — reachable only via the
+// small "∙" after the copyright in the footer. Everything reads the build
+// artifacts in data/ (activity.json, crux_stats.json, the fetcher CSVs); nothing
+// fetches live. See src/lib/puzzles.ts for the shaping.
 import Layout from '../../layouts/Layout.astro';
 import Heatmap from '../../components/Heatmap.astro';
-import SolveBars from '../../components/SolveBars.astro';
+import TodayCard from '../../components/TodayCard.astro';
+import TrendChart from '../../components/TrendChart.astro';
+import TimeOfDay from '../../components/TimeOfDay.astro';
+import WeekdayBars from '../../components/WeekdayBars.astro';
+import PuzzleIcon from '../../components/PuzzleIcon.astro';
 import {
   getActivity,
   cruxStats,
   buildCells,
-  lastNDays,
-  gameCounts,
+  currentAnyStreak,
+  currentStreakDates,
+  today,
   totalPuzzlesSolved,
-  formatDay,
-  getMiniSolves,
-  getMidiSolves,
-  alignSolves,
-  averageSeconds,
+  fastestMini,
+  miniMonthlyAvg,
+  hourHistogram,
+  weekdayMiniAvg,
+  cleanSplit,
+  solveTimesByDate,
+  gameCounts,
+  ICON_SLUGS,
   formatSeconds,
+  formatDay,
 } from '../../lib/puzzles';
 
 const a = getActivity();
 const cells = buildCells(a);
-const games = gameCounts(a);
-const totalDays = a.days.length;
-const totalPuzzles = totalPuzzlesSolved(a);
-const recent = a.days.slice(0, 14); // already newest-first
+const streak = currentAnyStreak(a);
+const streakDates = currentStreakDates(a);
+const total = totalPuzzlesSolved(a);
+const fastMini = fastestMini();
+const monthly = miniMonthlyAvg();
+const thisMonthAvg = monthly[monthly.length - 1]?.avg ?? 0;
+const hist = hourHistogram();
+const weekday = weekdayMiniAvg();
+const miniSplit = cleanSplit('mini_scores.csv');
+const midiSplit = cleanSplit('midi_scores.csv');
+const solveTimes = solveTimesByDate();
+const todayDay = today(a);
+// Only games we ship a real icon for — the rotation panel is icon-only.
+const rotation = gameCounts(a).filter((g) => ICON_SLUGS.has(g.slug));
 
-// Same 90-day window as the activity heatmap, so all three boxes share an x-axis.
-const last90 = lastNDays(cells, 90);
-const miniSeries = alignSolves(last90, getMiniSolves());
-const midiSeries = alignSolves(last90, getMidiSolves());
-const hasSeconds = (s: { seconds: number | null }): s is { date: string; seconds: number } => s.seconds !== null;
-const miniAvg = averageSeconds(miniSeries.filter(hasSeconds));
-const midiAvg = averageSeconds(midiSeries.filter(hasSeconds));
+const pct = (s: { clean: number; assisted: number }) =>
+  Math.round((s.clean / Math.max(s.clean + s.assisted, 1)) * 100);
 ---
 
 <Layout title="Puzzles" description="A daily puzzle log — for me, mostly." noindex>
@@ -43,79 +57,92 @@ const midiAvg = averageSeconds(midiSeries.filter(hasSeconds));
       <p class="eyebrow">Not on the CV</p>
       <h1>Daily Puzzles</h1>
       <p class="lede">
-        A running log of the crosswords and daily puzzles I solve before coffee.
-        Last updated {formatDay(a.generated, true)}.
+        A running log of the crosswords I solve — some over breakfast, a
+        suspicious number just before midnight. Last updated {formatDay(a.generated, true)}.
       </p>
     </header>
 
     <section class="stats">
       <div class="stat">
-        <p class="stat-num">{a.mini_streak}</p>
-        <p class="stat-label">NYT Mini streak</p>
+        <p class="stat-num">{total}</p>
+        <p class="stat-label">Puzzles solved</p>
       </div>
       <div class="stat">
-        <p class="stat-num">{cruxStats.crux_streak_current}</p>
-        <p class="stat-label">Crux streak · best {cruxStats.crux_streak_max}</p>
+        <p class="stat-num">{streak}</p>
+        <p class="stat-label">Day streak · any puzzle</p>
       </div>
       <div class="stat">
-        <p class="stat-num">{cruxStats.win_percentage}%</p>
-        <p class="stat-label">Crux win rate · avg {cruxStats.average_time}</p>
+        <p class="stat-num">{formatSeconds(fastMini)}</p>
+        <p class="stat-label">Fastest Mini</p>
       </div>
       <div class="stat">
-        <p class="stat-num">{totalDays}</p>
-        <p class="stat-label">Days logged · {totalPuzzles} puzzles</p>
+        <p class="stat-num">{formatSeconds(thisMonthAvg)}</p>
+        <p class="stat-label">Mini avg · this month</p>
       </div>
     </section>
 
-    <section class="activity-row">
-      <div class="bento-card heatmap-section">
-        <div class="card-head">
-          <p class="kicker">Activity · last 90 days</p>
+    <section class="today-row">
+      <div class="bento-card">
+        <TodayCard day={todayDay} activity={a} />
+      </div>
+      <div class="bento-card">
+        <p class="kicker">Activity · hover a day</p>
+        <div class="hm-wrap">
+          <Heatmap cells={cells} activity={a} streakDates={streakDates} solveTimes={solveTimes} />
         </div>
-        <div class="heatmap-wrap">
-          <Heatmap cells={last90} activity={a} />
-        </div>
-      </div>
-
-      <div class="bento-card pace-section">
-        <p class="kicker">NYT Mini finishes</p>
-        <p class="pace-num">{formatSeconds(miniAvg)}</p>
-        <p class="pace-label">average · last 90 days</p>
-        <SolveBars series={miniSeries} color="var(--p-blue-fg)" />
-      </div>
-
-      <div class="bento-card pace-section">
-        <p class="kicker">NYT Midi finishes</p>
-        <p class="pace-num">{formatSeconds(midiAvg)}</p>
-        <p class="pace-label">average · last 90 days</p>
-        <SolveBars series={midiSeries} color="var(--p-blue-fg)" />
       </div>
     </section>
 
-    <section class="legend">
-      <p class="kicker">Games played</p>
-      <div class="pills">
-        {games.map((g) => (
-          <span class:list={['pill', g.source === 'nyt' ? 't-blue' : 't-green']}>
-            {g.label} · {g.count}
-          </span>
-        ))}
+    <section class="pair">
+      <div class="bento-card">
+        <p class="kicker">Mini solve time · monthly avg</p>
+        <TrendChart points={monthly} pb={fastMini} />
+      </div>
+      <div class="bento-card">
+        <p class="kicker">When I actually solve</p>
+        <TimeOfDay hist={hist} />
       </div>
     </section>
 
-    <section class="log">
-      <p class="kicker">Last 14 days</p>
-      <div class="log-rows">
-        {recent.map((day) => (
-          <div class="log-row">
-            <time datetime={day.date}>{formatDay(day.date)}</time>
-            <span class="log-games">
-              {day.played.length > 0
-                ? day.played.map((slug) => a.game_meta[slug]?.label ?? slug).join(', ')
-                : '—'}
-            </span>
+    <section class="pair">
+      <div class="bento-card">
+        <p class="kicker">Mini avg by weekday</p>
+        <WeekdayBars data={weekday} />
+      </div>
+      <div class="bento-card">
+        <p class="kicker">Clean vs. autocheck</p>
+        <div class="splits">
+          <div class="split-block">
+            <p class="split-head">Mini — {pct(miniSplit)}% clean</p>
+            <div class="split"><span class="a" style={`width:${pct(miniSplit)}%`}></span></div>
+            <div class="split-legend"><span>clean {miniSplit.clean}</span><span>assisted {miniSplit.assisted}</span></div>
           </div>
-        ))}
+          <div class="split-block">
+            <p class="split-head">Midi — {pct(midiSplit)}% clean</p>
+            <div class="split"><span class="a" style={`width:${pct(midiSplit)}%`}></span></div>
+            <div class="split-legend"><span>clean {midiSplit.clean}</span><span>assisted {midiSplit.assisted}</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pair">
+      <div class="bento-card crux-card">
+        <p class="kicker">Crux · consistency</p>
+        <p class="crux-num">{cruxStats.crux_streak_current}</p>
+        <p class="crux-sub">day streak · {cruxStats.win_percentage}% solved</p>
+        <p class="crux-meta">avg {cruxStats.average_time} · fastest {cruxStats.fastest_time}</p>
+      </div>
+      <div class="bento-card">
+        <p class="kicker">Games in rotation · hover for plays</p>
+        <div class="rotation">
+          {rotation.map((g) => (
+            <div class="rot-chip" tabindex="0">
+              <PuzzleIcon slug={g.slug} label={g.label} size={46} />
+              <span class="rot-tip">{g.label} · {g.count}×</span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   </main>
@@ -135,17 +162,17 @@ const midiAvg = averageSeconds(midiSeries.filter(hasSeconds));
     font-family: var(--serif); font-weight: 500;
     font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
   }
-  .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
+  .lede { margin: 1rem 0 0; max-width: 54ch; color: var(--muted); }
 
   .kicker {
     font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
     letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
   }
 
-  /* ---- stats ---- */
+  /* ---- stat row ---- */
   .stats {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin: clamp(2rem, 5vw, 3rem) 0;
+    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
   }
   .stat {
     background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
@@ -154,58 +181,58 @@ const midiAvg = averageSeconds(midiSeries.filter(hasSeconds));
   .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
   .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
 
-  /* ---- activity row: activity heatmap + two solve-time bento cards ---- */
-  .activity-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-    margin-bottom: 1.5rem; align-items: stretch;
-  }
+  /* ---- shared card ---- */
   .bento-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: clamp(1.4rem, 3vw, 2rem);
+    padding: clamp(1.4rem, 3vw, 1.9rem);
     display: flex; flex-direction: column;
   }
-  .card-head { margin-bottom: .5rem; }
-  .card-head .kicker { margin: 0; }
 
-  .heatmap-section .heatmap-wrap { flex: 1; display: flex; align-items: center; }
-  .heatmap-section :global(.heatmap) { padding-top: 0; }
+  .today-row { display: grid; grid-template-columns: 1fr 1.7fr; gap: 16px; margin-bottom: 1.5rem; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
 
-  .pace-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
-  .pace-label {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0 0;
+  .hm-wrap { flex: 1; display: flex; align-items: center; }
+  .hm-wrap :global(.heatmap) { width: 100%; }
+
+  /* ---- clean vs assisted ---- */
+  .splits { display: flex; flex-direction: column; gap: 1.4rem; margin-top: .2rem; }
+  .split-head { font-size: .9rem; margin: 0 0 .5rem; }
+  .split { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden; }
+  .split .a { display: block; height: 100%; background: var(--p-green-fg); }
+  .split-legend {
+    display: flex; justify-content: space-between; margin-top: .4rem;
+    font-family: var(--mono); font-size: .68rem; color: var(--muted);
   }
-  .pace-section :global(.solve-bars) { margin-top: auto; padding-top: 1.4rem; }
 
-  /* ---- legend ---- */
-  .legend { margin-bottom: clamp(2rem, 5vw, 3rem); }
-  .pills { display: flex; flex-wrap: wrap; gap: .5rem; }
-  .pill {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .04em;
-    padding: .3rem .65rem; border-radius: 9999px;
-  }
-  .t-blue { background: var(--p-blue-bg); color: var(--p-blue-fg); }
-  .t-green { background: var(--p-green-bg); color: var(--p-green-fg); }
+  /* ---- crux ---- */
+  .crux-num { font-family: var(--serif); font-size: clamp(2.4rem, 6vw, 3.2rem); margin: .2rem 0 0; letter-spacing: -.02em; line-height: 1; }
+  .crux-sub { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .6rem 0 0; }
+  .crux-meta { font-size: .86rem; color: var(--muted); margin: 1rem 0 0; }
 
-  /* ---- log ---- */
-  .log-rows { display: flex; flex-direction: column; }
-  .log-row {
-    display: flex; justify-content: space-between; gap: 1rem;
-    padding: .7rem 0; border-bottom: 1px solid var(--line);
+  /* ---- rotation (4x2 grid of icons) ---- */
+  .rotation {
+    display: grid; grid-template-columns: repeat(4, max-content);
+    gap: 12px; margin-top: auto; padding-top: 1.4rem;
   }
-  .log-row:last-child { border-bottom: 0; padding-bottom: 0; }
-  .log-row:first-of-type { padding-top: 0; }
-  .log-row time { font-family: var(--mono); font-size: .74rem; color: var(--muted); white-space: nowrap; }
-  .log-games { font-size: .88rem; text-align: right; }
+  .rot-chip {
+    position: relative; line-height: 0; cursor: default;
+    transition: transform .16s ease;
+  }
+  .rot-chip:hover, .rot-chip:focus-visible { transform: translateY(-4px); z-index: 20; outline: none; }
+  .rot-tip {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-family: var(--mono); font-size: .64rem;
+    text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 6px; padding: .25rem .5rem;
+    opacity: 0; pointer-events: none; transition: opacity .12s ease; line-height: 1;
+  }
+  .rot-chip:hover .rot-tip, .rot-chip:focus-visible .rot-tip { opacity: 1; }
 
   @media (max-width: 760px) {
-    .activity-row { grid-template-columns: 1fr; }
+    .today-row, .pair { grid-template-columns: 1fr; }
   }
-
   @media (max-width: 680px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
-    .card-head { flex-direction: column; align-items: flex-start; gap: .6rem; }
-    .log-row { flex-direction: column; gap: .3rem; }
-    .log-games { text-align: left; }
   }
 </style>

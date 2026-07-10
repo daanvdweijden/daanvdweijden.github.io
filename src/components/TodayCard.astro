@@ -1,0 +1,67 @@
+---
+// The most-recent day's puzzles as a horizontally-stacked row of brand icons.
+// Hovering (or focusing) an icon lifts it and reveals the game's name. Icons
+// overlap slightly, newest logic-order left-to-right.
+import PuzzleIcon from './PuzzleIcon.astro';
+import { formatDay, type Activity, type ActivityDay } from '../lib/puzzles';
+
+interface Props {
+  day: ActivityDay;
+  activity: Activity;
+}
+const { day, activity } = Astro.props;
+const games = day.played.map((slug) => ({ slug, label: activity.game_meta[slug]?.label ?? slug }));
+---
+
+<div class="today">
+  <div class="today-head">
+    <p class="kicker">Today</p>
+    <span class="count">{games.length}</span>
+  </div>
+
+  {games.length > 0 ? (
+    <div class="stack">
+      {games.map((g) => (
+        <button class="chip" type="button" aria-label={g.label}>
+          <PuzzleIcon slug={g.slug} label={g.label} size={52} />
+          <span class="name">{g.label}</span>
+        </button>
+      ))}
+    </div>
+  ) : (
+    <p class="empty">Nothing solved yet.</p>
+  )}
+
+  <p class="foot">{formatDay(day.date)} · hover a puzzle</p>
+</div>
+
+<style>
+  .today { display: flex; flex-direction: column; height: 100%; }
+  .today-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0;
+  }
+  .count { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1; letter-spacing: -.02em; }
+
+  .stack { display: flex; gap: 10px; margin-top: auto; padding-top: 1.4rem; }
+  .chip {
+    appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
+    position: relative; line-height: 0; border-radius: 12px;
+    transition: transform .16s ease;
+  }
+  .chip:hover, .chip:focus-visible { transform: translateY(-4px); z-index: 20; outline: none; }
+
+  .name {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-family: var(--mono); font-size: .64rem;
+    text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 6px; padding: .25rem .5rem;
+    opacity: 0; pointer-events: none; transition: opacity .12s ease; line-height: 1;
+  }
+  .chip:hover .name, .chip:focus-visible .name { opacity: 1; }
+
+  .foot { font-family: var(--mono); font-size: .66rem; color: var(--muted); margin: 2.2rem 0 0; }
+  .empty { color: var(--muted); margin-top: auto; }
+</style>
