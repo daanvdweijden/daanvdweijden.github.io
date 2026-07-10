@@ -9,10 +9,8 @@ import TodayCard from '../../components/TodayCard.astro';
 import TrendChart from '../../components/TrendChart.astro';
 import TimeOfDay from '../../components/TimeOfDay.astro';
 import WeekdayBars from '../../components/WeekdayBars.astro';
-import PuzzleIcon from '../../components/PuzzleIcon.astro';
 import {
   getActivity,
-  cruxStats,
   buildCells,
   currentAnyStreak,
   currentStreakDates,
@@ -24,8 +22,6 @@ import {
   weekdayMiniAvg,
   cleanSplit,
   solveTimesByDate,
-  gameCounts,
-  ICON_SLUGS,
   formatSeconds,
   formatDay,
 } from '../../lib/puzzles';
@@ -44,8 +40,6 @@ const miniSplit = cleanSplit('mini_scores.csv');
 const midiSplit = cleanSplit('midi_scores.csv');
 const solveTimes = solveTimesByDate();
 const todayDay = today(a);
-// Only games we ship a real icon for — the rotation panel is icon-only.
-const rotation = gameCounts(a).filter((g) => ICON_SLUGS.has(g.slug));
 
 const pct = (s: { clean: number; assisted: number }) =>
   Math.round((s.clean / Math.max(s.clean + s.assisted, 1)) * 100);
@@ -126,26 +120,6 @@ const pct = (s: { clean: number; assisted: number }) =>
       </div>
     </section>
 
-    <section class="pair">
-      <div class="bento-card crux-card">
-        <p class="kicker">Crux · consistency</p>
-        <p class="crux-num">{cruxStats.crux_streak_current}</p>
-        <p class="crux-sub">day streak · {cruxStats.win_percentage}% solved</p>
-        <p class="crux-meta">avg {cruxStats.average_time} · fastest {cruxStats.fastest_time}</p>
-      </div>
-      <div class="bento-card">
-        <p class="kicker">Games in rotation · hover for plays</p>
-        <div class="rotation">
-          {rotation.map((g) => (
-            <div class="rot-chip" tabindex="0">
-              <PuzzleIcon slug={g.slug} label={g.label} size={46} />
-              <span class="rot-tip">{g.label} · {g.count}×</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-    
     <div id="chart-tip" class="chart-tip" role="tooltip"></div>
   </main>
 </Layout>
@@ -238,31 +212,6 @@ const pct = (s: { clean: number; assisted: number }) =>
     display: flex; justify-content: space-between; margin-top: .4rem;
     font-family: var(--mono); font-size: .68rem; color: var(--muted);
   }
-
-  /* ---- crux ---- */
-  .crux-num { font-family: var(--serif); font-size: clamp(2.4rem, 6vw, 3.2rem); margin: .2rem 0 0; letter-spacing: -.02em; line-height: 1; }
-  .crux-sub { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .6rem 0 0; }
-  .crux-meta { font-size: .86rem; color: var(--muted); margin: 1rem 0 0; }
-
-  /* ---- rotation (4x2 grid of icons) ---- */
-  .rotation {
-    display: grid; grid-template-columns: repeat(4, max-content);
-    gap: 12px; margin-top: auto; padding-top: 1.4rem;
-  }
-  .rot-chip {
-    position: relative; line-height: 0; cursor: default;
-    transition: transform .16s ease;
-  }
-  .rot-chip:hover, .rot-chip:focus-visible { transform: translateY(-4px); z-index: 20; outline: none; }
-  .rot-tip {
-    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-    white-space: nowrap; font-family: var(--mono); font-size: .64rem;
-    text-transform: uppercase; letter-spacing: .04em;
-    color: var(--ink); background: var(--surface);
-    border: 1px solid var(--line); border-radius: 6px; padding: .25rem .5rem;
-    opacity: 0; pointer-events: none; transition: opacity .12s ease; line-height: 1;
-  }
-  .rot-chip:hover .rot-tip, .rot-chip:focus-visible .rot-tip { opacity: 1; }
 
   @media (max-width: 760px) {
     .today-row, .pair { grid-template-columns: 1fr; }
