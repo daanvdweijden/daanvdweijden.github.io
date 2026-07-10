@@ -36,27 +36,28 @@ const initial = label.replace(/^NYT\s+/, '').charAt(0).toUpperCase();
 </span>
 
 <style>
+  /* The icon artwork is already a rounded tile, so the wrapper must NOT clip or
+     re-round it — an overflow:hidden mask with a different radius shaves the
+     corners. Just size the box and let the SVG show its own shape. */
   .picon {
     display: inline-block;
     width: var(--sz);
     height: var(--sz);
-    border-radius: calc(var(--sz) * 0.22);
-    overflow: hidden;
     flex: 0 0 auto;
     line-height: 0;
-    /* A hairline ring so light tiles read against a light surface and dark
-       tiles against a dark surface. */
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent);
   }
   .picon :global(svg) { display: block; width: 100%; height: 100%; }
+  /* Only the flat monogram fallback needs its own rounding + hairline ring. */
   .picon-fallback {
     display: grid;
     place-items: center;
     width: 100%; height: 100%;
+    border-radius: calc(var(--sz) * 0.22);
     color: #fff;
     font-family: var(--mono);
     font-weight: 500;
     font-size: calc(var(--sz) * 0.4);
     line-height: 1;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent);
   }
 </style>

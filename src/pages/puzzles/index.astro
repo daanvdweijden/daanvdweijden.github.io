@@ -25,6 +25,7 @@ import {
   cleanSplit,
   solveTimesByDate,
   gameCounts,
+  ICON_SLUGS,
   formatSeconds,
   formatDay,
 } from '../../lib/puzzles';
@@ -43,7 +44,8 @@ const miniSplit = cleanSplit('mini_scores.csv');
 const midiSplit = cleanSplit('midi_scores.csv');
 const solveTimes = solveTimesByDate();
 const todayDay = today(a);
-const rotation = gameCounts(a);
+// Only games we ship a real icon for — the rotation panel is icon-only.
+const rotation = gameCounts(a).filter((g) => ICON_SLUGS.has(g.slug));
 
 const pct = (s: { clean: number; assisted: number }) =>
   Math.round((s.clean / Math.max(s.clean + s.assisted, 1)) * 100);
@@ -132,13 +134,12 @@ const pct = (s: { clean: number; assisted: number }) =>
         <p class="crux-meta">avg {cruxStats.average_time} · fastest {cruxStats.fastest_time}</p>
       </div>
       <div class="bento-card">
-        <p class="kicker">Games in rotation</p>
+        <p class="kicker">Games in rotation · hover for plays</p>
         <div class="rotation">
           {rotation.map((g) => (
-            <div class="rot-row">
-              <PuzzleIcon slug={g.slug} label={g.label} size={26} />
-              <span class="rot-name">{g.label}</span>
-              <span class="rot-count">{g.count}</span>
+            <div class="rot-chip" tabindex="0">
+              <PuzzleIcon slug={g.slug} label={g.label} size={46} />
+              <span class="rot-tip">{g.label} · {g.count}×</span>
             </div>
           ))}
         </div>
@@ -208,16 +209,25 @@ const pct = (s: { clean: number; assisted: number }) =>
   .crux-sub { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .6rem 0 0; }
   .crux-meta { font-size: .86rem; color: var(--muted); margin: 1rem 0 0; }
 
-  /* ---- rotation ---- */
-  .rotation { display: flex; flex-direction: column; }
-  .rot-row {
-    display: flex; align-items: center; gap: .7rem;
-    padding: .55rem 0; border-bottom: 1px solid var(--line);
+  /* ---- rotation (4x2 grid of icons) ---- */
+  .rotation {
+    display: grid; grid-template-columns: repeat(4, max-content);
+    gap: 12px; margin-top: auto; padding-top: 1.4rem;
   }
-  .rot-row:last-child { border-bottom: 0; padding-bottom: 0; }
-  .rot-row:first-child { padding-top: 0; }
-  .rot-name { font-size: .9rem; }
-  .rot-count { margin-left: auto; font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+  .rot-chip {
+    position: relative; line-height: 0; cursor: default;
+    transition: transform .16s ease;
+  }
+  .rot-chip:hover, .rot-chip:focus-visible { transform: translateY(-4px); z-index: 20; outline: none; }
+  .rot-tip {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-family: var(--mono); font-size: .64rem;
+    text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 6px; padding: .25rem .5rem;
+    opacity: 0; pointer-events: none; transition: opacity .12s ease; line-height: 1;
+  }
+  .rot-chip:hover .rot-tip, .rot-chip:focus-visible .rot-tip { opacity: 1; }
 
   @media (max-width: 760px) {
     .today-row, .pair { grid-template-columns: 1fr; }

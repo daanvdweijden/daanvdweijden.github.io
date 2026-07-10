@@ -44,21 +44,13 @@ const games = day.played.map((slug) => ({ slug, label: activity.game_meta[slug]?
   }
   .count { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1; letter-spacing: -.02em; }
 
-  .stack { display: flex; margin-top: auto; padding-top: 1.4rem; padding-left: 4px; }
+  .stack { display: flex; gap: 10px; margin-top: auto; padding-top: 1.4rem; }
   .chip {
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
     position: relative; line-height: 0; border-radius: 12px;
     transition: transform .16s ease;
   }
-  .chip + .chip { margin-left: -18px; }
-  /* Stack order so a hovered icon can rise above its right-hand neighbours. */
-  .chip:nth-child(1) { z-index: 1; }
-  .chip:nth-child(2) { z-index: 2; }
-  .chip:nth-child(3) { z-index: 3; }
-  .chip:nth-child(4) { z-index: 4; }
-  .chip:nth-child(5) { z-index: 5; }
-  .chip:nth-child(6) { z-index: 6; }
-  .chip:hover, .chip:focus-visible { transform: translateY(-6px); z-index: 20; outline: none; }
+  .chip:hover, .chip:focus-visible { transform: translateY(-4px); z-index: 20; outline: none; }
 
   .name {
     position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
