@@ -53,6 +53,7 @@
       "played": [
         "mini",
         "midi",
+        "connections",
         "crux"
       ]
     },
@@ -136,6 +137,7 @@
       "played": [
         "mini",
         "midi",
+        "connections",
         "crux",
         "precies-vier",
         "vorto"
@@ -288,6 +290,7 @@
       "played": [
         "mini",
         "midi",
+        "connections",
         "crux",
         "sudoku",
         "vorto"
@@ -322,6 +325,7 @@
       "played": [
         "mini",
         "midi",
+        "connections",
         "cijferblok",
         "crux",
         "sudoku"
