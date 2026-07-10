@@ -105,7 +105,7 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-06-08,23837,midi,Ian Livengood,Adieu AEIOU,119,1:59,100,True,1780907467,,,True,True,0,0,0,autocheck
 2026-06-09,23582,midi,Tom McCoy,Put It in Reverse,701,11:41,100,True,1780986531,,,False,True,0,1,0,checked
 2026-06-10,23592,midi,Adrianne Baik,Movie Marathon,413,6:53,100,True,1781079598,,,True,True,1,0,0,revealed
-2026-06-11,23910,midi,Ian Livengood,Let the Games Begin,771,12:51,69,False,,,,True,False,0,7,0,checked
+2026-06-11,23910,midi,Ian Livengood,Let the Games Begin,771,12:51,69,False,,,,True,True,0,7,0,checked
 2026-06-12,23602,midi,Alina Abidi,Step Up to the Plate,726,12:06,100,True,1781356638,,,True,True,4,0,0,revealed
 2026-06-13,23557,midi,Zhou Zhang and Kevin Curry,They're Lit!,728,12:08,100,True,1781355104,,,True,True,1,0,0,revealed
 2026-06-14,23890,midi,Ian Livengood,Act on a Hunch,224,3:44,100,True,1781441159,,,False,False,0,0,0,clean
