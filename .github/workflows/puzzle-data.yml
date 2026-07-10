@@ -2,9 +2,9 @@ name: Puzzle data
 
 on:
   schedule:
-    # 6×/day (every 4h) at :17 — :17 avoids the top-of-hour rush when GitHub
-    # delays/drops scheduled runs. Runs ~00,04,08,12,16,20 UTC.
-    - cron: "17 */4 * * *"
+    # 6×/day (every 4h) at :45. Shifted to include 03:45 UTC (11:45 PM NY time)
+    # so we don't miss late-evening NYT solves right before the puzzle expires.
+    - cron: "45 3,7,11,15,19,23 * * *"
   workflow_dispatch: {}      # manual "Run workflow" button
 
 permissions:
