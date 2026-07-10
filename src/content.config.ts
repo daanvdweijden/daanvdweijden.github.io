@@ -43,13 +43,13 @@ const publications = defineCollection({
     // Locally-hosted PDF: the filename of a PDF dropped in public/papers/, e.g.
     // "2024-playing-with-fire.pdf". Renders a "PDF" button linking to the copy on
     // this site, and drives the first-page thumbnail (scripts/build_thumbs.py
-    // writes public/papers/thumbs/<stem>.png). Keep links.arxiv/doi/url for the
+    // writes public/papers/thumbs/<stem>.jpg). Keep links.arxiv/doi/url for the
     // canonical online version.
     file: z.string().optional(),
     // Manual thumbnail override — a path relative to public/, e.g.
-    // "papers/thumbs/2024-playing-with-fire.png" or any custom image. When set it
+    // "papers/thumbs/2024-playing-with-fire.jpg" or any custom image. When set it
     // is used verbatim and the generator leaves it alone; otherwise the auto
-    // thumbnail at papers/thumbs/<file-stem>.png is used when it exists.
+    // thumbnail at papers/thumbs/<file-stem>.jpg is used when it exists.
     thumb: z.string().optional(),
     // Any subset of these renders as an action button, in this order.
     links: z

@@ -23,9 +23,11 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
     return (
       <g>
         <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h} rx="2"
-              class:list={['bar', { sat: isSat }]} />
+              class:list={['bar', { sat: isSat }]}
+              data-tip={`${formatSeconds(d.avg)} avg on ${d.day}`}
+              tabindex="0" />
         <text x={cx} y={H - padBot - h - 5} class="val" text-anchor="middle">{formatSeconds(d.avg)}</text>
-        <text x={cx} y={H - 6} class="axis" text-anchor="middle">{d.day[0]}</text>
+        <text x={cx} y={H - 6} class="axis" text-anchor="middle">{d.day}</text>
       </g>
     );
   })}
@@ -33,8 +35,10 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
 
 <style>
   .wd { display: block; width: 100%; height: auto; }
-  .bar { fill: var(--p-blue-fg); }
-  .bar.sat { fill: var(--p-red-fg); }
+  .bar { transition: fill .12s ease; cursor: default; outline: none; }
+  rect.bar { fill: var(--p-blue-fg); }
+  rect.bar.sat { fill: var(--p-red-fg); }
+  rect.bar:hover, rect.bar:focus-visible { fill: var(--ink); }
   .val { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
   .axis { font-family: var(--mono); font-size: 8.5px; fill: var(--muted); }
 </style>

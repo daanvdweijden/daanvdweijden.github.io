@@ -2,8 +2,8 @@
 """
 Generate first-page thumbnails for publication PDFs.
 ----------------------------------------------------
-Renders page 1 of every PDF in public/papers/ to a PNG in public/papers/thumbs/,
-named after the PDF (2024-foo.pdf -> thumbs/2024-foo.png). The website picks the
+Renders page 1 of every PDF in public/papers/ to a JPG in public/papers/thumbs/,
+named after the PDF (2024-foo.pdf -> thumbs/2024-foo.jpg). The website picks the
 thumbnail up automatically for any publication whose `file:` frontmatter points
 at that PDF (see src/lib/pubs.ts -> thumbSrc).
 
@@ -11,10 +11,10 @@ Workflow:
   1. Drop <slug>.pdf into public/papers/  (slug usually matches the .md filename)
   2. Add `file: <slug>.pdf` to the publication's frontmatter
   3. Run this script:  python3 scripts/build_thumbs.py
-  4. Commit the PDF and the generated thumbs/<slug>.png
+  4. Commit the PDF and the generated thumbs/<slug>.jpg
 
 Existing thumbnails are left untouched, so if an auto thumbnail looks wrong you
-can simply replace public/papers/thumbs/<slug>.png with your own image and it
+can simply replace public/papers/thumbs/<slug>.jpg with your own image and it
 will survive future runs. Use --force to regenerate everything, or point the
 publication's `thumb:` frontmatter at a separate hand-made image for a permanent
 override.
@@ -41,7 +41,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def render_first_page(pdf_path: str, out_path: str, width: int) -> None:
-    """Render page 1 of pdf_path to a `width`px-wide PNG at out_path."""
+    """Render page 1 of pdf_path to a `width`px-wide JPG at out_path."""
     doc = fitz.open(pdf_path)
     try:
         if doc.page_count == 0:
@@ -93,14 +93,14 @@ def main() -> None:
     made = skipped = failed = 0
     for pdf in pdfs:
         stem = os.path.splitext(pdf)[0]
-        out = os.path.join(thumbs_dir, f"{stem}.png")
+        out = os.path.join(thumbs_dir, f"{stem}.jpg")
         if os.path.exists(out) and not args.force:
-            print(f"  skip  {stem}.png (exists — --force to redo, or replace it by hand)")
+            print(f"  skip  {stem}.jpg (exists — --force to redo, or replace it by hand)")
             skipped += 1
             continue
         try:
             render_first_page(os.path.join(papers_dir, pdf), out, args.width)
-            print(f"  ok    {stem}.png")
+            print(f"  ok    {stem}.jpg")
             made += 1
         except Exception as e:  # noqa: BLE001 - report and continue with the rest
             print(f"  FAIL  {pdf}: {e}")

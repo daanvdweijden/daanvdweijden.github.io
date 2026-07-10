@@ -1,0 +1,446 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getReadBooks, type Book } from '../../lib/books';
+
+const books = await getReadBooks();
+const total = books.length;
+
+// calculate some stats
+const withReviews = books.filter((b) => b.review.length > 0).length;
+const ratings = books.filter((b) => b.rating > 0).map((b) => b.rating);
+const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : '0';
+
+const currentYear = new Date().getFullYear();
+const readThisYear = books.filter((b) => {
+  if (!b.readAt && !b.addedAt) return false;
+  const d = new Date(b.readAt || b.addedAt);
+  return d.getFullYear() === currentYear;
+}).length;
+const fiveStarReads = books.filter((b) => b.rating === 5).length;
+
+// format date helper
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return 'Unknown';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
+---
+
+<Layout title="Reading Log" description="A log of books I've read." noindex>
+  <main class="wrap page">
+    <header class="page-head">
+      <p class="eyebrow">PERSONAL</p>
+      <h1>Reading Log</h1>
+      <p class="lede">
+        A running list of books I've read, fetched straight from my Goodreads. Hover over a book to read my review.
+      </p>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <p class="stat-num">{total}</p>
+        <p class="stat-label">Total Books</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{readThisYear}</p>
+        <p class="stat-label">Read in {currentYear}</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{fiveStarReads}</p>
+        <p class="stat-label">5-Star Reads</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{avgRating}</p>
+        <p class="stat-label">Avg Rating</p>
+      </div>
+    </section>
+
+    <section class="books-section">
+      <div class="bento-card">
+        <p class="kicker">Library · Hover for review</p>
+        <div class="book-grid">
+          {books.map((book, index) => {
+            const year = new Date(book.readAt || book.addedAt).getFullYear();
+            const prevBook = index > 0 ? books[index - 1] : null;
+            const prevYear = prevBook ? new Date(prevBook.readAt || prevBook.addedAt).getFullYear() : year;
+            const yearChanged = index === 0 || year !== prevYear;
+
+            return (
+              <>
+                {yearChanged && (
+                  <div class="year-divider">
+                    <span class="year-text">{year}</span>
+                  </div>
+                )}
+                <div 
+                  class="book-card" 
+                  tabindex="0"
+                  data-title={book.title}
+                  data-author={book.author}
+                  data-rating={book.rating}
+                  data-date={formatDate(book.readAt || book.addedAt)}
+                  data-review={book.review}
+                >
+                  <div class="cover-wrapper">
+                    {book.imageUrl ? (
+                      <img src={book.imageUrl} alt={`Cover of ${book.title}`} loading={index < 5 ? "eager" : "lazy"} />
+                    ) : (
+                      <div class="no-cover">
+                        <span class="no-cover-title">{book.title}</span>
+                      </div>
+                    )}
+                    <div class="spine-highlight"></div>
+                  </div>
+                </div>
+              </>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+    
+    <div id="book-tip" class="book-tip" role="tooltip">
+      <div class="tip-head">
+        <h3 id="tip-title">Title</h3>
+        <span id="tip-rating" class="tip-rating"></span>
+      </div>
+      <p id="tip-author" class="tip-author">Author</p>
+      <p id="tip-date" class="tip-date">Date</p>
+      <div class="tip-divider"></div>
+      <p id="tip-review" class="tip-review">Review goes here...</p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const tip = document.getElementById('book-tip');
+  const tipTitle = document.getElementById('tip-title');
+  const tipAuthor = document.getElementById('tip-author');
+  const tipDate = document.getElementById('tip-date');
+  const tipRating = document.getElementById('tip-rating');
+  const tipReview = document.getElementById('tip-review');
+
+  if (tip && tipTitle && tipAuthor && tipDate && tipRating && tipReview) {
+    const show = (el: Element) => {
+      const data = (el as HTMLElement).dataset;
+      
+      tipTitle.textContent = data.title || '';
+      tipAuthor.textContent = `by ${data.author || ''}`;
+      tipDate.textContent = `Finished: ${data.date || ''}`;
+      
+      const rating = parseInt(data.rating || '0', 10);
+      tipRating.textContent = rating > 0 ? '★'.repeat(rating) : '';
+      
+      const review = data.review || '';
+      if (review) {
+        tipReview.textContent = review;
+        tipReview.style.display = 'block';
+        tip.classList.add('has-review');
+      } else {
+        tipReview.textContent = '';
+        tipReview.style.display = 'none';
+        tip.classList.remove('has-review');
+      }
+
+      tip.style.opacity = '1';
+      tip.style.pointerEvents = 'auto'; // allow text selection in tip if needed, though usually tooltips don't
+      
+      const r = el.getBoundingClientRect();
+      const tw = tip.offsetWidth;
+      let left = r.left + r.width / 2 - tw / 2;
+      left = Math.max(16, Math.min(left, window.innerWidth - tw - 16));
+      tip.style.left = left + 'px';
+      
+      // try placing above
+      let top = window.scrollY + r.top - tip.offsetHeight - 12;
+      // if too high, place below
+      if (r.top - tip.offsetHeight - 12 < 0) {
+        top = window.scrollY + r.bottom + 12;
+      }
+      tip.style.top = top + 'px';
+    };
+    
+    const hide = () => { 
+      tip.style.opacity = '0'; 
+      tip.style.pointerEvents = 'none';
+    };
+
+    let hideTimeout: number;
+
+    const startHide = () => {
+      clearTimeout(hideTimeout);
+      hideTimeout = window.setTimeout(hide, 250);
+    };
+
+    document.addEventListener('mouseover', (e) => {
+      const target = (e.target as Element).closest('.book-card');
+      if (target) {
+        clearTimeout(hideTimeout);
+        show(target);
+      } else if (!(e.target as Element).closest('.book-tip')) {
+        startHide();
+      }
+    });
+
+    tip.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimeout);
+    });
+    
+    tip.addEventListener('mouseleave', () => {
+      startHide();
+    });
+
+    document.addEventListener('focusin', (e) => {
+      const target = (e.target as Element).closest('.book-card');
+      if (target) show(target);
+    });
+    document.addEventListener('focusout', hide);
+  }
+</script>
+
+<style>
+  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .page-head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  }
+  .lede { margin: 1rem 0 0; max-width: 54ch; color: var(--muted); }
+
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 1.5rem;
+  }
+
+  /* ---- stats ---- */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
+  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+
+  /* ---- shared card ---- */
+  .bento-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: clamp(1.4rem, 3vw, 1.9rem);
+    display: flex; flex-direction: column;
+  }
+
+  /* ---- books grid ---- */
+  .books-section { margin-bottom: 1.5rem; }
+  
+  .book-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 24px; /* Space for scrollbar and hover effects */
+    margin-bottom: -12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) transparent;
+    align-items: center; /* align books and dividers nicely */
+  }
+  
+  .book-grid::-webkit-scrollbar {
+    height: 8px;
+  }
+  .book-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .book-grid::-webkit-scrollbar-thumb {
+    background-color: var(--muted);
+    border-radius: 4px;
+  }
+
+  .year-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 220px; /* approximates the cover height */
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  
+  .year-divider::before,
+  .year-divider::after {
+    content: '';
+    width: 1px;
+    flex: 1;
+    background: var(--line);
+  }
+  
+  .year-text {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    padding: 12px 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .book-card {
+    width: 160px; /* Double size */
+    flex-shrink: 0;
+    cursor: default;
+    outline: none;
+    position: relative; /* important for z-index on hover */
+  }
+
+  .book-card:hover, .book-card:focus-visible {
+    z-index: 10;
+  }
+
+  .cover-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 4px 8px 8px 4px; /* classic book shape */
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2), 3px 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    background: var(--line);
+    transform-origin: left center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  }
+  
+  .book-card:hover .cover-wrapper, .book-card:focus-visible .cover-wrapper {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: -3px 0 8px rgba(0,0,0,0.25), 6px 12px 20px rgba(0,0,0,0.2);
+  }
+
+  .cover-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .spine-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    z-index: 2;
+    border-radius: 4px 0 0 4px;
+  }
+
+  .no-cover {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .no-cover-title {
+    font-family: var(--serif);
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: var(--ink);
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ---- tooltip ---- */
+  .book-tip {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 25%, transparent);
+    padding: 1.2rem; 
+    width: max-content;
+    max-width: 340px;
+    opacity: 0; transition: opacity .15s ease;
+  }
+
+  .tip-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .tip-head h3 {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .tip-rating {
+    color: #fbbf24; /* yellow star color */
+    font-size: 0.9rem;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  .tip-author {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tip-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .tip-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 12px 0;
+    display: none;
+  }
+  
+  .has-review .tip-divider {
+    display: block;
+  }
+
+  .tip-review {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+    display: none;
+    max-height: 350px;
+    overflow-y: auto;
+  }
+
+  /* Scrollbar for tip if review is too long */
+  .tip-review::-webkit-scrollbar { width: 4px; }
+  .tip-review::-webkit-scrollbar-track { background: transparent; }
+  .tip-review::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+  @media (max-width: 680px) {
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat { padding: 1rem; }
+    .stat-num { font-size: 1.5rem; }
+    .stat-label { font-size: 0.6rem; }
+    .book-card { width: 120px; }
+    .book-tip { max-width: 280px; padding: 1rem; }
+  }
+</style>

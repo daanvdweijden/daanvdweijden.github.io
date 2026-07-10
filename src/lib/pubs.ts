@@ -49,13 +49,13 @@ export function localPdfHref(p: Pub): string | null {
 /**
  * First-page thumbnail for the paper, or null when there is none.
  * Priority: explicit `thumb` override → auto thumbnail at
- * papers/thumbs/<file-stem>.png (only if that file exists on disk) → null.
+ * papers/thumbs/<file-stem>.jpg (only if that file exists on disk) → null.
  */
 export function thumbSrc(p: Pub): string | null {
   const base = import.meta.env.BASE_URL;
   if (p.data.thumb) return `${base}${p.data.thumb.replace(/^\/+/, '')}`;
   if (!p.data.file) return null;
-  const rel = `papers/thumbs/${fileStem(p.data.file)}.png`;
+  const rel = `papers/thumbs/${fileStem(p.data.file)}.jpg`;
   return existsSync(PUBLIC_DIR + rel) ? `${base}${rel}` : null;
 }
 

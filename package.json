@@ -14,7 +14,9 @@
     "@citation-js/plugin-bibtex": "^0.7.14",
     "@citation-js/plugin-csl": "^0.7.14",
     "astro": "^5.7.0",
+    "fast-xml-parser": "^5.9.3",
     "gsap": "^3.15.0",
+    "he": "^1.2.0",
     "rough-notation": "^0.5.1"
   }
 }

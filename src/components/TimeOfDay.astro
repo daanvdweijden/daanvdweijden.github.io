@@ -15,6 +15,7 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
 const zone = (h: number): 'morning' | 'night' | 'day' =>
   h >= 7 && h <= 11 ? 'morning' : (h >= 22 || h <= 1) ? 'night' : 'day';
 const TICKS: [number, string][] = [[0, '12a'], [6, '6a'], [12, '12p'], [18, '6p'], [23, '11p']];
+const hourLabel = (h: number) => (h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`);
 ---
 
 <svg viewBox={`0 0 ${W} ${H}`} class="tod" role="img" aria-label="Solves by hour of day, peaking late morning with a near-midnight spike">
@@ -23,6 +24,8 @@ const TICKS: [number, string][] = [[0, '12a'], [6, '6a'], [12, '12p'], [18, '6p'
       x={h * bw + 1} y={H - padBot - barH(v)}
       width={bw - 2} height={barH(v)} rx="1.5"
       class:list={['bar', zone(h)]}
+      data-tip={`${v} solves at ${hourLabel(h)}`}
+      tabindex="0"
     />
   ))}
   {TICKS.map(([h, label]) => (
@@ -32,8 +35,10 @@ const TICKS: [number, string][] = [[0, '12a'], [6, '6a'], [12, '12p'], [18, '6p'
 
 <style>
   .tod { display: block; width: 100%; height: auto; }
-  .bar.morning { fill: var(--p-blue-fg); }
-  .bar.night { fill: var(--p-red-fg); }
-  .bar.day { fill: color-mix(in srgb, var(--muted) 55%, transparent); }
+  .bar { transition: fill .12s ease; cursor: default; outline: none; }
+  rect.bar.morning { fill: var(--p-blue-fg); }
+  rect.bar.night { fill: var(--p-red-fg); }
+  rect.bar.day { fill: color-mix(in srgb, var(--muted) 55%, transparent); }
+  rect.bar:hover, rect.bar:focus-visible { fill: var(--ink); }
   .axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
 </style>

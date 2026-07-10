@@ -19,7 +19,7 @@ const x = (i: number) => padX + (i * (W - 2 * padX)) / Math.max(points.length - 
 const y = (v: number) => padTop + (1 - (v - lo) / span) * (H - padTop - padBot);
 
 const line = points.map((p, i) => `${x(i).toFixed(1)},${y(p.avg).toFixed(1)}`).join(' ');
-const MONTH_INITIAL = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const first = points[0]?.avg ?? 0;
 const last = points[points.length - 1]?.avg ?? 0;
 ---
@@ -31,21 +31,28 @@ const last = points[points.length - 1]?.avg ?? 0;
   <text x={W - padX} y={y(pb) - 4} class="pb-label" text-anchor="end">PB {formatSeconds(pb)}</text>
 
   <polyline points={line} class="curve" />
-  {points.map((p, i) => <circle cx={x(i)} cy={y(p.avg)} r="2.4" class="dot" />)}
+  {points.map((p, i) => (
+    <g class="hover-target" tabindex="0" data-tip={`${formatSeconds(p.avg)} avg in ${MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}`}>
+      <circle cx={x(i)} cy={y(p.avg)} r="12" fill="transparent" class="touch-target" />
+      <circle cx={x(i)} cy={y(p.avg)} r="2.4" class="dot" />
+    </g>
+  ))}
 
   <!-- endpoint value labels -->
   <text x={x(0)} y={y(first) - 7} class="val" text-anchor="start">{formatSeconds(first)}</text>
   <text x={x(points.length - 1)} y={y(last) - 7} class="val" text-anchor="end">{formatSeconds(last)}</text>
 
   {points.map((p, i) => (
-    <text x={x(i)} y={H - 8} class="axis" text-anchor="middle">{MONTH_INITIAL[Number(p.month.slice(5, 7)) - 1]}</text>
+    <text x={x(i)} y={H - 8} class="axis" text-anchor="middle">{MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}</text>
   ))}
 </svg>
 
 <style>
   .trend { display: block; width: 100%; height: auto; overflow: visible; }
   .curve { fill: none; stroke: var(--p-blue-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-  .dot { fill: var(--p-blue-fg); }
+  .dot { fill: var(--p-blue-fg); transition: r .12s ease; }
+  .hover-target { cursor: default; outline: none; }
+  .hover-target:hover .dot, .hover-target:focus-visible .dot { r: 4.5; }
   .pb { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; }
   .pb-label, .axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
   .val { font-family: var(--mono); font-size: 8.5px; fill: var(--ink); }

@@ -55,8 +55,12 @@ const payload = JSON.stringify(days);
     }
 
     const render = () => {
-      const width = root.clientWidth;
+      // Empty the calendar first so it doesn't inflate the parent's width on resize down
+      root.replaceChildren();
+      // Measure parent width since root might have been stretching it
+      const width = root.parentElement?.clientWidth || root.clientWidth;
       if (!width) return;
+      
       // How many whole week-columns fit at a legible min size, then size each
       // cell to fill the width exactly. Fewer columns when the box is narrow —
       // the OLDEST weeks drop off; we never scroll sideways.
@@ -65,25 +69,44 @@ const payload = JSON.stringify(days);
       let cell = (width - (fit - 1) * GAP) / fit;
       if (cell > MAX_CELL) cell = MAX_CELL; // don't balloon when only a few weeks exist
       const shown = weeks.slice(-fit); // keep the NEWEST columns
-      root.replaceChildren();
-      for (const week of shown) {
-        const col = document.createElement('div');
-        col.className = 'wk';
-        for (const day of week) {
-          const c = document.createElement('span');
-          c.className = 'cell' + (day ? '' : ' pad') + (day?.streak ? ' streak' : '');
-          c.style.width = c.style.height = cell.toFixed(2) + 'px';
+      
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      // Set width and height precisely so SVG scales it natively
+      const exactWidth = fit * cell + (fit - 1) * GAP;
+      const exactHeight = 7 * cell + 6 * GAP;
+      svg.setAttribute('width', exactWidth.toFixed(2));
+      svg.setAttribute('height', exactHeight.toFixed(2));
+      svg.style.display = 'block';
+      svg.style.overflow = 'visible';
+      
+      for (let w = 0; w < shown.length; w++) {
+        const week = shown[w];
+        const x = w * (cell + GAP);
+        for (let d = 0; d < week.length; d++) {
+          const day = week[d];
+          const y = d * (cell + GAP);
+          
+          const rect = document.createElementNS(svgNS, 'rect');
+          rect.setAttribute('x', x.toFixed(2));
+          rect.setAttribute('y', y.toFixed(2));
+          rect.setAttribute('width', cell.toFixed(2));
+          rect.setAttribute('height', cell.toFixed(2));
+          rect.setAttribute('rx', '3'); // Match border-radius
+          
           if (day) {
-            c.dataset.b = String(day.b);
-            (c as any)._day = day;
-            c.tabIndex = 0;
+            rect.setAttribute('class', 'cell' + (day.streak ? ' streak' : ''));
+            rect.dataset.b = String(day.b);
+            (rect as any)._day = day;
+            rect.setAttribute('tabindex', '0');
           } else {
-            c.setAttribute('aria-hidden', 'true');
+            rect.setAttribute('class', 'cell pad');
+            rect.setAttribute('aria-hidden', 'true');
           }
-          col.appendChild(c);
+          svg.appendChild(rect);
         }
-        root.appendChild(col);
       }
+      root.appendChild(svg);
     };
 
     // Debounce with setTimeout, not requestAnimationFrame — rAF is paused in a
@@ -105,7 +128,7 @@ const payload = JSON.stringify(days);
     tip.setAttribute('role', 'tooltip');
     document.body.appendChild(tip);
 
-    const showFor = (cell: HTMLElement) => {
+    const showFor = (cell: Element) => {
       const day: Day = (cell as any)._day;
       if (!day) return;
       let html = `<div class="t-date">${day.label}</div>`;
@@ -129,11 +152,11 @@ const payload = JSON.stringify(days);
     const hide = () => { tip.style.opacity = '0'; };
 
     root.addEventListener('mouseover', (e) => {
-      const cell = (e.target as HTMLElement).closest('.cell:not(.pad)') as HTMLElement;
+      const cell = (e.target as Element).closest('.cell:not(.pad)');
       if (cell) showFor(cell);
     });
     root.addEventListener('mouseout', hide);
-    root.addEventListener('focusin', (e) => showFor(e.target as HTMLElement));
+    root.addEventListener('focusin', (e) => showFor(e.target as Element));
     root.addEventListener('focusout', hide);
   }
 
@@ -146,19 +169,22 @@ const payload = JSON.stringify(days);
   /* The week columns and cells are created in the client script, so they never
      receive Astro's scoped-style attribute — style them via :global(), kept
      under .heatmap so nothing leaks. */
-  .heatmap { width: 100%; }
-  .heatmap :global(.cal) { display: flex; gap: 3px; justify-content: flex-start; }
-  .heatmap :global(.wk) { display: flex; flex-direction: column; gap: 3px; }
-  .heatmap :global(.cell) {
-    border-radius: 3px; background: var(--line); cursor: default; flex: 0 0 auto;
+  .heatmap { width: 100%; min-width: 0; }
+  .heatmap :global(.cal) { display: flex; justify-content: flex-start; }
+  .heatmap :global(rect.cell) {
+    fill: var(--line); outline: none; cursor: default;
   }
-  .heatmap :global(.cell.pad) { background: transparent; }
-  .heatmap :global(.cell[data-b='1']) { background: var(--heat-1); }
-  .heatmap :global(.cell[data-b='2']) { background: var(--heat-2); }
-  .heatmap :global(.cell[data-b='3']) { background: var(--heat-3); }
-  .heatmap :global(.cell[data-b='4']) { background: var(--p-blue-fg); }
-  .heatmap :global(.cell.streak) { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent); }
-  .heatmap :global(.cell:focus-visible) { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .heatmap :global(rect.cell.pad) { fill: transparent; }
+  .heatmap :global(rect.cell[data-b='1']) { fill: var(--heat-1); }
+  .heatmap :global(rect.cell[data-b='2']) { fill: var(--heat-2); }
+  .heatmap :global(rect.cell[data-b='3']) { fill: var(--heat-3); }
+  .heatmap :global(rect.cell[data-b='4']) { fill: var(--p-blue-fg); }
+  /* SVG handles fractional strokes perfectly symmetrically */
+  .heatmap :global(rect.cell.streak) { 
+    stroke: color-mix(in srgb, var(--ink) 45%, transparent); 
+    stroke-width: 1.5; 
+  }
+  .heatmap :global(rect.cell:focus-visible) { stroke: var(--ink); stroke-width: 2; }
 
   :global(.heatmap-tip) {
     position: absolute; z-index: 60; pointer-events: none;

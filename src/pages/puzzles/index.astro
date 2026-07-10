@@ -54,7 +54,7 @@ const pct = (s: { clean: number; assisted: number }) =>
 <Layout title="Puzzles" description="A daily puzzle log — for me, mostly." noindex>
   <main class="wrap page">
     <header class="page-head">
-      <p class="eyebrow">Not on the CV</p>
+      <p class="eyebrow">PERSONAL</p>
       <h1>Daily Puzzles</h1>
       <p class="lede">
         A running log of the crosswords I solve — some over breakfast, a
@@ -145,8 +145,43 @@ const pct = (s: { clean: number; assisted: number }) =>
         </div>
       </div>
     </section>
+    
+    <div id="chart-tip" class="chart-tip" role="tooltip"></div>
   </main>
 </Layout>
+
+<script>
+  const tip = document.getElementById('chart-tip');
+  if (tip) {
+    const show = (el: Element) => {
+      const text = (el as HTMLElement).dataset.tip;
+      if (!text) return;
+      tip.textContent = text;
+      tip.style.opacity = '1';
+      const r = el.getBoundingClientRect();
+      const tw = tip.offsetWidth;
+      let left = r.left + r.width / 2 - tw / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+      tip.style.left = left + 'px';
+      // position slightly above the element
+      tip.style.top = window.scrollY + r.top - tip.offsetHeight - 8 + 'px';
+    };
+    const hide = () => { tip.style.opacity = '0'; };
+
+    document.addEventListener('mouseover', (e) => {
+      const target = (e.target as Element).closest('[data-tip]');
+      if (target) show(target);
+    });
+    document.addEventListener('mouseout', (e) => {
+      if (!(e.target as Element).closest('[data-tip]')) hide();
+    });
+    document.addEventListener('focusin', (e) => {
+      const target = (e.target as Element).closest('[data-tip]');
+      if (target) show(target);
+    });
+    document.addEventListener('focusout', hide);
+  }
+</script>
 
 <style>
   /* Only set vertical padding -- the `padding` shorthand would zero out the
@@ -191,7 +226,7 @@ const pct = (s: { clean: number; assisted: number }) =>
   .today-row { display: grid; grid-template-columns: 1fr 1.7fr; gap: 16px; margin-bottom: 1.5rem; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
 
-  .hm-wrap { flex: 1; display: flex; align-items: center; }
+  .hm-wrap { flex: 1; display: flex; align-items: center; min-width: 0; }
   .hm-wrap :global(.heatmap) { width: 100%; }
 
   /* ---- clean vs assisted ---- */
@@ -234,5 +269,14 @@ const pct = (s: { clean: number; assisted: number }) =>
   }
   @media (max-width: 680px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .chart-tip {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 12%, transparent);
+    padding: .35rem .6rem; font-size: .75rem; white-space: nowrap;
+    opacity: 0; transition: opacity .12s ease;
   }
 </style>
