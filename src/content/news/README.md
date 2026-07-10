@@ -19,6 +19,7 @@ Copy this into a new file and edit:
 title: "Short, specific headline"
 date: 2024-06-01          # drives sort order and year grouping
 tag: conference            # optional — e.g. "conference", "publication", "award"
+emphasis: "specific headline"  # optional — substring of title, highlighted in lists only
 draft: false               # set true to hide while you write it
 ---
 
@@ -30,9 +31,10 @@ own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 
 | Field   | Required | Notes                                              |
 | ------- | :------: | --------------------------------------------------- |
-| `title` |    ✓     | Headline shown on the list, home feed, and page.    |
-| `date`  |    ✓     | `YYYY-MM-DD`; drives sort order and year grouping.  |
-| `tag`   |          | Free text badge, e.g. "conference", "award".        |
-| `draft` |          | `true` hides the item everywhere.                   |
+| `title`      |    ✓     | Headline shown on the list, home feed, and page.    |
+| `date`       |    ✓     | `YYYY-MM-DD`; drives sort order and year grouping.  |
+| `tag`        |          | Free text badge, e.g. "conference", "award".        |
+| `emphasis`   |          | Substring of `title` to highlight — shown on the home feed and `/news/` list, but not on the item's own page. Must match part of `title` exactly. |
+| `draft`      |          | `true` hides the item everywhere.                   |
 
 The **body** below the frontmatter is shown on the item's own page.

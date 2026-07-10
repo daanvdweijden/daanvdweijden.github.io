@@ -30,3 +30,15 @@ export function groupByYear(items: NewsItem[]): { year: number; items: NewsItem[
 
 /** Path to a news item's own page. */
 export const newsHref = (n: NewsItem) => `${import.meta.env.BASE_URL}news/${n.id}/`;
+
+/**
+ * Splits a news item's title into the part before, the emphasized part, and
+ * the part after `data.emphasis` (for list views). Falls back to a single
+ * `before` chunk when there's no emphasis or it doesn't match the title.
+ */
+export function titleParts(n: NewsItem): { before: string; emphasis: string; after: string } {
+  const { title, emphasis } = n.data;
+  const i = emphasis ? title.indexOf(emphasis) : -1;
+  if (i === -1) return { before: title, emphasis: '', after: '' };
+  return { before: title.slice(0, i), emphasis: title.slice(i, i + emphasis!.length), after: title.slice(i + emphasis!.length) };
+}

@@ -14,6 +14,10 @@ const news = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     tag: z.string().optional(), // e.g. "conference", "publication", "award"
+    // Substring of `title` to emphasize when the title is shown in a list
+    // (homepage feed, /news index). Must match part of `title` exactly.
+    // Ignored on the item's own page, where the title renders plain.
+    emphasis: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });

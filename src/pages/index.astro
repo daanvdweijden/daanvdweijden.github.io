@@ -9,8 +9,8 @@
 //   • news             → src/content/news/*.md
 import Layout from '../layouts/Layout.astro';
 import { site } from '../site.config';
-import { getPublications, yearOf, pubHref } from '../lib/pubs';
-import { getNews, newsHref } from '../lib/news';
+import { getPublications, yearOf, pubHref, isOwner } from '../lib/pubs';
+import { getNews, newsHref, titleParts } from '../lib/news';
 
 const pubs = await getPublications();
 
@@ -54,7 +54,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
             at the {site.university}, working on artificial intelligence and its impact on democracy.
           </p>
           <p>
-            My research applies computational methods to societal problems — sometimes to understand
+            My research applies computational methods to societal problems. Sometimes to understand
             what's driving them, sometimes to build tools that help address them. I come from a background
             spanning Linguistics (BA) and Artificial Intelligence (BSc, MSc), which led me to the
             interdisciplinary <a href="https://d3-project.ch" class="inline-link">Digital Deliberative Democracy (D3)</a> project,
@@ -73,11 +73,6 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
             <a href="https://www.goodreads.com/user/show/155595600-daan-van-der-weijden" class="inline-link">read a book</a>.
             Previous obsessions include bowling, minigolf, bouldering, and DnD. Always down for a new game!
           </p>
-          <div class="tags">
-            <span class="tag t-red">Artificial Intelligence</span>
-            <span class="tag t-blue">Digital Democracy</span>
-            <span class="tag t-green">Natural Language Processing</span>
-          </div>
         </article>
 
         <article class="card c-pubs">
@@ -89,7 +84,11 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
             <div class="pub">
               <a class="pt-link" href={pubHref(p)}>
                 <p class="pt">{p.data.title}</p>
-                <p class="pa">{p.data.authors.join(', ')}</p>
+                <p class="pa">
+                  {p.data.authors.map((a, i) => (
+                    <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
+                  ))}
+                </p>
                 <p class="pv">{[p.data.venue, yearOf(p)].filter(Boolean).join(' · ')}</p>
               </a>
             </div>
@@ -101,12 +100,15 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
             <p class="kicker">News</p>
             <a class="see-all" href={`${import.meta.env.BASE_URL}news/`}>All →</a>
           </div>
-          {news.map((n) => (
-            <a class="news-item" href={newsHref(n)}>
-              <time datetime={iso(n.data.date)}>{fmtMonth(n.data.date)}</time>
-              {n.data.title}
-            </a>
-          ))}
+          {news.map((n) => {
+            const { before, emphasis, after } = titleParts(n);
+            return (
+              <a class="news-item" href={newsHref(n)}>
+                <time datetime={iso(n.data.date)}>{fmtMonth(n.data.date)}</time>
+                {before}{emphasis && <em class="hl">{emphasis}</em>}{after}
+              </a>
+            );
+          })}
         </article>
       </div>
     </div>
@@ -164,8 +166,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .card h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 .6rem; }
   .card p { margin: 0 0 .6rem; }
   .card p:last-child { margin-bottom: 0; }
-  .inline-link { border-bottom: 1px solid var(--line); text-decoration: none; transition: color .2s, border-color .2s; }
-  .inline-link:hover { color: var(--accent, var(--ink)); border-bottom-color: var(--accent, var(--muted)); }
+  .inline-link { border-bottom: 1px solid var(--accent, var(--line)); text-decoration: none; transition: color .2s, border-color .2s; }
+  .inline-link:hover { color: var(--accent, var(--ink)); }
 
   .avatar { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; object-fit: cover; border: 1px solid var(--line); margin-bottom: 1.1rem; }
   .c-profile .name { font-family: var(--serif); font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
@@ -199,6 +201,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .pub .pt { font-family: var(--serif); font-size: 1.1rem; letter-spacing: -0.01em; margin: 0 0 .2rem; transition: color .2s; }
   .pub a.pt-link:hover .pt { color: var(--accent, var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
   .pub .pa { font-size: .9rem; color: var(--muted); margin: 0; }
+  .pub .author.me { color: var(--p-blue-fg); font-weight: 600; }
   .pub .pv { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: .35rem 0 0; text-transform: uppercase; letter-spacing: .06em; }
 
   .news-item {
@@ -209,6 +212,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .news-item:last-child { border-bottom: 0; padding-bottom: 0; }
   .news-item:first-of-type { padding-top: 0; }
   .news-item time { font-family: var(--mono); font-size: .7rem; color: var(--muted); display: block; margin-bottom: .3rem; }
+  .news-item .hl { color: var(--p-green-fg); font-style: normal; font-weight: 600; }
 
   @media (max-width: 760px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
