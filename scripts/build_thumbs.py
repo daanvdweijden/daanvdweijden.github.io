@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Generate first-page thumbnails for publication PDFs.
-----------------------------------------------------
-Renders page 1 of every PDF in public/papers/ to a JPG in public/papers/thumbs/,
-named after the PDF (2024-foo.pdf -> thumbs/2024-foo.jpg). The website picks the
-thumbnail up automatically for any publication whose `file:` frontmatter points
-at that PDF (see src/lib/pubs.ts -> thumbSrc).
+Generate thumbnails for publication PDFs.
+------------------------------------------
+Renders page 1 (or --page N) of every PDF in public/papers/ to a JPG in
+public/papers/thumbs/, named after the PDF (2024-foo.pdf -> thumbs/2024-foo.jpg).
+The website picks the thumbnail up automatically for any publication whose
+`file:` frontmatter points at that PDF (see src/lib/pubs.ts -> thumbSrc).
 
 Workflow:
   1. Drop <slug>.pdf into public/papers/  (slug usually matches the .md filename)
@@ -40,13 +40,15 @@ except ImportError:
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def render_first_page(pdf_path: str, out_path: str, width: int) -> None:
-    """Render page 1 of pdf_path to a `width`px-wide JPG at out_path."""
+def render_page(pdf_path: str, out_path: str, width: int, page_number: int) -> None:
+    """Render `page_number` (1-indexed) of pdf_path to a `width`px-wide JPG at out_path."""
     doc = fitz.open(pdf_path)
     try:
         if doc.page_count == 0:
             raise ValueError("PDF has no pages")
-        page = doc.load_page(0)
+        if page_number < 1 or page_number > doc.page_count:
+            raise ValueError(f"page {page_number} out of range (PDF has {doc.page_count} pages)")
+        page = doc.load_page(page_number - 1)
         # Render directly at the target width (crisp, antialiased) rather than
         # rendering large and downscaling.
         zoom = width / page.rect.width
@@ -64,8 +66,12 @@ def main() -> None:
         help="folder holding the source PDFs (default: public/papers)",
     )
     ap.add_argument(
-        "--width", type=int, default=480,
-        help="output thumbnail width in pixels (default: 480)",
+        "--width", type=int, default=320,
+        help="output thumbnail width in pixels (default: 320)",
+    )
+    ap.add_argument(
+        "--page", type=int, default=1,
+        help="1-indexed page to render (default: 1)",
     )
     ap.add_argument(
         "--force", action="store_true",
@@ -99,7 +105,7 @@ def main() -> None:
             skipped += 1
             continue
         try:
-            render_first_page(os.path.join(papers_dir, pdf), out, args.width)
+            render_page(os.path.join(papers_dir, pdf), out, args.width, args.page)
             print(f"  ok    {stem}.jpg")
             made += 1
         except Exception as e:  # noqa: BLE001 - report and continue with the rest
