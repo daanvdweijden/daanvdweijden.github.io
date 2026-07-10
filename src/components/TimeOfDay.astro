@@ -1,0 +1,39 @@
+---
+// A 24-hour histogram of when solves are completed (local Amsterdam time).
+// Morning hours and the late-night tail are tinted so the two clusters read at
+// a glance. Inline SVG, scales to its container.
+interface Props {
+  hist: number[]; // length 24, index = local hour
+}
+const { hist } = Astro.props;
+const W = 320, H = 132;
+const padTop = 12, padBot = 22;
+const bw = W / 24;
+const max = Math.max(...hist, 1);
+const barH = (v: number) => (v / max) * (H - padTop - padBot);
+
+const zone = (h: number): 'morning' | 'night' | 'day' =>
+  h >= 7 && h <= 11 ? 'morning' : (h >= 22 || h <= 1) ? 'night' : 'day';
+const TICKS: [number, string][] = [[0, '12a'], [6, '6a'], [12, '12p'], [18, '6p'], [23, '11p']];
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class="tod" role="img" aria-label="Solves by hour of day, peaking late morning with a near-midnight spike">
+  {hist.map((v, h) => (
+    <rect
+      x={h * bw + 1} y={H - padBot - barH(v)}
+      width={bw - 2} height={barH(v)} rx="1.5"
+      class:list={['bar', zone(h)]}
+    />
+  ))}
+  {TICKS.map(([h, label]) => (
+    <text x={h * bw + bw / 2} y={H - 6} class="axis" text-anchor="middle">{label}</text>
+  ))}
+</svg>
+
+<style>
+  .tod { display: block; width: 100%; height: auto; }
+  .bar.morning { fill: var(--p-blue-fg); }
+  .bar.night { fill: var(--p-red-fg); }
+  .bar.day { fill: color-mix(in srgb, var(--muted) 55%, transparent); }
+  .axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
+</style>

@@ -213,3 +213,154 @@ export function alignSolves(cells: Cell[], solves: Solve[]): DaySlot[] {
   const byDate = new Map(solves.map((s) => [s.date, s.seconds]));
   return cells.map((c) => ({ date: c.date, seconds: byDate.get(c.date) ?? null }));
 }
+
+// ---------------------------------------------------------------------------
+// v2 additions — richer derivations for the redesigned page. Everything below
+// reads the same build artifacts; nothing fetches live.
+// ---------------------------------------------------------------------------
+
+/** Brand-ish accent per game, used for tooltip dots and the icon fallback tile. */
+export const GAME_COLORS: Record<string, string> = {
+  mini: '#4a90e2',
+  midi: '#1d9e75',
+  crux: '#31d3ff',
+  wordle: '#6aaa64',
+  connections: '#bc70c4',
+  vorto: '#9fd727',
+  cijferblok: '#dd246f',
+  'precies-vier': '#dc246f',
+  sudoku: '#8a8f98',
+  'aan-zet': '#8a8f98',
+  koprol: '#8a8f98',
+};
+
+/** Games we ship a real inline icon for (see src/assets/puzzle-icons). */
+export const ICON_SLUGS = new Set([
+  'mini', 'midi', 'wordle', 'connections', 'crux', 'cijferblok', 'vorto', 'precies-vier',
+]);
+
+/** Longest run of consecutive days ending at `generated` on which anything was solved. */
+export function currentAnyStreak(a: Activity): number {
+  const active = new Set(a.days.filter((d) => d.played.length > 0).map((d) => d.date));
+  let streak = 0;
+  let t = toUTC(a.generated).getTime();
+  while (active.has(fromUTC(t))) {
+    streak += 1;
+    t -= DAY_MS;
+  }
+  return streak;
+}
+
+/** The set of dates in the current any-puzzle streak (for ringing them on the calendar). */
+export function currentStreakDates(a: Activity): Set<string> {
+  const active = new Set(a.days.filter((d) => d.played.length > 0).map((d) => d.date));
+  const out = new Set<string>();
+  let t = toUTC(a.generated).getTime();
+  while (active.has(fromUTC(t))) {
+    out.add(fromUTC(t));
+    t -= DAY_MS;
+  }
+  return out;
+}
+
+/** The most-recent recorded day (games played that day), for the "Today" card. */
+export function today(a: Activity): ActivityDay {
+  return a.days[0]; // days are newest-first
+}
+
+// --- richer CSV rows (mini/midi carry per-solve timing + assist flags) -------
+
+export interface SolveRow {
+  date: string;
+  seconds: number | null;
+  solvedAt: number | null; // epoch seconds
+  clean: boolean; // solved with no autocheck and no reveal/cheat
+}
+
+function getSolveRows(name: string): SolveRow[] {
+  return readDataCSV(name)
+    .filter((r) => r.solved === 'True')
+    .map((r) => ({
+      date: r.date,
+      seconds: r.seconds ? Number(r.seconds) : null,
+      solvedAt: r.solved_at ? Number(r.solved_at) : null,
+      clean: r.cheated === 'False' && r.autocheck === 'False',
+    }));
+}
+
+/** Fastest Mini in seconds, ignoring sub-`floor` outliers (reveal artifacts). */
+export function fastestMini(floor = 15): number {
+  const secs = getMiniSolves().map((s) => s.seconds).filter((s) => s >= floor);
+  return secs.length ? Math.min(...secs) : 0;
+}
+
+export interface MonthPoint {
+  month: string; // 'YYYY-MM'
+  avg: number; // seconds
+}
+
+/** Monthly average Mini solve time, oldest-first — the "getting faster" trend. */
+export function miniMonthlyAvg(): MonthPoint[] {
+  const sum: Record<string, number> = {};
+  const n: Record<string, number> = {};
+  for (const s of getMiniSolves()) {
+    const m = s.date.slice(0, 7);
+    sum[m] = (sum[m] ?? 0) + s.seconds;
+    n[m] = (n[m] ?? 0) + 1;
+  }
+  return Object.keys(sum).sort().map((m) => ({ month: m, avg: Math.round(sum[m] / n[m]) }));
+}
+
+// Solve timestamps are epoch UTC; bucket them by the hour they show in
+// Amsterdam (DST-aware) so "when I solve" reflects local wall-clock time.
+const AMS_HOUR = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Amsterdam', hour: '2-digit', hour12: false,
+});
+function amsHour(epochSeconds: number): number {
+  return Number(AMS_HOUR.format(new Date(epochSeconds * 1000))) % 24;
+}
+
+/** 24-bucket histogram (index = local hour) of Mini + Midi completion times. */
+export function hourHistogram(): number[] {
+  const hist = new Array(24).fill(0);
+  for (const name of ['mini_scores.csv', 'midi_scores.csv']) {
+    for (const r of getSolveRows(name)) {
+      if (r.solvedAt !== null) hist[amsHour(r.solvedAt)] += 1;
+    }
+  }
+  return hist;
+}
+
+/** Average Mini solve time per weekday, Mon..Sun (Saturday is the hard one). */
+export function weekdayMiniAvg(): { day: string; avg: number }[] {
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const sum = new Array(7).fill(0);
+  const n = new Array(7).fill(0);
+  for (const s of getMiniSolves()) {
+    // getUTCDay: 0=Sun..6=Sat -> shift to 0=Mon..6=Sun
+    const wd = (toUTC(s.date).getUTCDay() + 6) % 7;
+    sum[wd] += s.seconds;
+    n[wd] += 1;
+  }
+  return labels.map((day, i) => ({ day, avg: n[i] ? Math.round(sum[i] / n[i]) : 0 }));
+}
+
+/** Clean-vs-assisted split for a game (Mini is almost all clean; Midi autochecks). */
+export function cleanSplit(name: string): { clean: number; assisted: number } {
+  const rows = getSolveRows(name);
+  const clean = rows.filter((r) => r.clean).length;
+  return { clean, assisted: rows.length - clean };
+}
+
+/** date -> { slug: 'm:ss' } for games with a recorded time, for heatmap tooltips. */
+export function solveTimesByDate(): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  const add = (name: string, slug: string) => {
+    for (const s of getSolveRows(name)) {
+      if (s.seconds !== null) (out[s.date] ??= {})[slug] = formatSeconds(s.seconds);
+    }
+  };
+  add('mini_scores.csv', 'mini');
+  add('midi_scores.csv', 'midi');
+  return out;
+}

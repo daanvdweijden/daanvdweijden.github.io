@@ -1,0 +1,40 @@
+---
+// Average Mini solve time by weekday, Mon..Sun. Saturday (the notoriously hard
+// NYT Mini) is tinted so the spike stands out. Inline SVG, scales to container.
+import { formatSeconds } from '../lib/puzzles';
+
+interface Props {
+  data: { day: string; avg: number }[]; // Mon..Sun
+}
+const { data } = Astro.props;
+const W = 320, H = 140;
+const padTop = 18, padBot = 20, padX = 6;
+const max = Math.max(...data.map((d) => d.avg), 1);
+const slot = (W - 2 * padX) / data.length;
+const barW = slot * 0.62;
+const barH = (v: number) => (v / max) * (H - padTop - padBot);
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class="wd" role="img" aria-label="Average Mini solve time by weekday, highest on Saturday">
+  {data.map((d, i) => {
+    const cx = padX + i * slot + slot / 2;
+    const h = barH(d.avg);
+    const isSat = d.day === 'Sat';
+    return (
+      <g>
+        <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h} rx="2"
+              class:list={['bar', { sat: isSat }]} />
+        <text x={cx} y={H - padBot - h - 5} class="val" text-anchor="middle">{formatSeconds(d.avg)}</text>
+        <text x={cx} y={H - 6} class="axis" text-anchor="middle">{d.day[0]}</text>
+      </g>
+    );
+  })}
+</svg>
+
+<style>
+  .wd { display: block; width: 100%; height: auto; }
+  .bar { fill: var(--p-blue-fg); }
+  .bar.sat { fill: var(--p-red-fg); }
+  .val { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
+  .axis { font-family: var(--mono); font-size: 8.5px; fill: var(--muted); }
+</style>
