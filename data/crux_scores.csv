@@ -107,3 +107,7 @@ date,puzzle_id,puzzle_type,constructor,width,height,solved,seconds,time,global_a
 2026-07-04,nrc-gsEQF7O4H4nwP7QYHR2j-4584deae3c63-20260704,crux,steenhuis,6,6,False,,,,
 2026-07-05,nrc-gsEQF7O4H4nwP7QYHR2j-b803e9a277de-20260705,crux,steenhuis,7,7,False,,,,
 2026-07-06,nrc-gsEQF7O4H4nwP7QYHR2j-3f551c921614-20260706,crux,steenhuis,5,5,True,,,,
+2026-07-07,nrc-gsEQF7O4H4nwP7QYHR2j-63c8bdb55a6c-20260707,crux,steenhuis,6,4,False,,,,
+2026-07-08,nrc-gsEQF7O4H4nwP7QYHR2j-67af9474f69a-20260708,crux,steenhuis,7,4,True,,,,
+2026-07-09,nrc-gsEQF7O4H4nwP7QYHR2j-0fd1daf0d8c7-20260709,crux,steenhuis,5,5,True,,,,
+2026-07-10,nrc-gsEQF7O4H4nwP7QYHR2j-d79917521b90-20260710,crux,steenhuis,6,4,False,,,,

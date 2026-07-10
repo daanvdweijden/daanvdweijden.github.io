@@ -51,7 +51,8 @@
     {
       "date": "2026-07-10",
       "played": [
-        "mini"
+        "mini",
+        "midi"
       ]
     },
     {
@@ -60,14 +61,18 @@
         "mini",
         "midi",
         "wordle",
-        "connections"
+        "connections",
+        "crux",
+        "precies-vier"
       ]
     },
     {
       "date": "2026-07-08",
       "played": [
         "mini",
-        "midi"
+        "midi",
+        "crux",
+        "vorto"
       ]
     },
     {
@@ -82,7 +87,8 @@
       "played": [
         "mini",
         "midi",
-        "crux"
+        "crux",
+        "vorto"
       ]
     },
     {
