@@ -134,3 +134,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-09,23678,midi,Ian Livengood,It's Electric!,369,6:09,100,True,1783586397,,,True,True,0,0,0,autocheck
 2026-07-10,23537,midi,Erik Agard,Web Hits,482,8:02,100,True,1783684477,,,False,False,0,0,0,clean
 2026-07-11,23566,midi,Avery Gee Katz and Aaron Gee,Kindred Spirits,497,8:17,70,False,,,,True,True,0,0,0,autocheck
+2026-07-12,24029,midi,Ian Livengood,Media Moguls,1,0:01,0,False,,,,False,False,0,0,0,clean
