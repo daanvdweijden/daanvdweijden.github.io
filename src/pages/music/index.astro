@@ -1,0 +1,272 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getMusicData } from '../../lib/music';
+
+const { albums, stats } = await getMusicData();
+
+// format helpers
+const fmt = (n: number) => n.toLocaleString('en-US');
+const hours = stats ? Math.round(stats.durationMs / 3_600_000) : 0;
+
+// per-album time, shown in the tooltip
+const albumHours = (ms: number) => {
+  const h = ms / 3_600_000;
+  return h >= 10 ? `${Math.round(h)} hrs` : `${h.toFixed(1)} hrs`;
+};
+---
+
+<Layout title="Listening Log" description="The music I've spent my life listening to, from stats.fm." noindex>
+  <main class="wrap page">
+    <header class="page-head">
+      <p class="eyebrow">PERSONAL</p>
+      <h1>Listening Log</h1>
+      <p class="lede">
+        My most-played records of all time, pulled straight from my stats.fm (which sits on top of
+        my full Spotify history). Hover an album for the details.
+      </p>
+    </header>
+
+    {stats && (
+      <section class="stats">
+        <div class="stat">
+          <p class="stat-num">{fmt(hours)}</p>
+          <p class="stat-label">Hours Listened</p>
+        </div>
+        <div class="stat">
+          <p class="stat-num">{fmt(stats.streams)}</p>
+          <p class="stat-label">Total Streams</p>
+        </div>
+        <div class="stat">
+          <p class="stat-num">{fmt(stats.uniqueArtists)}</p>
+          <p class="stat-label">Artists</p>
+        </div>
+        <div class="stat">
+          <p class="stat-num">{fmt(stats.uniqueAlbums)}</p>
+          <p class="stat-label">Albums</p>
+        </div>
+      </section>
+    )}
+
+    <section class="albums-section">
+      <div class="bento-card">
+        <p class="kicker">Top Albums · All time · Hover for details</p>
+        {albums.length ? (
+          <div class="album-grid">
+            {albums.map((album, index) => {
+              const href = album.spotifyId
+                ? `https://open.spotify.com/album/${album.spotifyId}`
+                : `https://stats.fm/album/${album.id}`;
+              return (
+                <a
+                  class="album-card"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-title={album.name}
+                  data-artist={album.artist}
+                  data-streams={fmt(album.streams)}
+                  data-hours={albumHours(album.playedMs)}
+                  data-year={album.releaseYear ?? ''}
+                  data-label={album.label}
+                >
+                  <div class="cover-wrapper">
+                    {album.imageUrl ? (
+                      <img
+                        src={album.imageUrl}
+                        alt={`Cover of ${album.name}`}
+                        loading={index < 8 ? 'eager' : 'lazy'}
+                      />
+                    ) : (
+                      <div class="no-cover"><span>{album.name}</span></div>
+                    )}
+                    <span class="rank">{album.position}</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="empty">Couldn't reach stats.fm right now — check back later.</p>
+        )}
+      </div>
+    </section>
+
+    <div id="album-tip" class="album-tip" role="tooltip">
+      <h3 id="tip-title">Title</h3>
+      <p id="tip-artist" class="tip-artist">Artist</p>
+      <div class="tip-divider"></div>
+      <p id="tip-meta" class="tip-meta"></p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const tip = document.getElementById('album-tip');
+  const tipTitle = document.getElementById('tip-title');
+  const tipArtist = document.getElementById('tip-artist');
+  const tipMeta = document.getElementById('tip-meta');
+
+  if (tip && tipTitle && tipArtist && tipMeta) {
+    const show = (el: Element) => {
+      const d = (el as HTMLElement).dataset;
+      tipTitle.textContent = d.title || '';
+      tipArtist.textContent = d.artist || '';
+
+      const bits: string[] = [];
+      if (d.streams) bits.push(`${d.streams} plays`);
+      if (d.hours) bits.push(d.hours);
+      if (d.year) bits.push(d.year);
+      if (d.label) bits.push(d.label);
+      tipMeta.textContent = bits.join(' · ');
+
+      tip.style.opacity = '1';
+
+      const r = el.getBoundingClientRect();
+      const tw = tip.offsetWidth;
+      let left = r.left + r.width / 2 - tw / 2;
+      left = Math.max(16, Math.min(left, window.innerWidth - tw - 16));
+      tip.style.left = left + 'px';
+
+      let top = window.scrollY + r.top - tip.offsetHeight - 12;
+      if (r.top - tip.offsetHeight - 12 < 0) {
+        top = window.scrollY + r.bottom + 12;
+      }
+      tip.style.top = top + 'px';
+    };
+
+    const hide = () => { tip.style.opacity = '0'; };
+
+    document.addEventListener('mouseover', (e) => {
+      const target = (e.target as Element).closest('.album-card');
+      if (target) show(target);
+    });
+    document.addEventListener('mouseout', (e) => {
+      const target = (e.target as Element).closest('.album-card');
+      if (target) hide();
+    });
+    document.addEventListener('focusin', (e) => {
+      const target = (e.target as Element).closest('.album-card');
+      if (target) show(target);
+    });
+    document.addEventListener('focusout', hide);
+    window.addEventListener('scroll', hide, { passive: true });
+  }
+</script>
+
+<style>
+  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+
+  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
+  }
+  .page-head h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
+  }
+  .lede { margin: 1rem 0 0; max-width: 56ch; color: var(--muted); }
+
+  .kicker {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 1.5rem;
+  }
+
+  /* ---- stats ---- */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
+  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+
+  /* ---- shared card ---- */
+  .bento-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: clamp(1.4rem, 3vw, 1.9rem);
+  }
+
+  /* ---- albums grid ---- */
+  .albums-section { margin-bottom: 1.5rem; }
+
+  .album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 20px;
+  }
+
+  .album-card {
+    display: block;
+    text-decoration: none;
+    outline: none;
+    position: relative;
+  }
+  .album-card:hover, .album-card:focus-visible { z-index: 10; }
+
+  .cover-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    overflow: hidden;
+    background: var(--line);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  }
+  .album-card:hover .cover-wrapper, .album-card:focus-visible .cover-wrapper {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.22);
+  }
+
+  .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .rank {
+    position: absolute; top: 8px; left: 8px;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: .68rem; font-weight: 500;
+    color: #fff; background: rgba(0,0,0,0.62); border-radius: 6px;
+    backdrop-filter: blur(2px);
+  }
+
+  .no-cover {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px; text-align: center;
+    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
+  }
+  .no-cover span {
+    font-family: var(--serif); font-size: 0.72rem; font-weight: 600; color: var(--ink);
+    line-height: 1.2;
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .empty { color: var(--muted); margin: 0; }
+
+  /* ---- tooltip ---- */
+  .album-tip {
+    position: absolute; z-index: 60; pointer-events: none;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 25%, transparent);
+    padding: 1rem 1.2rem;
+    width: max-content; max-width: 300px;
+    opacity: 0; transition: opacity .15s ease;
+  }
+  .album-tip h3 { font-family: var(--serif); font-size: 1.15rem; margin: 0; line-height: 1.2; }
+  .tip-artist { font-size: 0.85rem; color: var(--muted); margin: 4px 0 0; }
+  .tip-divider { height: 1px; background: var(--line); margin: 10px 0; }
+  .tip-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin: 0; line-height: 1.5; }
+
+  @media (max-width: 680px) {
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat { padding: 1rem; }
+    .stat-num { font-size: 1.5rem; }
+    .stat-label { font-size: 0.6rem; }
+    .album-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 14px; }
+  }
+</style>
