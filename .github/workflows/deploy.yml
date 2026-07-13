@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    # Once a day at 12:00 UTC so build-time data (e.g. the /music stats.fm
+    # snapshot) refreshes even on days with no push to main.
+    - cron: "0 12 * * *"
   workflow_dispatch: {}
 
 permissions:
