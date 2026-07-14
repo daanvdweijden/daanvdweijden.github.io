@@ -135,3 +135,5 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-10,23537,midi,Erik Agard,Web Hits,482,8:02,100,True,1783684477,,,False,False,0,0,0,clean
 2026-07-11,23566,midi,Avery Gee Katz and Aaron Gee,Kindred Spirits,497,8:17,70,False,,,,True,True,0,0,0,autocheck
 2026-07-12,24029,midi,Ian Livengood,Media Moguls,1,0:01,0,False,,,,False,False,0,0,0,clean
+2026-07-13,23390,midi,Rena Cohen,True to the Letter(s),0,0:00,0,False,,,,False,False,0,0,0,clean
+2026-07-14,24102,midi,Ian Livengood,Going Both Ways,289,4:49,100,True,1784046218,,,False,True,0,1,0,checked
