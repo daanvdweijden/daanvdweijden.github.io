@@ -139,12 +139,19 @@ function rangeQuery({ range, afterDays }: { range?: string; afterDays?: number }
 // limit=48 -> 46), with the shortfall growing with the requested size. Over-fetch
 // by 1 and slice down to compensate.
 
+// stats.fm only ranks albums by stream count, but a quick skip-back-to-the-start
+// habit (looking at you, Aida) can rack up plays without much actual listening time.
+// Hours listened is the more honest "favorite" signal, so we over-fetch a wide pool
+// ranked by streams and re-rank it locally by playedMs.
 export async function getTopAlbums(opts: { limit?: number; range?: string; afterDays?: number } = {}): Promise<Album[]> {
   const { limit = 48 } = opts;
-  const data = await fetchJson(`/users/${USER}/top/albums?${rangeQuery(opts)}&limit=${limit + 1}`);
+  const poolSize = Math.max(limit * 5, 60);
+  const data = await fetchJson(`/users/${USER}/top/albums?${rangeQuery(opts)}&limit=${poolSize + 1}`);
   const items = data?.items;
   if (!Array.isArray(items)) return [];
-  return items.slice(0, limit).map(mapAlbum);
+  const albums = items.slice(0, poolSize).map(mapAlbum);
+  albums.sort((a, b) => b.playedMs - a.playedMs);
+  return albums.slice(0, limit).map((album, i) => ({ ...album, position: i + 1 }));
 }
 
 export async function getTopArtists(opts: { limit?: number; range?: string; afterDays?: number } = {}): Promise<Artist[]> {

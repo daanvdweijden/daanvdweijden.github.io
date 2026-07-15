@@ -67,7 +67,6 @@ const albumHours = (ms: number) => {
                   data-streams={fmt(album.streams)}
                   data-hours={albumHours(album.playedMs)}
                   data-year={album.releaseYear ?? ''}
-                  data-label={album.label}
                 >
                   <div class="cover-wrapper">
                     {album.imageUrl ? (
@@ -111,7 +110,6 @@ const albumHours = (ms: number) => {
                   data-streams={fmt(album.streams)}
                   data-hours={albumHours(album.playedMs)}
                   data-year={album.releaseYear ?? ''}
-                  data-label={album.label}
                 >
                   <div class="cover-wrapper">
                     {album.imageUrl ? (
@@ -230,10 +228,9 @@ const albumHours = (ms: number) => {
       tipArtist.textContent = d.artist || '';
 
       const bits: string[] = [];
-      if (d.streams) bits.push(`${d.streams} plays`);
       if (d.hours) bits.push(d.hours);
+      if (d.streams) bits.push(`${d.streams} plays`);
       if (d.year) bits.push(d.year);
-      if (d.label) bits.push(d.label);
       tipMeta.textContent = bits.join(' · ');
 
       tip.style.opacity = '1';
