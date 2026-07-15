@@ -182,7 +182,7 @@ export async function getMusicData(): Promise<MusicData> {
     getTopAlbums({ limit: 12 }),
     getTopAlbums({ limit: 6, afterDays: 365 }),
     getTopAlbums({ limit: 10, afterDays: 30 }),
-    getTopArtists({ limit: 10, afterDays: 30 }),
+    getTopArtists({ limit: 15, afterDays: 30 }),
     getTopTracks({ limit: 10, afterDays: 30 }),
     getMusicStats(),
   ]);
