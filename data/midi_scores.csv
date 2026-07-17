@@ -139,3 +139,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-14,24102,midi,Ian Livengood,Going Both Ways,289,4:49,100,True,1784046218,,,False,True,0,1,0,checked
 2026-07-15,23466,midi,Jeremy Newton,Close the Loop,681,11:21,100,True,1784126006,,,False,False,0,0,0,clean
 2026-07-16,24098,midi,Ian Livengood,Yankee Ingenuity,218,3:38,63,False,,,,False,False,0,0,0,clean
+2026-07-17,23608,midi,Kareem Ayas,Taking Care of Business,265,4:25,81,False,,,,False,False,0,0,0,clean
