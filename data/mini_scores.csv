@@ -279,3 +279,5 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-15,24255,mini,Wyna Liu,,112,1:52,68,False,,,,False,False,0,0,0,clean
 2026-07-16,23808,mini,Sam Ezersky,,111,1:51,100,True,1784185975,,,False,False,0,0,0,clean
 2026-07-17,24291,mini,Joel Fagliano,,138,2:18,100,True,1784271478,,,False,False,0,0,0,clean
+2026-07-18,24290,mini,Joel Fagliano,,231,3:51,100,True,1784443477,,,False,False,0,0,0,clean
+2026-07-19,24292,mini,Joel Fagliano,,47,0:47,100,True,1784443632,,,False,False,0,0,0,clean
