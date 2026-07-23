@@ -144,3 +144,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-19,24034,midi,Hanh Huynh,Fa-mous Last Words,381,6:21,100,True,1784458142,,,False,False,0,0,0,clean
 2026-07-20,24109,midi,Tarun Krishnamurthy,Low-Hanging Fruit,336,5:36,100,True,1784536126,,,False,False,0,0,0,clean
 2026-07-21,23749,midi,Ian Livengood,Three-For-One Fun,548,9:08,100,True,1784618626,,,True,True,5,0,0,revealed
+2026-07-22,23591,midi,Adrianne Baik,Higher-Ups,34,0:34,12,False,,,,False,False,0,0,0,clean
