@@ -147,3 +147,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-22,23591,midi,Adrianne Baik,Higher-Ups,34,0:34,12,False,,,,False,False,0,0,0,clean
 2026-07-23,23818,midi,Ian Livengood,Master of Suspense,91,1:31,42,False,,,,False,False,0,0,0,clean
 2026-07-24,23604,midi,Alina Abidi,Kinda Sorta,693,11:33,88,False,,,,True,True,0,0,0,autocheck
+2026-07-25,23554,midi,Zhou Zhang and Kevin Curry,Double Digits,316,5:16,100,True,1784989028,,,False,True,0,1,0,checked
