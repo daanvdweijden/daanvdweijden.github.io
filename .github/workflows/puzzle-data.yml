@@ -20,10 +20,21 @@ jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4    # this site repo
+      - uses: actions/checkout@v4    # this site repo (for scripts/build_feed.py)
+
+      # The data itself lives on the `puzzle-data` orphan branch, not in main,
+      # so main's history isn't 6 data commits a day. Its files sit at that
+      # branch's root and check out here as data/*.csv + activity.json — the
+      # same paths the fetchers and build_feed.py already write to, so nothing
+      # below had to change. The commit step pushes this nested checkout back
+      # to `puzzle-data`.
+      - uses: actions/checkout@v4
+        with:
+          ref: puzzle-data
+          path: data
 
       # Fetcher source, checked out fresh each run — public repos, no token
-      # needed. Nothing from these two gets committed here (see .gitignore);
+      # needed. Nothing from these two gets committed anywhere (see .gitignore);
       # only their --output (data/*.csv) is kept.
       - uses: actions/checkout@v4
         with:
@@ -86,22 +97,26 @@ jobs:
 
       - name: Commit updated puzzle data
         id: commit
+        working-directory: data      # the `puzzle-data` branch checkout
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
+          git add -A
           # No-op (and skip the push) when nothing changed — most runs.
           git diff --cached --quiet && { echo "No changes to commit."; exit 0; }
           git commit -m "Update puzzle data ($(date -u +'%F %H:%M') UTC)"
-          git pull --rebase --autostash
-          git push
+          # Explicit remote/refspec rather than relying on branch tracking config
+          # in a nested actions/checkout.
+          git pull --rebase --autostash origin puzzle-data
+          git push origin HEAD:puzzle-data
           echo "pushed=true" >> "$GITHUB_OUTPUT"
 
-      # A push made with the default GITHUB_TOKEN does NOT trigger the `on: push`
-      # in deploy.yml (GitHub suppresses workflow chains from GITHUB_TOKEN pushes),
-      # so the live site would never pick up new puzzle data on its own. Kick the
-      # deploy explicitly — workflow_dispatch IS allowed from GITHUB_TOKEN. Only
-      # fires when the commit step actually pushed something.
+      # deploy.yml only listens for pushes to main, and the data now lands on
+      # `puzzle-data`, so nothing would rebuild the site on its own. (Even when
+      # the data did live on main, a GITHUB_TOKEN push wouldn't have chained —
+      # GitHub suppresses workflow triggers from it.) Kick the deploy explicitly;
+      # workflow_dispatch IS allowed from GITHUB_TOKEN. Only fires when the
+      # commit step actually pushed something.
       - name: Trigger site deploy
         if: steps.commit.outputs.pushed == 'true'
         env:

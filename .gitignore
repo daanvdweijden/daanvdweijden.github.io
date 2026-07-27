@@ -13,7 +13,13 @@ npm-debug.log*
 .DS_Store
 
 # puzzle-data pipeline: ephemeral checkouts of the two public fetcher repos,
-# never committed here — only their output (data/*.csv, data/activity.json) is
+# never committed anywhere — only their output is kept
 .fetchers/
+
+# The fetcher output itself lives on the `puzzle-data` orphan branch, not in
+# main — otherwise main's history is 6 "Update puzzle data" commits a day.
+# CI checks that branch out into data/ before building; locally, do the same
+# with `npm run data:pull` (see README).
+data/
 __pycache__/
 *.pyc

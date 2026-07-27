@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "thumbs": "python3 scripts/build_thumbs.py"
+    "thumbs": "python3 scripts/build_thumbs.py",
+    "data:pull": "bash scripts/pull_data.sh"
   },
   "dependencies": {
     "@citation-js/core": "^0.7.14",
