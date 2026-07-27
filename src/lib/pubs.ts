@@ -97,7 +97,8 @@ export function bibtexFor(p: Pub): string {
     `  year      = {${yearOf(p)}},`,
   ];
   if (p.data.links?.doi) lines.push(`  doi       = {${p.data.links.doi}},`);
-  if (p.data.note) lines.push(`  note      = {${p.data.note}},`);
+  const note = [p.data.note, p.data.award].filter(Boolean).join(', ');
+  if (note) lines.push(`  note      = {${note}},`);
   lines.push('}');
   return lines.join('\n');
 }

@@ -9,6 +9,7 @@ venue: "ACM Conference on Conversational User Interfaces (CUI '26), Bremen, Germ
 venueShort: "CUI '26"
 type: Conference paper
 note: "Equal Author Contribution"
+award: "Best Poster Honorable Mention"
 file: 2026-cavaa-engagement-typology.pdf
 links:
   doi: 10.1145/3816046.3816272

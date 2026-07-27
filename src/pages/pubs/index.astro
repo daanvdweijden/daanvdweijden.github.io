@@ -54,6 +54,7 @@ const formatDate = (dateStr: Date | string | null) => {
                   data-authors-html={p.data.authors.map(a => `<span class="author ${isOwner(a) ? 'me' : ''}">${a}</span>`).join(', ')}
                   data-venue={p.data.venueShort || p.data.venue}
                   data-date={formatDate(p.data.date)}
+                  data-award={p.data.award || ''}
                   data-href={pubHref(p)}
                 >
                   <div class="cover-wrapper">
@@ -64,6 +65,9 @@ const formatDate = (dateStr: Date | string | null) => {
                         <span class="no-cover-title">{p.data.title}</span>
                         {p.data.venueShort && <span class="no-cover-badge">{p.data.venueShort}</span>}
                       </div>
+                    )}
+                    {p.data.award && (
+                      <span class="award-ribbon" title={p.data.award} aria-label={`Award: ${p.data.award}`}>🏆</span>
                     )}
                     <div class="spine-highlight"></div>
                   </div>
@@ -96,6 +100,7 @@ const formatDate = (dateStr: Date | string | null) => {
 
                 <div class="entry-main">
                   {p.data.venueShort && <span class="badge">{p.data.venueShort}</span>}
+                  {p.data.award && <span class="award-badge">🏆 {p.data.award}</span>}
 
                   <h2 class="title">
                     <a href={pubHref(p)}>{p.data.title}</a>
@@ -133,6 +138,7 @@ const formatDate = (dateStr: Date | string | null) => {
       </div>
       <p id="tip-authors" class="tip-authors">Authors</p>
       <p id="tip-date" class="tip-date">Date</p>
+      <p id="tip-award" class="tip-award award-badge">Award</p>
     </div>
   </main>
 </Layout>
@@ -143,21 +149,30 @@ const formatDate = (dateStr: Date | string | null) => {
   const tipAuthors = document.getElementById('tip-authors');
   const tipDate = document.getElementById('tip-date');
   const tipVenue = document.getElementById('tip-venue');
+  const tipAward = document.getElementById('tip-award');
 
-  if (tip && tipTitle && tipAuthors && tipDate && tipVenue) {
+  if (tip && tipTitle && tipAuthors && tipDate && tipVenue && tipAward) {
     const show = (el: Element) => {
       const data = (el as HTMLElement).dataset;
-      
+
       tipTitle.textContent = data.title || '';
       tipAuthors.innerHTML = data.authorsHtml || '';
       tipDate.textContent = `Published: ${data.date || ''}`;
-      
+
       const venue = data.venue || '';
       if (venue) {
         tipVenue.textContent = venue;
         tipVenue.style.display = 'inline-block';
       } else {
         tipVenue.style.display = 'none';
+      }
+
+      const award = data.award || '';
+      if (award) {
+        tipAward.textContent = `🏆 ${award}`;
+        tipAward.style.display = 'inline-block';
+      } else {
+        tipAward.style.display = 'none';
       }
 
       tip.style.opacity = '1';
@@ -305,6 +320,14 @@ const formatDate = (dateStr: Date | string | null) => {
     z-index: 2; border-radius: 4px 0 0 4px;
   }
 
+  .award-ribbon {
+    position: absolute; top: 6px; right: 6px; z-index: 3;
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; line-height: 1; border-radius: 50%;
+    background: var(--p-yellow-bg); box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    border: 1px solid color-mix(in srgb, var(--p-yellow-fg) 40%, transparent);
+  }
+
   .no-cover {
     width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
     background: linear-gradient(135deg, var(--surface), var(--line)); padding: 12px; text-align: center;
@@ -330,6 +353,7 @@ const formatDate = (dateStr: Date | string | null) => {
   .tip-authors { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin: 0 0 4px; line-height: 1.3; }
   .tip-authors :global(.author.me) { color: var(--ink); font-weight: 600; }
   .tip-date { font-size: 0.75rem; color: var(--muted); margin: 0; }
+  #tip-award.award-badge { margin: 6px 0 0; }
 
   /* ---- list view ---- */
   .year-row { padding: clamp(2.4rem, 5vw, 3.4rem) 0 clamp(1.5rem, 4vw, 2.5rem); }
@@ -357,6 +381,14 @@ const formatDate = (dateStr: Date | string | null) => {
     display: inline-block; margin-bottom: .55rem;
     font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
     color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: .2rem .5rem;
+  }
+
+  .award-badge {
+    display: inline-block; margin: 0 0 .55rem .5rem;
+    font-family: var(--sans); font-size: .74rem; font-weight: 600; letter-spacing: 0;
+    color: var(--p-yellow-fg); background: var(--p-yellow-bg);
+    border: 1px solid color-mix(in srgb, var(--p-yellow-fg) 30%, transparent);
+    border-radius: 999px; padding: .22rem .65rem .22rem .55rem;
   }
 
   .title { font-family: var(--serif); font-weight: 500; font-size: clamp(1.15rem, 2.5vw, 1.4rem); line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 .4rem; }

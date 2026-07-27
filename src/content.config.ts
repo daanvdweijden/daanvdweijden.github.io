@@ -39,7 +39,8 @@ const publications = defineCollection({
     venue: z.string(), // full venue name, e.g. "Benelux Conference on AI (BNAIC)"
     venueShort: z.string().optional(), // short badge, e.g. "BNAIC"
     type: z.string().optional(), // e.g. "Conference paper", "Journal article"
-    note: z.string().optional(), // e.g. "Master's project", "Best paper"
+    note: z.string().optional(), // e.g. "Master's project", "Equal Author Contribution"
+    award: z.string().optional(), // e.g. "Best Poster Honorable Mention" — rendered as a badge
     // Locally-hosted PDF: the filename of a PDF dropped in public/papers/, e.g.
     // "2024-playing-with-fire.pdf". Renders a "PDF" button linking to the copy on
     // this site, and drives the first-page thumbnail (scripts/build_thumbs.py

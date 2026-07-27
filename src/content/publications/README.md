@@ -24,7 +24,8 @@ date: 2024-06-01              # publication date; the year is derived from this
 venue: "Full Venue Name (ACRONYM)"
 venueShort: ACRONYM           # optional — the small badge on the list
 type: Conference paper        # optional — e.g. "Journal article", "Workshop paper"
-note: "Best paper"            # optional — a short highlight
+note: "Equal Author Contribution" # optional — a short italic highlight
+award: "Best Paper Award"     # optional — a prize, rendered as a gold badge
 file: 2024-emnlp-retrieval.pdf # optional — a PDF you host on the site (see below)
 # thumb: papers/thumbs/custom.png  # optional — manual thumbnail override
 links:                        # optional — every entry becomes a button
@@ -56,7 +57,8 @@ paper's own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 | `venue`       |    ✓     | Full venue name.                                             |
 | `venueShort`  |          | Short badge shown on the list (defaults to nothing).         |
 | `type`        |          | Free text, e.g. "Journal article".                           |
-| `note`        |          | Short highlight, e.g. "Best paper".                          |
+| `note`        |          | Short italic highlight, e.g. "Equal Author Contribution".    |
+| `award`       |          | A prize or honor, e.g. "Best Poster Honorable Mention" — shown as a gold badge (list, paper page, tooltip, cover ribbon), distinct from `note`. |
 | `file`        |          | Filename of a PDF hosted on the site (see below).            |
 | `thumb`       |          | Manual thumbnail override, a path under `public/`.           |
 | `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `slides`, `poster`, `video`, `url`. Order fixed. |

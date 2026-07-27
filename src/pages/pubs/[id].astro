@@ -36,6 +36,7 @@ const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Bo
     <header class="head">
       <p class="meta">{meta.join(' · ')}</p>
       <h1>{pub.data.title}</h1>
+      {pub.data.award && <p class="award-badge">🏆 {pub.data.award}</p>}
 
       <p class="authors">
         {pub.data.authors.map((a, i) => (
@@ -92,6 +93,14 @@ const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Bo
   .author.me { color: var(--ink); font-weight: 600; }
   .venue { margin: 0; font-family: var(--mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .venue .note { text-transform: none; letter-spacing: 0; font-style: italic; }
+
+  .award-badge {
+    display: inline-block; margin: .9rem 0 0;
+    font-family: var(--sans); font-size: .82rem; font-weight: 600;
+    color: var(--p-yellow-fg); background: var(--p-yellow-bg);
+    border: 1px solid color-mix(in srgb, var(--p-yellow-fg) 30%, transparent);
+    border-radius: 999px; padding: .3rem .8rem .3rem .65rem;
+  }
 
   .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
   .btn {

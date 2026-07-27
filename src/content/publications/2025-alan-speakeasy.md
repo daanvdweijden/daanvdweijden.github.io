@@ -22,6 +22,7 @@ date: 2025-04-28
 venue: "Companion Proceedings of the ACM Web Conference 2025 (WWW '25)"
 venueShort: "WWW '25"
 type: Conference paper
+award: "Demo Paper Third Place Award"
 file: 2025-alan-speakeasy.pdf
 links:
   doi: 10.1145/3701716.3715165
