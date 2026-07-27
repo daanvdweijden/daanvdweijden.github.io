@@ -17,11 +17,13 @@ import {
   today,
   totalPuzzlesSolved,
   fastestMini,
+  todayMiniSeconds,
   miniMonthlyAvg,
   hourHistogram,
   weekdayMiniAvg,
   hintBreakdown,
   hintTotal,
+  type HintSlice,
   solveTimesByDate,
   formatSeconds,
   formatDay,
@@ -33,6 +35,7 @@ const streak = currentAnyStreak(a);
 const streakDates = currentStreakDates(a);
 const total = totalPuzzlesSolved(a);
 const fastMini = fastestMini();
+const todayMini = todayMiniSeconds(a);
 const monthly = miniMonthlyAvg();
 const thisMonthAvg = monthly[monthly.length - 1]?.avg ?? 0;
 const hist = hourHistogram();
@@ -43,7 +46,7 @@ const solveTimes = solveTimesByDate();
 const todayDay = today(a);
 
 // % of solves in a given bucket, rounded — used for the "% clean" headline.
-const share = (slices: { key: string; count: number }[], key: string) => {
+const share = (slices: HintSlice[], key: string) => {
   const total = hintTotal(slices);
   const hit = slices.find((s) => s.key === key)?.count ?? 0;
   return total ? Math.round((hit / total) * 100) : 0;
@@ -56,8 +59,7 @@ const share = (slices: { key: string; count: number }[], key: string) => {
       <p class="eyebrow">PERSONAL</p>
       <h1>Daily Puzzles</h1>
       <p class="lede">
-        A running log of the crosswords I solve — some over breakfast, a
-        suspicious number just before midnight. Last updated {formatDay(a.generated, true)}.
+        A running log of the daily puzzles I solve. NYT Mini is the standard, but trying to do some additional NYT and NRC puzzles as well. Last updated {formatDay(a.generated, true)}.
       </p>
     </header>
 
@@ -71,8 +73,8 @@ const share = (slices: { key: string; count: number }[], key: string) => {
         <p class="stat-label">Day streak · any puzzle</p>
       </div>
       <div class="stat">
-        <p class="stat-num">{formatSeconds(fastMini)}</p>
-        <p class="stat-label">Fastest Mini</p>
+        <p class="stat-num">{todayMini !== null ? formatSeconds(todayMini) : '—'}</p>
+        <p class="stat-label">Mini time · today</p>
       </div>
       <div class="stat">
         <p class="stat-num">{formatSeconds(thisMonthAvg)}</p>
@@ -98,7 +100,7 @@ const share = (slices: { key: string; count: number }[], key: string) => {
         <TrendChart points={monthly} pb={fastMini} />
       </div>
       <div class="bento-card">
-        <p class="kicker">When I actually solve</p>
+        <p class="kicker">When I actually solve · Mini</p>
         <TimeOfDay hist={hist} />
       </div>
     </section>

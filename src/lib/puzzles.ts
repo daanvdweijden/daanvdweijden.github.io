@@ -288,9 +288,14 @@ export function currentStreakDates(a: Activity): Set<string> {
   return out;
 }
 
-/** The most-recent recorded day (games played that day), for the "Today" card. */
+/**
+ * The day matching `a.generated`, for the "Today" card. `a.days` only has
+ * entries for days with at least one solve, so days are missing whenever
+ * nothing's been played yet — falling back to `a.days[0]` in that case would
+ * show yesterday's puzzles under a "Today" label.
+ */
 export function today(a: Activity): ActivityDay {
-  return a.days[0]; // days are newest-first
+  return a.days.find((d) => d.date === a.generated) ?? { date: a.generated, played: [] };
 }
 
 // --- richer CSV rows (mini/midi carry per-solve timing + assist flags) -------
@@ -319,6 +324,11 @@ export function fastestMini(floor = 15): number {
   return secs.length ? Math.min(...secs) : 0;
 }
 
+/** Today's (`a.generated`) Mini solve time in seconds, or null if not solved yet. */
+export function todayMiniSeconds(a: Activity): number | null {
+  return getMiniSolves().find((s) => s.date === a.generated)?.seconds ?? null;
+}
+
 export interface MonthPoint {
   month: string; // 'YYYY-MM'
   avg: number; // seconds
@@ -345,13 +355,11 @@ function amsHour(epochSeconds: number): number {
   return Number(AMS_HOUR.format(new Date(epochSeconds * 1000))) % 24;
 }
 
-/** 24-bucket histogram (index = local hour) of Mini + Midi completion times. */
+/** 24-bucket histogram (index = local hour) of Mini completion times. */
 export function hourHistogram(): number[] {
   const hist = new Array(24).fill(0);
-  for (const name of ['mini_scores.csv', 'midi_scores.csv']) {
-    for (const r of getSolveRows(name)) {
-      if (r.solvedAt !== null) hist[amsHour(r.solvedAt)] += 1;
-    }
+  for (const r of getSolveRows('mini_scores.csv')) {
+    if (r.solvedAt !== null) hist[amsHour(r.solvedAt)] += 1;
   }
   return hist;
 }
