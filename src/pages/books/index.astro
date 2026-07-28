@@ -18,6 +18,8 @@ const readThisYear = books.filter((b) => {
 }).length;
 const fiveStarReads = books.filter((b) => b.rating === 5).length;
 
+const latestReview = books.find((b) => b.review && b.review.trim().length > 0) || null;
+
 // format date helper
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return 'Unknown';
@@ -32,7 +34,7 @@ const formatDate = (dateStr: string | null) => {
       <p class="eyebrow">PERSONAL</p>
       <h1>Reading Log</h1>
       <p class="lede">
-        A running list of books I've read, fetched straight from my Goodreads. Hover over a book to read my review.
+        A running list of books I've read, fetched straight from my Goodreads. Hover over a book to read my review (reviews are in Dutch only).
       </p>
     </header>
 
@@ -98,7 +100,40 @@ const formatDate = (dateStr: string | null) => {
         </div>
       </div>
     </section>
-    
+
+    {latestReview && (
+      <section class="latest-review-section">
+        <div class="bento-card latest-review-card">
+          <p class="kicker">Latest Review</p>
+          <div class="latest-review-content">
+            <div class="latest-cover-wrapper">
+              {latestReview.imageUrl ? (
+                <img src={latestReview.imageUrl} alt={`Cover of ${latestReview.title}`} />
+              ) : (
+                <div class="no-cover">
+                  <span class="no-cover-title">{latestReview.title}</span>
+                </div>
+              )}
+            </div>
+            <div class="latest-review-details">
+              <h2 class="latest-title">{latestReview.title}</h2>
+              <p class="latest-author">by {latestReview.author}</p>
+              <div class="latest-meta">
+                {latestReview.rating > 0 && (
+                  <span class="latest-rating" aria-label={`${latestReview.rating} out of 5 stars`}>
+                    {'★'.repeat(latestReview.rating)}{'☆'.repeat(5 - latestReview.rating)}
+                  </span>
+                )}
+                <span class="latest-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
+              </div>
+              <div class="latest-divider"></div>
+              <p class="latest-review-text">{latestReview.review}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
+
     <div id="book-tip" class="book-tip" role="tooltip">
       <div class="tip-head">
         <h3 id="tip-title">Title</h3>
@@ -363,6 +398,87 @@ const formatDate = (dateStr: string | null) => {
     overflow: hidden;
   }
 
+  /* ---- latest review ---- */
+  .latest-review-section { margin-bottom: 1.5rem; }
+
+  .latest-review-content {
+    display: flex;
+    gap: clamp(1.4rem, 3vw, 2.2rem);
+    align-items: flex-start;
+  }
+
+  .latest-cover-wrapper {
+    width: 160px;
+    flex-shrink: 0;
+    aspect-ratio: 2 / 3;
+    border-radius: 4px 8px 8px 4px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2), 3px 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    background: var(--line);
+  }
+
+  .latest-cover-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .latest-review-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .latest-title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.3rem, 3vw, 1.7rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .latest-author {
+    font-family: var(--mono);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin: .5rem 0 0;
+  }
+
+  .latest-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: .7rem;
+    flex-wrap: wrap;
+  }
+
+  .latest-rating {
+    color: #fbbf24;
+    letter-spacing: 1px;
+  }
+
+  .latest-date {
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--muted);
+  }
+
+  .latest-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 1rem 0;
+  }
+
+  .latest-review-text {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--ink);
+  }
+
   /* ---- tooltip ---- */
   .book-tip {
     position: absolute; z-index: 60; pointer-events: none;
@@ -444,5 +560,9 @@ const formatDate = (dateStr: string | null) => {
     .stat-label { font-size: 0.6rem; }
     .book-card { width: 120px; }
     .book-tip { max-width: 280px; padding: 1rem; }
+
+    .latest-review-content { flex-direction: column; align-items: center; text-align: center; }
+    .latest-cover-wrapper { width: 140px; }
+    .latest-meta { justify-content: center; }
   }
 </style>
