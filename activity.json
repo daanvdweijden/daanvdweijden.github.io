@@ -54,8 +54,10 @@
         "mini",
         "midi",
         "connections",
+        "cijferblok",
         "crux",
-        "precies-vier"
+        "precies-vier",
+        "sudoku"
       ]
     },
     {
