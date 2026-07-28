@@ -46,7 +46,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
           </div>
         </article>
 
-        <article class="card c-about">
+        <article class="card c-about" data-cursor="red">
           <p class="kicker">About</p>
           <p>
             I'm a PhD candidate at the <a href={site.affiliation.url} class="inline-link">{site.affiliation.name}</a> group
@@ -78,7 +78,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
           </p>
         </article>
 
-        <article class="card c-pubs">
+        <article class="card c-pubs" data-cursor="blue">
           <div class="card-head">
             <p class="kicker">Publications</p>
             <a class="see-all" href={`${import.meta.env.BASE_URL}pubs/`}>All →</a>
@@ -98,7 +98,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
           ))}
         </article>
 
-        <article class="card c-news">
+        <article class="card c-news" data-cursor="green">
           <div class="card-head">
             <p class="kicker">News</p>
             <a class="see-all" href={`${import.meta.env.BASE_URL}news/`}>All →</a>
