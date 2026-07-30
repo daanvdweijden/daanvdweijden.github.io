@@ -151,3 +151,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-27,24091,midi,Erica Hsiung Wojcik,Cutting Board,325,5:25,100,True,1785151930,,,True,True,0,0,0,autocheck
 2026-07-28,23445,midi,Ian Livengood,Carbo Loading,204,3:24,100,True,1785228972,,,False,False,0,0,0,clean
 2026-07-29,24107,midi,Olivia Mitra Framke,On Tilt,325,5:25,100,True,1785312268,,,False,True,0,6,0,checked
+2026-07-30,23579,midi,Tom McCoy,Precipitation Nation,918,15:18,100,True,1785443033,,,True,True,0,1,0,checked
