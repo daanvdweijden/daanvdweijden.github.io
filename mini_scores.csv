@@ -292,3 +292,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-28,24334,mini,Ian Livengood,,77,1:17,100,True,1785218270,,,False,False,0,0,0,clean
 2026-07-29,24356,mini,Joel Fagliano,,74,1:14,100,True,1785306335,,,False,False,0,0,0,clean
 2026-07-30,24340,mini,Ian Livengood,,54,0:54,100,True,1785441490,,,False,False,0,0,0,clean
+2026-07-31,24271,mini,Joel Fagliano,,171,2:51,81,False,,,,False,False,0,0,0,clean
