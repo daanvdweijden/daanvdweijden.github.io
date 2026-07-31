@@ -4,7 +4,7 @@
 // format them for the list page, the per-paper page, and the home page.
 // ---------------------------------------------------------------------------
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { site } from '../site.config';
 
@@ -12,7 +12,10 @@ export type Pub = CollectionEntry<'publications'>;
 
 // Absolute path to the project's public/ folder, so we can check at build time
 // whether an auto-generated thumbnail actually exists on disk.
-const PUBLIC_DIR = fileURLToPath(new URL('../../public/', import.meta.url));
+// Resolved from the project root, not from import.meta.url: Astro bundles this
+// module into dist/.prerender/ at build time, so a module-relative path would
+// point at dist/public/ and every existsSync check would silently return false.
+const PUBLIC_DIR = join(process.cwd(), 'public');
 
 /** "2024-foo" from "2024-foo.pdf". */
 const fileStem = (file: string) => file.replace(/\.pdf$/i, '');
@@ -56,7 +59,7 @@ export function thumbSrc(p: Pub): string | null {
   if (p.data.thumb) return `${base}${p.data.thumb.replace(/^\/+/, '')}`;
   if (!p.data.file) return null;
   const rel = `papers/thumbs/${fileStem(p.data.file)}.jpg`;
-  return existsSync(PUBLIC_DIR + rel) ? `${base}${rel}` : null;
+  return existsSync(join(PUBLIC_DIR, rel)) ? `${base}${rel}` : null;
 }
 
 /** Normalises the optional links object into an ordered list of buttons. */

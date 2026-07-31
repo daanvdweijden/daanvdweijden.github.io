@@ -5,7 +5,7 @@
 // — no live fetching, just shaping for display.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import activity from '../../data/activity.json';
 import cruxStatsData from '../../data/crux_stats.json';
 
@@ -192,7 +192,10 @@ function parseCSVLine(line: string): string[] {
 }
 
 function readDataCSV(name: string): Record<string, string>[] {
-  const path = fileURLToPath(new URL(`../../data/${name}`, import.meta.url));
+  // Resolved from the project root, not from import.meta.url: Astro bundles this
+  // module into dist/.prerender/ at build time, so a module-relative path would
+  // point at dist/data/ instead of the real data/ checkout.
+  const path = join(process.cwd(), 'data', name);
   const text = readFileSync(path, 'utf-8').trim();
   // Split on \r?\n — mini_scores.csv ships with CRLF endings, and a stray \r on
   // the last column would silently corrupt the trailing field (e.g. hint_type).
