@@ -22,7 +22,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Puzzle data lives on the `puzzle-data` orphan branch, not in main —
       # that keeps main's history free of the 6x/day data commits. Its files
@@ -30,18 +30,18 @@ jobs:
       # which is where src/lib/puzzles.ts reads them at build time. Must run
       # before `npm run build`, and after the root checkout (which cleans the
       # workspace and would otherwise wipe this).
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: puzzle-data
           path: data
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -53,4 +53,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

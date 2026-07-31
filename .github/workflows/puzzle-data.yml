@@ -20,7 +20,7 @@ jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4    # this site repo (for scripts/build_feed.py)
+      - uses: actions/checkout@v7    # this site repo (for scripts/build_feed.py)
 
       # The data itself lives on the `puzzle-data` orphan branch, not in main,
       # so main's history isn't 6 data commits a day. Its files sit at that
@@ -28,7 +28,7 @@ jobs:
       # same paths the fetchers and build_feed.py already write to, so nothing
       # below had to change. The commit step pushes this nested checkout back
       # to `puzzle-data`.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: puzzle-data
           path: data
@@ -36,16 +36,16 @@ jobs:
       # Fetcher source, checked out fresh each run — public repos, no token
       # needed. Nothing from these two gets committed anywhere (see .gitignore);
       # only their --output (data/*.csv) is kept.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: daanvdweijden/nyt-games-tracker
           path: .fetchers/nyt
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: daanvdweijden/nrc-puzzel-tracker
           path: .fetchers/nrc
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
