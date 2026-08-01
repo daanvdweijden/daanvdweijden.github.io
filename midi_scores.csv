@@ -153,3 +153,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-29,24107,midi,Olivia Mitra Framke,On Tilt,325,5:25,100,True,1785312268,,,False,True,0,6,0,checked
 2026-07-30,23579,midi,Tom McCoy,Precipitation Nation,918,15:18,100,True,1785443033,,,True,True,0,1,0,checked
 2026-07-31,23709,midi,Paolo Pasco,Make It Count,662,11:02,100,True,1785496493,,,True,True,0,1,0,checked
+2026-08-01,24158,midi,Ian Livengood,Sugar Crash,182,3:02,57,False,,,,False,False,0,0,0,clean
