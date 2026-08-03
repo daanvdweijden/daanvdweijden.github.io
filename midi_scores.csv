@@ -155,3 +155,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-07-31,23709,midi,Paolo Pasco,Make It Count,662,11:02,100,True,1785496493,,,True,True,0,1,0,checked
 2026-08-01,24158,midi,Ian Livengood,Sugar Crash,182,3:02,57,False,,,,False,False,0,0,0,clean
 2026-08-02,23536,midi,Erik Agard,Mixed Drinks,90,1:30,40,False,,,,False,False,0,0,0,clean
+2026-08-03,24186,midi,Ian Livengood,Vowel Play,362,6:02,73,False,,,,True,True,0,0,0,autocheck
