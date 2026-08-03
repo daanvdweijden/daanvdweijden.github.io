@@ -42,7 +42,7 @@ export interface Track {
 }
 
 export interface MusicStats {
-  /** Lifetime listening time in milliseconds. */
+  /** Listening time over the requested window, in milliseconds. */
   durationMs: number;
   /** Total number of streams (plays over 30s). */
   streams: number;
@@ -58,6 +58,7 @@ export interface MusicData {
   topTracks30d: Track[];
   topAlbums30d: Album[];
   stats: MusicStats | null;
+  stats30d: MusicStats | null;
 }
 
 async function fetchJson(path: string): Promise<any | null> {
@@ -170,8 +171,8 @@ export async function getTopTracks(opts: { limit?: number; range?: string; after
   return items.slice(0, limit).map(mapTrack);
 }
 
-export async function getMusicStats(): Promise<MusicStats | null> {
-  const data = await fetchJson(`/users/${USER}/streams/stats?range=lifetime`);
+export async function getMusicStats(opts: { range?: string; afterDays?: number } = {}): Promise<MusicStats | null> {
+  const data = await fetchJson(`/users/${USER}/streams/stats?${rangeQuery(opts)}`);
   const s = data?.items;
   if (!s) return null;
 
@@ -185,13 +186,14 @@ export async function getMusicStats(): Promise<MusicStats | null> {
 }
 
 export async function getMusicData(): Promise<MusicData> {
-  const [albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats] = await Promise.all([
+  const [albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats, stats30d] = await Promise.all([
     getTopAlbums({ limit: 12 }),
     getTopAlbums({ limit: 6, afterDays: 365 }),
     getTopAlbums({ limit: 10, afterDays: 30 }),
     getTopArtists({ limit: 15, afterDays: 30 }),
     getTopTracks({ limit: 10, afterDays: 30 }),
     getMusicStats(),
+    getMusicStats({ afterDays: 30 }),
   ]);
-  return { albums, recentAlbums, topArtists30d, topTracks30d, topAlbums30d, stats };
+  return { albums, recentAlbums, topArtists30d, topTracks30d, topAlbums30d, stats, stats30d };
 }

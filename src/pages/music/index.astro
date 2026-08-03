@@ -2,11 +2,11 @@
 import Layout from '../../layouts/Layout.astro';
 import { getMusicData } from '../../lib/music';
 
-const { albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats } = await getMusicData();
+const { albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats, stats30d } = await getMusicData();
 
 // format helpers
 const fmt = (n: number) => n.toLocaleString('en-US');
-const hours = stats ? Math.round(stats.durationMs / 3_600_000) : 0;
+const statHours = (ms: number) => fmt(Math.round(ms / 3_600_000));
 
 // per-album time, shown in the tooltip
 const albumHours = (ms: number) => {
@@ -26,22 +26,49 @@ const albumHours = (ms: number) => {
     </header>
 
     {stats && (
-      <section class="stats">
-        <div class="stat">
-          <p class="stat-num">{fmt(hours)}</p>
-          <p class="stat-label">Hours Listened</p>
+      <section class="stats-block">
+        <p class="kicker stats-kicker">All time</p>
+        <div class="stats">
+          <div class="stat">
+            <p class="stat-num">{statHours(stats.durationMs)}</p>
+            <p class="stat-label">Hours Listened</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats.streams)}</p>
+            <p class="stat-label">Total Streams</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats.uniqueArtists)}</p>
+            <p class="stat-label">Artists</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats.uniqueAlbums)}</p>
+            <p class="stat-label">Albums</p>
+          </div>
         </div>
-        <div class="stat">
-          <p class="stat-num">{fmt(stats.streams)}</p>
-          <p class="stat-label">Total Streams</p>
-        </div>
-        <div class="stat">
-          <p class="stat-num">{fmt(stats.uniqueArtists)}</p>
-          <p class="stat-label">Artists</p>
-        </div>
-        <div class="stat">
-          <p class="stat-num">{fmt(stats.uniqueAlbums)}</p>
-          <p class="stat-label">Albums</p>
+      </section>
+    )}
+
+    {stats30d && (
+      <section class="stats-block">
+        <p class="kicker stats-kicker">Last 30 days</p>
+        <div class="stats">
+          <div class="stat">
+            <p class="stat-num">{statHours(stats30d.durationMs)}</p>
+            <p class="stat-label">Hours Listened</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats30d.streams)}</p>
+            <p class="stat-label">Streams</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats30d.uniqueArtists)}</p>
+            <p class="stat-label">Artists</p>
+          </div>
+          <div class="stat">
+            <p class="stat-num">{fmt(stats30d.uniqueAlbums)}</p>
+            <p class="stat-label">Albums</p>
+          </div>
         </div>
       </section>
     )}
@@ -358,9 +385,11 @@ const albumHours = (ms: number) => {
   }
 
   /* ---- stats ---- */
+  .stats-block { margin-bottom: 1.5rem; }
+  .stats-block:first-of-type { margin-top: clamp(2rem, 5vw, 3rem); }
+  .stats-kicker { margin-bottom: .75rem; }
   .stats {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
   }
   .stat {
     background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
