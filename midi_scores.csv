@@ -156,3 +156,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-01,24158,midi,Ian Livengood,Sugar Crash,182,3:02,57,False,,,,False,False,0,0,0,clean
 2026-08-02,23536,midi,Erik Agard,Mixed Drinks,90,1:30,40,False,,,,False,False,0,0,0,clean
 2026-08-03,24186,midi,Ian Livengood,Vowel Play,362,6:02,73,False,,,,True,True,0,0,0,autocheck
+2026-08-04,24193,midi,Aaron Gee and Avery Gee Katz,Elvis Has Left the Building,349,5:49,100,True,1785829787,,,False,True,0,2,0,checked
