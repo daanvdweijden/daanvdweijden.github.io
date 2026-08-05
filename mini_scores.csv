@@ -297,3 +297,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-02,24338,mini,Sam Ezersky,,135,2:15,100,True,1785656668,,,False,False,0,0,0,clean
 2026-08-03,24358,mini,Christina Iverson,,135,2:15,100,True,1785738015,,,False,True,0,2,0,checked
 2026-08-04,24359,mini,Joel Fagliano,,118,1:58,64,False,,,,False,False,0,0,0,clean
+2026-08-05,24335,mini,Ian Livengood,,64,1:04,100,True,1785907772,,,False,False,0,0,0,clean
