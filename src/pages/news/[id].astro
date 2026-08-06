@@ -66,4 +66,17 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .prose :global(p) { margin: 0 0 1rem; }
   .prose :global(p:last-child) { margin-bottom: 0; }
   .prose :global(a) { border-bottom: 1px solid var(--line); text-decoration: none; }
+
+  /* Images in the body (conference photos etc.). Wrap one in a <figure> with a
+     <figcaption> to get a caption; a bare ![alt](...) works too. */
+  .prose :global(img) {
+    display: block; max-width: 100%; height: auto;
+    border-radius: 8px; margin: 1.6rem 0;
+  }
+  .prose :global(figure) { margin: 1.6rem 0; }
+  .prose :global(figure img) { margin: 0; }
+  .prose :global(figcaption) {
+    margin-top: .6rem; font-family: var(--mono); font-size: .72rem;
+    line-height: 1.5; color: var(--muted);
+  }
 </style>

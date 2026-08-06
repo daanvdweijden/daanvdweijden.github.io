@@ -14,7 +14,7 @@ import { getNews, newsHref, titleParts } from '../lib/news';
 
 const pubs = await getPublications();
 
-// News feed, newest first.
+// News feed, newest first. The card shows the latest few; "All →" has the rest.
 const news = await getNews();
 const fmtMonth = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -103,7 +103,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
             <p class="kicker">News</p>
             <a class="see-all" href={`${import.meta.env.BASE_URL}news/`}>All →</a>
           </div>
-          {news.map((n) => {
+          {news.slice(0, 5).map((n) => {
             const { before, emphasis, after } = titleParts(n);
             return (
               <a class="news-item" href={newsHref(n)}>
