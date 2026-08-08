@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07",
+  "generated": "2026-08-08",
   "mini_streak": 301,
   "game_meta": {
     "crux": {
@@ -49,9 +49,16 @@
   },
   "days": [
     {
+      "date": "2026-08-08",
+      "played": [
+        "vorto"
+      ]
+    },
+    {
       "date": "2026-08-07",
       "played": [
         "mini",
+        "midi",
         "crux"
       ]
     },
