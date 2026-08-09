@@ -6,7 +6,7 @@ emphasis: "UZH's Engagement Award"
 ---
 
 Nominated for the Faculty of Business, Economics and Informatics' Engagement
-Award for Special Commitment, recognizing work as PhD representative and
+Award for Special Commitment, recognising work as PhD representative and
 member of hiring committees at the Department of Informatics (IfI). The
 winner is voted by the audience at the graduation ceremony; see the
 [full announcement](https://www.oec.uzh.ch/en/faculty/responsibility/impact-and-engagement-awards.html)
