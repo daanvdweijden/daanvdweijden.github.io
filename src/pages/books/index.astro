@@ -34,7 +34,7 @@ const formatDate = (dateStr: string | null) => {
       <p class="eyebrow">PERSONAL</p>
       <h1>Reading Log</h1>
       <p class="lede">
-        A running list of books I've read, fetched straight from my Goodreads. Hover over a book to read my review (reviews are in Dutch only).
+        A running list of books I've read, fetched straight from my Goodreads. Hover over a book for a quick look, or click it to open the full review below (reviews are in Dutch only).
       </p>
     </header>
 
@@ -59,7 +59,7 @@ const formatDate = (dateStr: string | null) => {
 
     <section class="books-section">
       <div class="bento-card">
-        <p class="kicker">Library · Hover for review</p>
+        <p class="kicker">Library · Click a cover to read the review</p>
         <div class="book-grid">
           {books.map((book, index) => {
             const year = new Date(book.readAt || book.addedAt).getFullYear();
@@ -74,14 +74,18 @@ const formatDate = (dateStr: string | null) => {
                     <span class="year-text">{year}</span>
                   </div>
                 )}
-                <div 
-                  class="book-card" 
+                <div
+                  class="book-card"
                   tabindex="0"
+                  role="button"
+                  aria-label={`Show my review of ${book.title}`}
                   data-title={book.title}
                   data-author={book.author}
                   data-rating={book.rating}
                   data-date={formatDate(book.readAt || book.addedAt)}
                   data-review={book.review}
+                  data-review-html={book.reviewHtml}
+                  data-image={book.imageUrl}
                 >
                   <div class="cover-wrapper">
                     {book.imageUrl ? (
@@ -102,11 +106,11 @@ const formatDate = (dateStr: string | null) => {
     </section>
 
     {latestReview && (
-      <section class="latest-review-section">
+      <section class="latest-review-section" id="review-section" tabindex="-1">
         <div class="bento-card latest-review-card">
-          <p class="kicker">Latest Review</p>
+          <p class="kicker" id="review-kicker">Latest Review</p>
           <div class="latest-review-content">
-            <div class="latest-cover-wrapper">
+            <div class="latest-cover-wrapper" id="review-cover">
               {latestReview.imageUrl ? (
                 <img src={latestReview.imageUrl} alt={`Cover of ${latestReview.title}`} />
               ) : (
@@ -116,18 +120,16 @@ const formatDate = (dateStr: string | null) => {
               )}
             </div>
             <div class="latest-review-details">
-              <h2 class="latest-title">{latestReview.title}</h2>
-              <p class="latest-author">by {latestReview.author}</p>
+              <h2 class="latest-title" id="review-title">{latestReview.title}</h2>
+              <p class="latest-author" id="review-author">by {latestReview.author}</p>
               <div class="latest-meta">
-                {latestReview.rating > 0 && (
-                  <span class="latest-rating" aria-label={`${latestReview.rating} out of 5 stars`}>
-                    {'★'.repeat(latestReview.rating)}{'☆'.repeat(5 - latestReview.rating)}
-                  </span>
-                )}
-                <span class="latest-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
+                <span class="latest-rating" id="review-rating" aria-label={`${latestReview.rating} out of 5 stars`}>
+                  {latestReview.rating > 0 ? `${'★'.repeat(latestReview.rating)}${'☆'.repeat(5 - latestReview.rating)}` : ''}
+                </span>
+                <span class="latest-date" id="review-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
               </div>
               <div class="latest-divider"></div>
-              <p class="latest-review-text">{latestReview.review}</p>
+              <div class="latest-review-text" id="review-text" set:html={latestReview.reviewHtml} />
             </div>
           </div>
         </div>
@@ -177,9 +179,11 @@ const formatDate = (dateStr: string | null) => {
         tip.classList.remove('has-review');
       }
 
+      // Stays pointer-events: none (as the stylesheet has it): the tip is
+      // parked right over the cover it describes, and anything clickable here
+      // would swallow the click that opens the review below.
       tip.style.opacity = '1';
-      tip.style.pointerEvents = 'auto'; // allow text selection in tip if needed, though usually tooltips don't
-      
+
       const r = el.getBoundingClientRect();
       const tw = tip.offsetWidth;
       let left = r.left + r.width / 2 - tw / 2;
@@ -195,9 +199,8 @@ const formatDate = (dateStr: string | null) => {
       tip.style.top = top + 'px';
     };
     
-    const hide = () => { 
-      tip.style.opacity = '0'; 
-      tip.style.pointerEvents = 'none';
+    const hide = () => {
+      tip.style.opacity = '0';
     };
 
     let hideTimeout: number;
@@ -212,17 +215,9 @@ const formatDate = (dateStr: string | null) => {
       if (target) {
         clearTimeout(hideTimeout);
         show(target);
-      } else if (!(e.target as Element).closest('.book-tip')) {
+      } else {
         startHide();
       }
-    });
-
-    tip.addEventListener('mouseenter', () => {
-      clearTimeout(hideTimeout);
-    });
-    
-    tip.addEventListener('mouseleave', () => {
-      startHide();
     });
 
     document.addEventListener('focusin', (e) => {
@@ -230,6 +225,79 @@ const formatDate = (dateStr: string | null) => {
       if (target) show(target);
     });
     document.addEventListener('focusout', hide);
+  }
+</script>
+
+<script>
+  // Clicking a cover swaps the card below from "latest review" to that book's.
+  // Everything it needs already rides along on the card's data attributes, so
+  // there's no second fetch and no per-book page.
+  const section = document.getElementById('review-section');
+  const kicker = document.getElementById('review-kicker');
+  const cover = document.getElementById('review-cover');
+  const title = document.getElementById('review-title');
+  const author = document.getElementById('review-author');
+  const rating = document.getElementById('review-rating');
+  const date = document.getElementById('review-date');
+  const text = document.getElementById('review-text');
+
+  if (section && kicker && cover && title && author && rating && date && text) {
+    let selected: Element | null = null;
+
+    const select = (card: HTMLElement) => {
+      const data = card.dataset;
+
+      kicker.textContent = 'Selected Review';
+      title.textContent = data.title || '';
+      author.textContent = `by ${data.author || ''}`;
+      date.textContent = `Finished ${data.date || ''}`;
+
+      const stars = parseInt(data.rating || '0', 10);
+      rating.textContent = stars > 0 ? '★'.repeat(stars) + '☆'.repeat(5 - stars) : '';
+      rating.setAttribute('aria-label', stars > 0 ? `${stars} out of 5 stars` : '');
+
+      // Already sanitized to an allowlist at build time (see lib/books.ts), so
+      // the markup — paragraph breaks, links, blockquotes — survives intact.
+      const html = data.reviewHtml || '';
+      text.innerHTML = html;
+      if (!html) {
+        text.textContent = "I didn't write a review for this one.";
+        text.classList.add('is-empty');
+      } else {
+        text.classList.remove('is-empty');
+      }
+
+      if (data.image) {
+        cover.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.alt = `Cover of ${data.title || ''}`;
+        cover.appendChild(img);
+      } else {
+        cover.innerHTML = '<div class="no-cover"><span class="no-cover-title"></span></div>';
+        cover.querySelector('.no-cover-title')!.textContent = data.title || '';
+      }
+
+      selected?.classList.remove('is-selected');
+      card.classList.add('is-selected');
+      selected = card;
+
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    document.addEventListener('click', (e) => {
+      const card = (e.target as Element).closest('.book-card');
+      if (card) select(card as HTMLElement);
+    });
+
+    // The cards are focusable, so keyboard users get the same thing.
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = (e.target as Element).closest('.book-card');
+      if (!card) return;
+      e.preventDefault();
+      select(card as HTMLElement);
+    });
   }
 </script>
 
@@ -331,7 +399,7 @@ const formatDate = (dateStr: string | null) => {
   .book-card {
     width: 160px; /* Double size */
     flex-shrink: 0;
-    cursor: default;
+    cursor: pointer;
     outline: none;
     position: relative; /* important for z-index on hover */
   }
@@ -355,6 +423,12 @@ const formatDate = (dateStr: string | null) => {
   .book-card:hover .cover-wrapper, .book-card:focus-visible .cover-wrapper {
     transform: translateY(-8px) scale(1.05);
     box-shadow: -3px 0 8px rgba(0,0,0,0.25), 6px 12px 20px rgba(0,0,0,0.2);
+  }
+
+  /* The cover whose review is currently open below. */
+  .book-card.is-selected .cover-wrapper {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
   }
 
   .cover-wrapper img {
@@ -417,11 +491,32 @@ const formatDate = (dateStr: string | null) => {
     background: var(--line);
   }
 
-  .latest-cover-wrapper img {
+  /* :global because clicking a book replaces this cover from JS, and injected
+     nodes carry no scope attribute. Same for the .no-cover fallback. */
+  .latest-cover-wrapper :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+  }
+
+  .latest-cover-wrapper :global(.no-cover) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
+    padding: 8px;
+    text-align: center;
+  }
+
+  .latest-cover-wrapper :global(.no-cover-title) {
+    font-family: var(--serif);
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--ink);
+    line-height: 1.2;
   }
 
   .latest-review-details {
@@ -478,6 +573,31 @@ const formatDate = (dateStr: string | null) => {
     margin: 0;
     color: var(--ink);
   }
+
+  .latest-review-text.is-empty { color: var(--muted); font-style: italic; }
+
+  /* set:html content carries no scope attribute, so its children need :global. */
+  .latest-review-text :global(p) { margin: 0 0 .9rem; }
+  .latest-review-text :global(p:last-child) { margin-bottom: 0; }
+
+  .latest-review-text :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--line);
+  }
+  .latest-review-text :global(a:hover) { text-decoration-color: currentColor; }
+
+  .latest-review-text :global(blockquote) {
+    margin: 1rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--line);
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .latest-review-text :global(ul),
+  .latest-review-text :global(ol) { margin: .9rem 0; padding-left: 1.2rem; }
 
   /* ---- tooltip ---- */
   .book-tip {
