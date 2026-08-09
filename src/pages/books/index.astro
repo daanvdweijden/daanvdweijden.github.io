@@ -83,7 +83,6 @@ const formatDate = (dateStr: string | null) => {
                   data-author={book.author}
                   data-rating={book.rating}
                   data-date={formatDate(book.readAt || book.addedAt)}
-                  data-review={book.review}
                   data-review-html={book.reviewHtml}
                   data-image={book.imageUrl}
                 >
@@ -144,7 +143,7 @@ const formatDate = (dateStr: string | null) => {
       <p id="tip-author" class="tip-author">Author</p>
       <p id="tip-date" class="tip-date">Date</p>
       <div class="tip-divider"></div>
-      <p id="tip-review" class="tip-review">Review goes here...</p>
+      <p id="tip-hint" class="tip-hint">Click to read the review</p>
     </div>
   </main>
 </Layout>
@@ -155,9 +154,9 @@ const formatDate = (dateStr: string | null) => {
   const tipAuthor = document.getElementById('tip-author');
   const tipDate = document.getElementById('tip-date');
   const tipRating = document.getElementById('tip-rating');
-  const tipReview = document.getElementById('tip-review');
+  const tipHint = document.getElementById('tip-hint');
 
-  if (tip && tipTitle && tipAuthor && tipDate && tipRating && tipReview) {
+  if (tip && tipTitle && tipAuthor && tipDate && tipRating && tipHint) {
     const show = (el: Element) => {
       const data = (el as HTMLElement).dataset;
       
@@ -168,16 +167,9 @@ const formatDate = (dateStr: string | null) => {
       const rating = parseInt(data.rating || '0', 10);
       tipRating.textContent = rating > 0 ? '★'.repeat(rating) : '';
       
-      const review = data.review || '';
-      if (review) {
-        tipReview.textContent = review;
-        tipReview.style.display = 'block';
-        tip.classList.add('has-review');
-      } else {
-        tipReview.textContent = '';
-        tipReview.style.display = 'none';
-        tip.classList.remove('has-review');
-      }
+      // The review itself lives in the card below now — the tip just says
+      // whether there's one to open.
+      tipHint.textContent = data.reviewHtml ? 'Click to read the review' : 'No review for this one';
 
       // Stays pointer-events: none (as the stylesheet has it): the tip is
       // parked right over the cover it describes, and anything clickable here
@@ -652,26 +644,16 @@ const formatDate = (dateStr: string | null) => {
     height: 1px;
     background: var(--line);
     margin: 12px 0;
-    display: none;
-  }
-  
-  .has-review .tip-divider {
-    display: block;
   }
 
-  .tip-review {
-    font-size: 0.9rem;
-    line-height: 1.5;
+  .tip-hint {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
     margin: 0;
-    display: none;
-    max-height: 350px;
-    overflow-y: auto;
   }
-
-  /* Scrollbar for tip if review is too long */
-  .tip-review::-webkit-scrollbar { width: 4px; }
-  .tip-review::-webkit-scrollbar-track { background: transparent; }
-  .tip-review::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 
   @media (max-width: 680px) {
     .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
