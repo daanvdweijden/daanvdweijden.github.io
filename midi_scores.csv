@@ -160,3 +160,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-05,23385,midi,Rena Cohen,Close But No Cigar,385,6:25,88,False,,,,False,False,0,0,0,clean
 2026-08-06,24325,midi,Ian Livengood,"Hello, Sailor!",395,6:35,100,True,1786007319,,,False,True,2,2,0,revealed
 2026-08-07,24239,midi,Natan Last,Tipping the Scales,480,8:00,100,True,1786137241,,,False,False,0,0,0,clean
+2026-08-09,23416,midi,Ian Livengood,Take the L,392,6:32,100,True,1786274830,,,True,True,0,0,0,autocheck
