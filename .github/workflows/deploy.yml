@@ -10,7 +10,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write   # the build refreshes data/books.json on the puzzle-data branch
   pages: write
   id-token: write
 
@@ -27,9 +27,11 @@ jobs:
       # Puzzle data lives on the `puzzle-data` orphan branch, not in main —
       # that keeps main's history free of the 6x/day data commits. Its files
       # sit at that branch's root and land here as data/*.csv + activity.json,
-      # which is where src/lib/puzzles.ts reads them at build time. Must run
-      # before `npm run build`, and after the root checkout (which cleans the
-      # workspace and would otherwise wipe this).
+      # which is where src/lib/puzzles.ts reads them at build time. The same
+      # checkout carries data/books.json, the Goodreads snapshot the build reads
+      # when the feed is down and rewrites when it isn't (see the commit step
+      # below). Must run before `npm run build`, and after the root checkout
+      # (which cleans the workspace and would otherwise wipe this).
       - uses: actions/checkout@v7
         with:
           ref: puzzle-data
@@ -44,6 +46,26 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+
+      # The build rewrote data/books.json from the live Goodreads feed; push it
+      # back so the next build has a fallback if Goodreads is down then. Only
+      # `books.json` is staged — the puzzle CSVs in this checkout belong to
+      # puzzle-data.yml. Runs after the artifact upload and never fails the job:
+      # a stale snapshot is a much smaller problem than a skipped deploy.
+      - name: Commit refreshed books snapshot
+        continue-on-error: true
+        working-directory: data      # the `puzzle-data` branch checkout
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add books.json
+          # No-op on most runs — the file only changes when a book does.
+          git diff --cached --quiet && { echo "Books unchanged."; exit 0; }
+          git commit -m "Update books snapshot ($(date -u +'%F %H:%M') UTC)"
+          # puzzle-data.yml pushes to this branch 6x/day and the two workflows
+          # are in different concurrency groups, so rebase onto whatever landed.
+          git pull --rebase --autostash origin puzzle-data
+          git push origin HEAD:puzzle-data
 
   deploy:
     needs: build

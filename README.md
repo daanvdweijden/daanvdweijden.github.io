@@ -68,3 +68,21 @@ you need directly (from wherever you've cloned those two repos) with
 `python scripts/build_feed.py`. Since `data/` is a worktree on the
 `puzzle-data` branch, commit any local results from inside it
 (`git -C data commit ...`).
+
+## Books cache
+
+`/books` reads the Goodreads RSS feed at build time. That feed is flaky — rate
+limits, 5xx, and the occasional valid-but-empty shelf — and any of those used
+to blank the page until the next deploy.
+
+So `src/lib/books.ts` snapshots every good fetch to `data/books.json` and falls
+back to it when the feed misbehaves (an empty shelf counts as misbehaving; the
+read shelf is never legitimately empty). It rides on the **`puzzle-data`
+branch** with the puzzle data, for the same reason — a snapshot commit per
+finished book shouldn't clutter `main`. `deploy.yml` pushes the refreshed file
+back after each build, and that step is `continue-on-error`: a stale snapshot
+beats a skipped deploy.
+
+A fresh clone that skips `npm run data:pull` has no snapshot, so a failing feed
+there renders `/books` empty — same as before. Local builds write the file into
+the worktree; leave it uncommitted unless you want to seed the branch by hand.
