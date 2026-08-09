@@ -49,9 +49,16 @@
   },
   "days": [
     {
+      "date": "2026-08-09",
+      "played": [
+        "crux"
+      ]
+    },
+    {
       "date": "2026-08-08",
       "played": [
         "mini",
+        "crux",
         "vorto"
       ]
     },
