@@ -74,7 +74,15 @@ const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Bo
 </Layout>
 
 <style>
-  .paper { padding: clamp(2rem, 6vw, 4rem) 0 clamp(3rem, 8vw, 6rem); max-width: 48rem; }
+  /* Same 64rem `.wrap` as every other page, so the left edge lines up with the
+     nav mark. Only set vertical padding -- the `padding` shorthand would zero
+     out the horizontal padding `.wrap` provides. The reading column is capped
+     separately below, the way the index pages cap their lede. */
+  .paper { padding-top: clamp(2rem, 6vw, 4rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+
+  /* Hairlines run the full width (as the year rules do on /pubs/); the text
+     itself keeps a readable measure. */
+  .head h1, .authors, .prose, #bibtex { max-width: 48rem; }
 
   .back {
     display: inline-block; margin-bottom: clamp(1.5rem, 4vw, 2.5rem);

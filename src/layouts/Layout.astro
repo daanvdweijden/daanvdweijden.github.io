@@ -92,6 +92,11 @@ const pageAccent = internal.find((l) => l.key === active)?.accent;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; }
+      /* Always reserve the scrollbar track. Short pages (a one-paragraph news
+         item) don't scroll, so without this they'd be ~15px wider than every
+         other page and the whole centered layout would jump sideways on
+         navigation. */
+      html { scrollbar-gutter: stable; }
       body {
         background: var(--bg);
         color: var(--ink);
