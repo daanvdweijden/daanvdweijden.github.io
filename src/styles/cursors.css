@@ -1,0 +1,53 @@
+/* GENERATED FILE — see scripts/gen-cursors.mjs, do not hand-edit.
+
+   The custom cursor is a native `cursor: url()` image rather than a JS-driven
+   overlay: the OS draws it, so it can never lag behind the real pointer and
+   never flickers back to a native shape over links or buttons.
+
+   PNG rather than SVG because Safari ignores SVG data-URI cursors. Each dot is
+   baked per accent AND per theme, since a data URI can't reference a custom
+   property. Fine pointers only — touch devices get nothing here anyway. */
+@media (pointer: fine) {
+
+  /* ---- light ---- */
+  html:not([data-theme='dark']), html:not([data-theme='dark']) * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOQl5dnoCZmGDWQ5gYGAPF+IP4PxfuhYmQZOB/JIHQ8n1QDA/AYBsMBpBi4nwgD95Ni4H8i8cAZSHUvUz1SqJ5saJKwR0ubATIQAMJw4AFoHU+CAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOQl5dnoCZmGDWQ5gYGAPF+IP4PxfuhYmQZOB/JIHQ8n1QDA/AYBsMBpBi4nwgD95Ni4H8i8cAZSHUvUz1SqJ5saJKwR0ubATIQAMJw4AFoHU+CAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAmElEQVR42u3XwQ2AIAyFYTbpSozQzRiBkToKcsALiYnBFlt9h/9iOHwJAWoiouS5BCCAAAII4PeB3Ks96bWRjG/8JjBPqKtkrN0KLDdgc2UXcAW3jFzZ1vawbAkUBaBYAVkBd8YWwKoIrBZAUQSKBbAp9z+g+y12f0jcXzPuL+oQT537YSHEuBViYA0x8uOvDkAAAQQQQEoHA/N+MiTChPcAAAAASUVORK5CYII=") 2x) 10 10, auto !important;
+  }
+  html:not([data-theme='dark'])[data-page-accent='red'], html:not([data-theme='dark'])[data-page-accent='red'] *,
+  html:not([data-theme='dark']) [data-cursor='red'], html:not([data-theme='dark']) [data-cursor='red'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOYr6/LQE3MMGogzQ0MAOL9QPwfivdDxcgycD6SQeh4PqkGBuAxDIYDSDFwPxEG7ifFwP9E4oEzkOpepnqkUD3Z0CRhj5Y2A2QgAD6h1vA87AE1AAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOYr6/LQE3MMGogzQ0MAOL9QPwfivdDxcgycD6SQeh4PqkGBuAxDIYDSDFwPxEG7ifFwP9E4oEzkOpepnqkUD3Z0CRhj5Y2A2QgAD6h1vA87AE1AAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAmUlEQVR42u3XwQ2AIAyF4S5EXIURuhkjMFJHQQ54MTEx2GKr7/BfDIcvIUClsiXyHAEIIIAAAvh9IPdqT3ptJOMbvwnMJ9RVMtYuBZYbsHNlFXAGN42c2db2sGwJFAWgWAFZAXfEFsCqCKwWQFEEigWwKfc/oPstdn9I3F8z7i/qEE+d+2EhxLgVYmANMfLjrw5AAAEEEMBEO3hnWe6nCVleAAAAAElFTkSuQmCC") 2x) 10 10, auto !important;
+  }
+  html:not([data-theme='dark'])[data-page-accent='blue'], html:not([data-theme='dark'])[data-page-accent='blue'] *,
+  html:not([data-theme='dark']) [data-cursor='blue'], html:not([data-theme='dark']) [data-cursor='blue'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOQz5nPQE3MMGogzQ0MAOL9QPwfivdDxcgycD6SQeh4PqkGBuAxDIYDSDFwPxEG7ifFwP9E4oEzkOpepnqkUD3Z0CRhj5Y2A2QgAFMiIG9kYq1OAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mOQz5nPQE3MMGogzQ0MAOL9QPwfivdDxcgycD6SQeh4PqkGBuAxDIYDSDFwPxEG7ifFwP9E4oEzkOpepnqkUD3Z0CRhj5Y2A2QgAFMiIG9kYq1OAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAmklEQVR42u3XwQ2AIAyF4W7iSozQAdyJERipoyAHvJCYGGyx1Xf4L4bDlxCg0rZn8hwBCCCAAAL4fSC3SktatSf9G78JTAPqKulrlwLzDdhYXgWcwU0jZ7a1PixZAkUBKFZAVsCdsQWwKAKLBVAUgWIBrMr9D+h+i90fEvfXjPuLOsRT535YCDFuhRhYQ4z8+KsDEEAAAQQw0wHN/X+9JRCIgAAAAABJRU5ErkJggg==") 2x) 10 10, auto !important;
+  }
+  html:not([data-theme='dark'])[data-page-accent='green'], html:not([data-theme='dark'])[data-page-accent='green'] *,
+  html:not([data-theme='dark']) [data-cursor='green'], html:not([data-theme='dark']) [data-cursor='green'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mMwSbVgoCZmGDWQ5gYGAPF+IP4PxfuhYmQZOB/JIHQ8n1QDA/AYBsMBpBi4nwgD95Ni4H8i8cAZSHUvUz1SqJ5saJKwR0ubATIQALTylVBjsESkAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mMwSbVgoCZmGDWQ5gYGAPF+IP4PxfuhYmQZOB/JIHQ8n1QDA/AYBsMBpBi4nwgD95Ni4H8i8cAZSHUvUz1SqJ5saJKwR0ubATIQALTylVBjsESkAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAm0lEQVR42u3XwQ2AIAyF4Q7lgTEYgYtzMQIjdRTkgBcSE4MttvoO/8Vw+BICVNr2QJYjAAEEEEAAvw9MrdLiVu1x/5beBMYBdRX3tUuB+QZsLK8CzuCmkTPbWh8WNYEsAGQtYBLAnSUNYBEEFg0gCwJZA1iF+x/Q/BabPyTmrxnzF7WLp878sOBi3HIxsLoY+fFXByCAAAIIYKADj/FTX+AUxykAAAAASUVORK5CYII=") 2x) 10 10, auto !important;
+  }
+
+  /* ---- dark ---- */
+  html[data-theme='dark'], html[data-theme='dark'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mN4+fIZAzUxw6iBNDcwAIj3A/F/KN4PFSPLwPlIBqHj+aQaGIDHMBgOIMXA/UQYuJ8UA/8TiQfOQKp7meqRQvVkQ5OEPVraDJCBAHDwjm1qH7IyAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mN4+fIZAzUxw6iBNDcwAIj3A/F/KN4PFSPLwPlIBqHj+aQaGIDHMBgOIMXA/UQYuJ8UA/8TiQfOQKp7meqRQvVkQ5OEPVraDJCBAHDwjm1qH7IyAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAmUlEQVR42u3XwQnAIAyF4YzoCG7mCI6Um+AU1oO9CIViE5u07/BfiocPRE2p1kKWIwABBBBAAL8PjL3c414b8fgW3wSGCXUVj7VbgekGbC7tAq7glpEr29oeFjSBLABkLWAUwJ1FDWAWBGYNIAsCWQPYhPsf0PwWmz8k5q8Z8xe1i6fO/LDgYtxyMbC6GPnxVwcggAACCGChAxy1N9NL/gP5AAAAAElFTkSuQmCC") 2x) 10 10, auto !important;
+  }
+  html[data-theme='dark'][data-page-accent='red'], html[data-theme='dark'][data-page-accent='red'] *,
+  html[data-theme='dark'] [data-cursor='red'], html[data-theme='dark'] [data-cursor='red'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mP4sGIJAzUxw6iBNDcwAIj3A/F/KN4PFSPLwPlIBqHj+aQaGIDHMBgOIMXA/UQYuJ8UA/8TiQfOQKp7meqRQvVkQ5OEPVraDJCBAFS1zJ7cjuDmAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mP4sGIJAzUxw6iBNDcwAIj3A/F/KN4PFSPLwPlIBqHj+aQaGIDHMBgOIMXA/UQYuJ8UA/8TiQfOQKp7meqRQvVkQ5OEPVraDJCBAFS1zJ7cjuDmAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAmklEQVR42u3XMQ6AIAyF4R6RI3AzFgY3jtQreANkwIXExGCLrb7hXwzDlxCg0r5lshwBCCCAAAL4fWBslRa3ao/7t/gmMAyoq7ivXQpMN2BjaRVwBjeNnNnW+rCgCWQBIGsBowDuLGoAiyCwaABZEMgawCrc/4Dmt9j8ITF/zZi/qF08deaHBRfjlouB1cXIj786AAEEEEAAMx0aKzCmrA16xgAAAABJRU5ErkJggg==") 2x) 10 10, auto !important;
+  }
+  html[data-theme='dark'][data-page-accent='blue'], html[data-theme='dark'][data-page-accent='blue'] *,
+  html[data-theme='dark'] [data-cursor='blue'], html[data-theme='dark'] [data-cursor='blue'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mPoO/mGgZqYYdRAmhsYAMT7gfg/FO+HipFl4Hwkg9DxfFINDMBjGAwHkGLgfiIM3E+Kgf+JxANnINW9TPVIoXqyoUnCHi1tBshAAO3c145w4XNsAAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mPoO/mGgZqYYdRAmhsYAMT7gfg/FO+HipFl4Hwkg9DxfFINDMBjGAwHkGLgfiIM3E+Kgf+JxANnINW9TPVIoXqyoUnCHi1tBshAAO3c145w4XNsAAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAnElEQVR42u3XwQ2AIAyFYUZkhE7kCozAHE7RBdgBOeCFxMRgi62+w38xHL6EADVsewmWCwACCCCAAH4fSK3c4lbtcf9GbwLjgLqK+9qlwHQDNpZWAWdw08iZba0Pi5pAFgCyFpAEcGekAcyCwKwBZEEgawCrcP8Dmt9i84fE/DVj/qJ28dSZHxZcjFsuBlYXIz/+6gAEEEAAASzhAHSJXGbqd/eYAAAAAElFTkSuQmCC") 2x) 10 10, auto !important;
+  }
+  html[data-theme='dark'][data-page-accent='green'], html[data-theme='dark'][data-page-accent='green'] *,
+  html[data-theme='dark'] [data-cursor='green'], html[data-theme='dark'] [data-cursor='green'] * {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mPoPzWFgZqYYdRAmhsYAMT7gfg/FO+HipFl4Hwkg9DxfFINDMBjGAwHkGLgfiIM3E+Kgf+JxANnINW9TPVIoXqyoUnCHi1tBshAAPEVUS4GZNZ5AAAAAElFTkSuQmCC") 10 10, auto !important;
+    cursor: image-set(url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAUUlEQVR42mPoPzWFgZqYYdRAmhsYAMT7gfg/FO+HipFl4Hwkg9DxfFINDMBjGAwHkGLgfiIM3E+Kgf+JxANnINW9TPVIoXqyoUnCHi1tBshAAPEVUS4GZNZ5AAAAAElFTkSuQmCC") 1x, url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAm0lEQVR42u3XwQ2AIAyF4Y7ICGzkhTsjsIdLdBTkgBcSE4MttvoO/8Vw+BICVNr2RJYjAAEEEEAAvw+MrdLiVu1x/xbfBIYBdRX3tUuB+QZsLK8CzuCmkTPbWh8WNIEsAGQtYBTAnUUNYBEEFg0gCwJZA1iF+x/Q/BabPyTmrxnzF7WLp878sOBi3HIxsLoY+fFXByCAAAIIYKIDSeJCyBBSHuoAAAAASUVORK5CYII=") 2x) 10 10, auto !important;
+  }
+}

@@ -3,6 +3,7 @@
 // Pages provide their own <style> for page-specific layout. This keeps the
 // minimal editorial look identical across Home, Publications, etc.
 import { site } from '../site.config';
+import '../styles/cursors.css';
 
 interface Props {
   title?: string;
@@ -22,17 +23,18 @@ const year = new Date().getFullYear();
 // as its section elsewhere on the site (kicker dots, eyebrows), so the active
 // nav item is marked with a colored dot + matching text/underline.
 const internal = [
-  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news', accent: 'var(--p-green-fg)' },
-  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications', accent: 'var(--p-blue-fg)' },
-  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv', accent: 'var(--p-red-fg)' },
+  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news', hue: 'green' },
+  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications', hue: 'blue' },
+  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv', hue: 'red' },
 ];
 // Section pages (News/Publications/CV) tint the cursor dot with their own accent
-// throughout, instead of just the homepage bento cards.
-const pageAccent = internal.find((l) => l.key === active)?.accent;
+// throughout, instead of just the homepage bento cards. styles/cursors.css keys
+// off this attribute; the bento cards use [data-cursor] for the same effect.
+const pageAccent = internal.find((l) => l.key === active)?.hue;
 ---
 
 <!doctype html>
-<html lang="en" style={pageAccent ? `--page-accent: ${pageAccent}` : undefined}>
+<html lang="en" data-page-accent={pageAccent}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -209,20 +211,8 @@ const pageAccent = internal.find((l) => l.key === active)?.accent;
       html[data-theme='dark'] .theme-toggle .i-sun { display: block; }
       html[data-theme='dark'] .theme-toggle .i-moon { display: none; }
 
-      /* ---- custom cursor dot ----
-         A small dot follows the pointer and picks up the accent color of
-         whichever [data-cursor] element it's over (see index.astro's bento
-         cards). Fine-pointer devices only — touchscreens keep native behavior. */
-      @media (pointer: fine) {
-        html.has-custom-cursor, html.has-custom-cursor * { cursor: none; }
-      }
-      #cursor-dot {
-        position: fixed; top: 0; left: 0; width: 10px; height: 10px; border-radius: 50%;
-        background: var(--cursor-color, var(--page-accent, var(--ink))); opacity: 0;
-        pointer-events: none; z-index: 9999;
-        transform: translate(-100px, -100px);
-      }
-      html.has-custom-cursor #cursor-dot { opacity: 1; }
+      /* The custom cursor dot lives in styles/cursors.css — it's a native
+         `cursor: url()` image, so there's no overlay element or JS here. */
 
       /* ---- footer ---- */
       footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; margin-top: 2rem; }
@@ -265,7 +255,7 @@ const pageAccent = internal.find((l) => l.key === active)?.accent;
                   <a
                     class:list={['internal', { active: active === l.key }]}
                     href={l.href}
-                    style={active === l.key ? `--accent: ${l.accent}` : undefined}
+                    style={active === l.key ? `--accent: var(--p-${l.hue}-fg)` : undefined}
                   >{l.name}</a>
                 ))}
               </div>
@@ -280,8 +270,6 @@ const pageAccent = internal.find((l) => l.key === active)?.accent;
     </nav>
 
     <slot />
-
-    <div id="cursor-dot" aria-hidden="true"></div>
 
     <footer>
       <div class="wrap">
@@ -319,25 +307,6 @@ const pageAccent = internal.find((l) => l.key === active)?.accent;
           document.documentElement.setAttribute('data-theme', next);
           try { localStorage.setItem('theme', next); } catch (e) {}
           syncLabel();
-        });
-      }
-
-      // Custom cursor dot: follows the pointer, swaps color over [data-cursor] elements.
-      const cursorDot = document.getElementById('cursor-dot');
-      if (cursorDot && window.matchMedia('(pointer: fine)').matches) {
-        document.documentElement.classList.add('has-custom-cursor');
-        window.addEventListener('mousemove', (e) => {
-          cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-        }, { passive: true });
-        document.documentElement.addEventListener('mouseleave', () => { cursorDot.style.opacity = '0'; });
-        document.documentElement.addEventListener('mouseenter', () => { cursorDot.style.opacity = '1'; });
-        document.querySelectorAll('[data-cursor]').forEach((el) => {
-          el.addEventListener('mouseenter', () => {
-            document.documentElement.style.setProperty('--cursor-color', `var(--p-${el.dataset.cursor}-fg)`);
-          });
-          el.addEventListener('mouseleave', () => {
-            document.documentElement.style.removeProperty('--cursor-color');
-          });
         });
       }
 
