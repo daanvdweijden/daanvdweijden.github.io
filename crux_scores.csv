@@ -154,4 +154,5 @@ date,puzzle_id,puzzle_type,constructor,width,height,solved,seconds,time,global_a
 2026-08-20,nrc-gsEQF7O4H4nwP7QYHR2j-c2b135f87fa6-20260820,crux,steenhuis,6,4,True,,,,
 2026-08-21,nrc-gsEQF7O4H4nwP7QYHR2j-82eabad168ec-20260821,crux,steenhuis,5,5,True,,,,
 2026-08-22,nrc-gsEQF7O4H4nwP7QYHR2j-d7aa1f339b30-20260822,crux,steenhuis,6,5,True,,,,
-2026-08-23,nrc-gsEQF7O4H4nwP7QYHR2j-714a6d67ec8e-20260823,crux,steenhuis,5,7,False,,,,
+2026-08-23,nrc-gsEQF7O4H4nwP7QYHR2j-714a6d67ec8e-20260823,crux,steenhuis,5,7,True,,,,
+2026-08-24,nrc-gsEQF7O4H4nwP7QYHR2j-1a396bb13608-20260824,crux,steenhuis,5,5,False,,,,
