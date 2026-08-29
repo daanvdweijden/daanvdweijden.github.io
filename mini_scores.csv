@@ -321,3 +321,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-26,24413,mini,Adam Aaronson,,85,1:25,100,True,1787777845,,,False,False,0,0,0,clean
 2026-08-27,24452,mini,Joel Fagliano,,134,2:14,100,True,1787808698,,,False,False,0,0,0,clean
 2026-08-28,24408,mini,Joel Fagliano,,166,2:46,100,True,1787904667,,,False,False,0,0,0,clean
+2026-08-29,24440,mini,Joel Fagliano,,120,2:00,100,True,1787990771,,,False,False,0,0,0,clean
