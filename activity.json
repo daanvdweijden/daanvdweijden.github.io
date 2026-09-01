@@ -1,6 +1,6 @@
 {
   "generated": "2026-09-01",
-  "mini_streak": 325,
+  "mini_streak": 326,
   "game_meta": {
     "crux": {
       "label": "Crux",
@@ -51,7 +51,12 @@
     {
       "date": "2026-09-01",
       "played": [
-        "crux"
+        "mini",
+        "connections",
+        "crux",
+        "koprol",
+        "precies-vier",
+        "sudoku"
       ]
     },
     {
