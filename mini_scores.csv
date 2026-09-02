@@ -325,3 +325,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-30,24403,mini,Sam Ezersky,,60,1:00,100,True,1788078645,,,False,False,0,0,0,clean
 2026-08-31,24476,mini,Joel Fagliano,,239,3:59,55,False,,,,False,False,0,0,0,clean
 2026-09-01,24477,mini,Joel Fagliano,,160,2:40,100,True,1788253595,,,False,False,0,0,0,clean
+2026-09-02,24478,mini,Joel Fagliano,,94,1:34,100,True,1788331813,,,False,False,0,0,0,clean
