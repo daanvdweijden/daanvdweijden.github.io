@@ -178,3 +178,7 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-08-27,24108,midi,Tarun Krishnamurthy,Party Animal,231,3:51,80,False,,,,False,False,0,0,0,clean
 2026-08-29,24122,midi,Olivia Mitra Framke,Wildflowers,408,6:48,97,False,,,,False,False,0,0,0,clean
 2026-09-04,24048,midi,Rena Cohen,Three Strikes and Yer Out!,343,5:43,100,True,1788527114,,,False,True,1,1,0,revealed
+2026-08-31,23586,midi,Tom McCoy,"Oh, What a Meal",579,9:39,100,True,1788540430,,,False,True,1,3,0,revealed
+2026-09-01,24298,midi,Ian Livengood,Quick Start,453,7:33,100,True,1788541074,,,True,True,2,0,0,revealed
+2026-09-02,24354,midi,Ian Livengood,Social Climber,616,10:16,100,True,1788543606,,,True,True,0,0,0,autocheck
+2026-09-03,23354,midi,Hanh Huynh,Ro-blox,275,4:35,47,False,,,,False,False,0,0,0,clean
