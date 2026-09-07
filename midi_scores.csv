@@ -182,3 +182,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-01,24298,midi,Ian Livengood,Quick Start,453,7:33,100,True,1788541074,,,True,True,2,0,0,revealed
 2026-09-02,24354,midi,Ian Livengood,Social Climber,616,10:16,100,True,1788543606,,,True,True,0,0,0,autocheck
 2026-09-03,23354,midi,Hanh Huynh,Ro-blox,275,4:35,47,False,,,,False,False,0,0,0,clean
+2026-09-07,24229,midi,Ian Livengood,Grill Marks,2,0:02,0,False,,,,False,False,0,0,0,clean
