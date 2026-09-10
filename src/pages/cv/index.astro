@@ -1,10 +1,20 @@
 ---
-// CV — Education / Work / Awards & Grants, in a resume-style timeline.
-// All content lives in src/data/resume.json (JSON Resume schema — portable
-// to other JSON Resume themes/tools, not just this site). Edit the JSON to
-// update entries; this page only sorts and renders it.
+// CV — an overview, not the whole record. The full account lives in the PDF,
+// built from the LaTeX source at github.com/daanvdweijden/cv, which is the
+// source of truth. That repo's CI commits public/cv/daan-van-der-weijden-cv.pdf
+// here on every change, so the download below stays current on its own; this
+// page carries the sections a visitor wants at a glance and links out for the
+// rest.
+// Content comes from src/data/resume.json (JSON Resume schema, plus custom
+// sections it has no slot for). The JSON deliberately holds more than is shown
+// — presentations, supervision, visits and languages are kept in sync with the
+// PDF, so restoring a section here is a matter of adding it to `sections`.
 import Layout from '../../layouts/Layout.astro';
-import { resume, educationSorted, workSorted, awardsSorted, dateRange, formatDate, countryName } from '../../lib/resume';
+import {
+  resume, educationSorted, workSorted, awardsSorted, presentationsSorted,
+  supervisionSorted, teachingSorted, visitsSorted, volunteerSorted,
+  dateRange, formatDate, countryName,
+} from '../../lib/resume';
 
 const sections = [
   {
@@ -15,17 +25,7 @@ const sections = [
       title: `${e.studyType} in ${e.area}`,
       org: e.institution,
       detail: [e.score, e.summary].filter(Boolean).join(' · '),
-      note: e.courses?.join(', '),
-    })),
-  },
-  {
-    key: 'work',
-    label: 'Work Experience',
-    items: workSorted().map((w) => ({
-      when: dateRange(w.startDate, w.endDate),
-      title: w.position,
-      org: [w.name, w.location].filter(Boolean).join(', '),
-      detail: w.summary,
+      note: e.thesis ? `Thesis: ${e.thesis}${e.thesisNote ? ` — ${e.thesisNote}` : ''}` : undefined,
     })),
   },
   {
@@ -35,9 +35,40 @@ const sections = [
       when: formatDate(a.date),
       title: a.title,
       org: a.awarder,
+      detail: a.summary,
+    })),
+  },
+  {
+    key: 'teaching',
+    label: 'Teaching',
+    items: teachingSorted().map((t) => ({
+      when: t.term,
+      title: t.course,
+      org: [t.role, t.detail, t.institution].filter(Boolean).join(', '),
+    })),
+  },
+  {
+    key: 'work',
+    label: 'Research & Professional Experience',
+    items: workSorted().map((w) => ({
+      when: dateRange(w.startDate, w.endDate),
+      title: w.position,
+      org: [w.name, w.location].filter(Boolean).join(', '),
+      detail: w.summary,
+    })),
+  },
+  {
+    key: 'service',
+    label: 'Academic Service & Engagement',
+    items: volunteerSorted().map((v) => ({
+      when: v.term,
+      title: v.position,
+      org: v.organization,
+      detail: v.summary,
     })),
   },
 ];
+
 
 ---
 
@@ -46,7 +77,13 @@ const sections = [
     <header class="page-head">
       <p class="eyebrow">Experience</p>
       <h1>Curriculum Vitae</h1>
-      <p class="lede">Education, work experience, and awards.</p>
+      <p class="lede">
+        An overview of my education, teaching, and service. The full CV —
+        including publications, talks, and student supervision — is in the PDF.
+      </p>
+      <a class="cv-download" href={`${import.meta.env.BASE_URL}cv/daan-van-der-weijden-cv.pdf`}>
+        Download CV (PDF)
+      </a>
     </header>
 
     {sections.map((s) => (
@@ -57,7 +94,7 @@ const sections = [
             <li class="entry">
               <div class="when">{item.when}</div>
               <div class="body">
-                <h3 class="entry-title">{item.title}</h3>
+                {item.title && <h3 class="entry-title">{item.title}</h3>}
                 {item.org && <p class="org">{item.org}</p>}
                 {item.detail && <p class="detail">{item.detail}</p>}
                 {item.note && <p class="note">{item.note}</p>}
@@ -91,6 +128,16 @@ const sections = [
     font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
   }
   .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
+
+  /* Hairline button, matching the profile links on the home page. */
+  .cv-download {
+    display: inline-block; margin-top: 1.4rem;
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .1em; text-decoration: none; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 2px;
+    padding: .55rem .9rem; transition: border-color .15s ease;
+  }
+  .cv-download:hover { border-color: var(--ink); }
 
   .cv-section { padding: clamp(1.5rem, 4vw, 2.5rem) 0; border-top: 1px solid var(--line); }
   .section-title {

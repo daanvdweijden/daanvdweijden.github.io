@@ -21,7 +21,8 @@
       "area": "Computer Science",
       "studyType": "PhD",
       "startDate": "2023-09",
-      "endDate": ""
+      "endDate": "",
+      "summary": "Advisor: Prof. Dr. Abraham Bernstein. Part of the interdisciplinary Digital Deliberative Democracy (D3) project."
     },
     {
       "institution": "Utrecht University",
@@ -30,12 +31,9 @@
       "startDate": "2021-09",
       "endDate": "2023-08",
       "score": "GPA 3.7/4.0",
-      "summary": "Honours Student; Faculty Council Member",
-      "courses": [
-        "Human Centered Machine Learning",
-        "Intelligent Agents",
-        "Natural Language Generation"
-      ]
+      "summary": "Graduate Honours of Interdisciplinary Seminars.",
+      "thesis": "Dutch Data Augmentation for Low-Resource Tasks",
+      "thesisNote": "Carried out at TNO, The Hague."
     },
     {
       "institution": "Utrecht University",
@@ -43,13 +41,7 @@
       "studyType": "Bachelor of Science",
       "startDate": "2019-09",
       "endDate": "2021-08",
-      "score": "GPA 4.0/4.0, Cum Laude",
-      "summary": "Chair of Political Party VUUR; Faculty Council Member",
-      "courses": [
-        "Logical Complexity",
-        "Intelligent Systems",
-        "Computational Linguistics"
-      ]
+      "score": "GPA 4.0/4.0, Cum Laude"
     },
     {
       "institution": "Utrecht University",
@@ -57,13 +49,7 @@
       "studyType": "Bachelor of Arts",
       "startDate": "2017-09",
       "endDate": "2021-08",
-      "score": "GPA 3.8/4.0",
-      "summary": "Chair of Linguistics Study Association",
-      "courses": [
-        "Language and Computation",
-        "Semantics and Pragmatics",
-        "Experimental Psycholinguistics"
-      ]
+      "score": "GPA 3.8/4.0"
     }
   ],
   "work": [
@@ -82,25 +68,14 @@
       "startDate": "2022-01",
       "endDate": "2023-08",
       "summary": "Analyzed Twitter interactions regarding Dutch datacenters (published); developed an algorithmic oversight framework for authorities; conducted political influence research on social media."
-    },
-    {
-      "name": "Utrecht University",
-      "location": "",
-      "position": "Teaching Assistant",
-      "startDate": "2020-01",
-      "endDate": "2022-12",
-      "summary": "Seminars, grading, and code feedback for Machine Learning, Natural/Formal Languages, and Introduction to Logic."
-    },
-    {
-      "name": "Channable",
-      "location": "Utrecht",
-      "position": "Technical Support",
-      "startDate": "2020-09",
-      "endDate": "2021-04",
-      "summary": "Platform support for eCommerce product centralization; customer onboarding."
     }
   ],
   "awards": [
+    {
+      "title": "Best Poster Honorable Mention",
+      "date": "2026-07",
+      "awarder": "ACM Conference on Conversational User Interfaces (CUI '26), Bremen"
+    },
     {
       "title": "Engagement Award for Special Commitment (Nominee)",
       "date": "2026-06",
@@ -112,24 +87,201 @@
       "awarder": "University of Queensland visit"
     },
     {
-      "title": "DSI PhD Excellence Program",
+      "title": "Demo Paper Third Place Award",
+      "date": "2025-04",
+      "awarder": "The Web Conference 2025 (WWW '25), demo track"
+    },
+    {
+      "title": "DSI PhD Excellence Program & Personal Grant",
       "date": "2024-09",
-      "awarder": "Digital Society Initiative"
-    },
-    {
-      "title": "DSI Excellence Personal Grant",
-      "date": "2024-09",
-      "awarder": "5000 CHF"
-    },
-    {
-      "title": "Graduate Honours of Interdisciplinary Seminars",
-      "date": "2023-08",
-      "awarder": ""
-    },
-    {
-      "title": "Cum Laude Distinction",
-      "date": "2021-08",
-      "awarder": ""
+      "awarder": "Digital Society Initiative",
+      "summary": "Competitive interdisciplinary programme; personal research grant of CHF 5,000."
     }
+  ],
+  "presentations": [
+    {
+      "title": "Towards a Typology of User Engagement in CAVAAs",
+      "venue": "ACM Conference on Conversational User Interfaces (CUI '26), Bremen",
+      "date": "2026-07",
+      "note": "Poster"
+    },
+    {
+      "title": "Personalised Summarisation for Swiss Leaflets",
+      "venue": "Digital Democracy Workshop, Digital Society Initiative, University of Zurich",
+      "date": "2025-11",
+      "note": "With Cristina Sarasua and Abraham Bernstein"
+    },
+    {
+      "title": "AutoDQI: An Automated Measurement of Deliberation Quality",
+      "venue": "EDDY 2025, Centre d'Économie de la Sorbonne, Paris",
+      "date": "2025-06"
+    },
+    {
+      "title": "Using Large Language Models to Simulate Online Political Discussions",
+      "venue": "EDDY 2024 — Digital Democracy: Bridging Theory and Practice, Erasmus University Rotterdam",
+      "date": "2024-04"
+    },
+    {
+      "title": "Bursting the Burden Bubble?",
+      "venue": "BNAIC/BeNeLearn 2022, Mechelen",
+      "date": "2022-11"
+    },
+    {
+      "title": "Infrastructures of Data Power: Revisiting the Twitter Debate on Data Centers in the Netherlands",
+      "venue": "Dialogues in Data Power, ZeMKI, University of Bremen",
+      "date": "2022-06",
+      "note": "With Karin van Es and Jeroen Bakker"
+    },
+    {
+      "title": "Interviewing an Algorithm: Developing a Research Method for Critical Inquiry into Algorithmic Systems from a Socio-Cultural Perspective",
+      "venue": "Dialogues in Data Power, ZeMKI, University of Bremen",
+      "date": "2022-06",
+      "note": "With Iris Muis, Mirko Tobias Schäfer, and Arthur Vankan"
+    }
+  ],
+  "supervision": [
+    {
+      "students": "Marlon Gelpke & Kim Hyeongseok",
+      "title": "Debate Bots: A Multi-Agent Interactive Environment for Swiss Political Debates",
+      "kind": "MSc research project",
+      "institution": "University of Zurich",
+      "startDate": "2025-09",
+      "endDate": "2026-09",
+      "note": "Co-supervised with Selene Báez Santamaría."
+    },
+    {
+      "students": "Jana Joy Muheim",
+      "title": "Designing Debate Bots Interface",
+      "kind": "BSc thesis",
+      "institution": "University of Zurich",
+      "startDate": "2025-09",
+      "endDate": "2026-03"
+    },
+    {
+      "students": "Wesley Muri",
+      "title": "Clustering Swiss Politics",
+      "kind": "MSc thesis",
+      "institution": "University of Zurich",
+      "startDate": "2025-07",
+      "endDate": "2026-01"
+    },
+    {
+      "students": "Zihan Liu & Zehao Zhang",
+      "title": "Front-End Enhancement of the Online Discussion Platform CitizenOS",
+      "kind": "MSc research project",
+      "institution": "University of Zurich",
+      "startDate": "2024-10",
+      "endDate": "2025-10"
+    },
+    {
+      "students": "Hasan Atak",
+      "title": "Automated Drafting of Swiss Popular Initiatives Through Large Language Models",
+      "kind": "MSc thesis",
+      "institution": "University of Zurich",
+      "startDate": "2024-05",
+      "endDate": "2024-11"
+    },
+    {
+      "students": "Julian Novoa Martin",
+      "title": "Improving the Automatic Measure of Discourse Quality",
+      "kind": "MSc thesis",
+      "institution": "University of Zurich",
+      "startDate": "2024-02",
+      "endDate": "2024-08"
+    }
+  ],
+  "teaching": [
+    {
+      "course": "Advanced Topics in Artificial Intelligence",
+      "role": "Teaching assistant",
+      "detail": "MSc course",
+      "institution": "University of Zurich",
+      "term": "Fall 2024, Fall 2025",
+      "date": "2025-09"
+    },
+    {
+      "course": "Machine Learning",
+      "role": "Teaching assistant",
+      "institution": "Utrecht University",
+      "term": "Fall 2022",
+      "date": "2022-09"
+    },
+    {
+      "course": "Natural and Formal Languages",
+      "role": "Teaching assistant",
+      "institution": "Utrecht University",
+      "term": "Spring 2021",
+      "date": "2021-02"
+    },
+    {
+      "course": "Introduction to Logic",
+      "role": "Teaching assistant",
+      "institution": "Utrecht University",
+      "term": "Fall 2020",
+      "date": "2020-09"
+    }
+  ],
+  "visits": [
+    {
+      "position": "Visiting Researcher",
+      "institution": "University of Queensland",
+      "location": "Brisbane, Australia",
+      "term": "2025",
+      "date": "2025-04",
+      "summary": "Funded by a CIRES Travel Grant."
+    }
+  ],
+  "volunteer": [
+    {
+      "position": "PhD Representative",
+      "organization": "Department of Informatics (IfI), University of Zurich",
+      "startDate": "",
+      "endDate": "",
+      "term": "Current",
+      "date": "9999-99",
+      "summary": "Represents the doctoral community; member of hiring committees."
+    },
+    {
+      "position": "Member of the Faculty Assembly",
+      "organization": "Faculty of Business, Economics and Informatics (OEC), University of Zurich",
+      "endDate": "2026-08",
+      "term": "Until 2026.08",
+      "date": "2026-08"
+    },
+    {
+      "position": "Reviewer",
+      "organization": "AAAI/ACM Conference on AI, Ethics, and Society (AIES '24); Extended Semantic Web Conference (ESWC 2024); Digital Democracy Workshop 2024",
+      "term": "2024",
+      "date": "2024-12"
+    },
+    {
+      "position": "Organising Committee, Digital Democracy Workshop 2024",
+      "organization": "Digital Society Initiative & Digital Democracy Lab, University of Zurich",
+      "term": "2024",
+      "date": "2024-11"
+    },
+    {
+      "position": "Faculty Council Member",
+      "organization": "Faculty of Science, Utrecht University",
+      "term": "2021 – 2023",
+      "date": "2021-01"
+    },
+    {
+      "position": "Chair, student political party VUUR",
+      "organization": "Utrecht University",
+      "term": "2020 – 2021",
+      "date": "2020-01"
+    },
+    {
+      "position": "Chair, Linguistics study association",
+      "organization": "Utrecht University",
+      "term": "2018 – 2019",
+      "date": "2018-01"
+    }
+  ],
+  "languages": [
+    { "language": "Dutch", "fluency": "Native" },
+    { "language": "English", "fluency": "Fluent" },
+    { "language": "German", "fluency": "Working knowledge" }
   ]
 }
