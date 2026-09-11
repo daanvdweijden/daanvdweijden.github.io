@@ -3,7 +3,7 @@ title: "Best Poster Honorable Mention at CUI '26 in Bremen"
 date: 2026-07-21
 tag: award
 emphasis: "Best Poster Honorable Mention"
-draft: true
+draft: false
 ---
 
 Our poster on a typology of user engagement in conversational agent voting

@@ -3,7 +3,7 @@ title: "Alan's Speakeasy took third place in the WWW '25 demo track"
 date: 2025-04-28
 tag: award
 emphasis: "third place in the WWW '25 demo track"
-draft: true
+draft: false
 ---
 
 Our demo paper on Alan's Speakeasy, an ecosystem for evaluating conversational

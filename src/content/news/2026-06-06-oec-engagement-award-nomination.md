@@ -3,6 +3,7 @@ title: "Nominated for UZH's Engagement Award for Special Commitment"
 date: 2026-06-06
 tag: award
 emphasis: "UZH's Engagement Award"
+draft: false
 ---
 
 Nominated for the Faculty of Business, Economics and Informatics' Engagement
