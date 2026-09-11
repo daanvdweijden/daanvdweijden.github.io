@@ -110,7 +110,14 @@ const sections = [
 <style>
   /* Only set vertical padding -- the `padding` shorthand would zero out the
      horizontal padding `.wrap` provides, pulling content outside the header. */
-  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+  /* CV carries the red accent used for the section in the nav and on the
+     homepage's personal card. Set once here; the eyebrow dot, section markers
+     and download button below all read from it. */
+  .page {
+    --accent: var(--p-red-fg);
+    --accent-bg: var(--p-red-bg);
+    padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
 
   .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   /* Accent dot echoes the homepage kicker index (CV = red, the personal card). */
@@ -121,7 +128,7 @@ const sections = [
   }
   .eyebrow::before {
     content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
-    background: var(--p-red-fg);
+    background: var(--accent);
   }
   .page-head h1 {
     font-family: var(--serif); font-weight: 500;
@@ -133,16 +140,24 @@ const sections = [
   .cv-download {
     display: inline-block; margin-top: 1.4rem;
     font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .1em; text-decoration: none; color: var(--ink);
-    border: 1px solid var(--line); border-radius: 2px;
-    padding: .55rem .9rem; transition: border-color .15s ease;
+    letter-spacing: .1em; text-decoration: none; color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 2px;
+    padding: .55rem .9rem; transition: border-color .15s ease, background .15s ease;
   }
-  .cv-download:hover { border-color: var(--ink); }
+  .cv-download:hover { border-color: var(--accent); background: var(--accent-bg); }
 
   .cv-section { padding: clamp(1.5rem, 4vw, 2.5rem) 0; border-top: 1px solid var(--line); }
   .section-title {
+    position: relative;
     font-family: var(--serif); font-weight: 500; font-size: 1.6rem;
     letter-spacing: -0.02em; margin: 0 0 1.5rem;
+  }
+  /* Short accent rule sitting on the section's hairline, so the long grey
+     stack of sections gets a little colour without shouting. */
+  .cv-section { position: relative; }
+  .cv-section::before {
+    content: ""; position: absolute; top: -1px; left: 0;
+    width: 2.5rem; height: 2px; background: var(--accent);
   }
 
   .entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: clamp(1.4rem, 3vw, 2rem); }
@@ -158,9 +173,15 @@ const sections = [
     font-family: var(--serif); font-weight: 500; font-size: 1.1rem;
     letter-spacing: -0.01em; margin: 0 0 .3rem;
   }
-  .org { margin: 0 0 .3rem; font-size: .95rem; color: var(--ink); }
+  /* Institutions carry a hint of the accent -- warm enough to scan by, short
+     of a page full of red. */
+  .org { margin: 0 0 .3rem; font-size: .95rem; color: color-mix(in srgb, var(--accent) 70%, var(--ink)); }
   .detail { margin: 0 0 .3rem; font-size: .92rem; color: var(--muted); }
-  .note { margin: 0; font-size: .85rem; color: var(--muted); font-style: italic; }
+  .note {
+    margin: 0; font-size: .85rem; color: var(--muted); font-style: italic;
+    border-left: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    padding-left: .6rem;
+  }
 
   @media (max-width: 680px) {
     .entry { grid-template-columns: 1fr; gap: .4rem; }
