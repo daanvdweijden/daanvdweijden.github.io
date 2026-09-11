@@ -2,7 +2,7 @@
 title: "Back at EDDY for the second edition, in Paris"
 date: 2025-06-12
 tag: talk
-emphasis: "second edition"
+emphasis: "EDDY"
 draft: false
 ---
 
