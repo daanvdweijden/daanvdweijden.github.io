@@ -186,3 +186,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-08,24306,midi,Victor Schmitt,Extended Play,367,6:07,100,True,1788890049,,,False,False,0,0,0,clean
 2026-09-10,24308,midi,Kareem Ayas,Interstates,545,9:05,100,True,1789028107,,,False,True,0,1,0,checked
 2026-09-11,24079,midi,Nate Cardin,Team Building Exercise,306,5:06,93,False,,,,False,False,0,0,0,clean
+2026-09-12,24178,midi,Ian Livengood,Housing Bubbles,59,0:59,17,False,,,,False,False,0,0,0,clean
