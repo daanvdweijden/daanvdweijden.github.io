@@ -1,6 +1,17 @@
 {
-  "fetchedAt": "2026-09-16T01:41:30.196Z",
+  "fetchedAt": "2026-09-16T15:33:41.432Z",
   "books": [
+    {
+      "id": "243927974",
+      "title": "Alles voor de reis",
+      "author": "Adriaan van Dis",
+      "imageUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1763162408l/243927974._SY475_.jpg",
+      "rating": 4,
+      "review": "Alles voor de reis is een ode aan het leven verpakt als een boek over de dood. Deze terugblik op het leven van een geliefde biedt een kijkje in de meest intieme momenten van een relatie, zowel terugblikkend als in de laatste momenten. Die intimiteit speelt eigenlijk het hele boek een grote rol en voelt soms bijna ongemakkelijk aan. Na te weten te zijn gekomen dat het boek quasi autobiografisch is (shoutout Tom), en dus ook de 'personages' te vertalen naar 'echte mensen', begin ik het boek totaal anders te lezen. Waar het eerst bijna te zweverig en romantisch was werd het daardoor een stuk tastbaarder en vertederend. Het maakt het echter ook soms wat tenenkrommend, gegeven de verhouding van De Ander, en diens onwetendheid van de situatie. Een mooie kijk in een enorm verrijkend leven, maar blij dat het niet mijn leven is.",
+      "reviewHtml": "Alles voor de reis is een ode aan het leven verpakt als een boek over de dood. Deze terugblik op het leven van een geliefde biedt een kijkje in de meest intieme momenten van een relatie, zowel terugblikkend als in de laatste momenten. Die intimiteit speelt eigenlijk het hele boek een grote rol en voelt soms bijna ongemakkelijk aan. <br /><br />Na te weten te zijn gekomen dat het boek quasi autobiografisch is (shoutout Tom), en dus ook de 'personages' te vertalen naar 'echte mensen', begin ik het boek totaal anders te lezen. Waar het eerst bijna te zweverig en romantisch was werd het daardoor een stuk tastbaarder en vertederend. <br /><br />Het maakt het echter ook soms wat tenenkrommend, gegeven de verhouding van De Ander, en diens onwetendheid van de situatie. Een mooie kijk in een enorm verrijkend leven, maar blij dat het niet mijn leven is.",
+      "readAt": "2026-09-16T00:00:00.000Z",
+      "addedAt": "2026-09-16T12:54:29.000Z"
+    },
     {
       "id": "214152261",
       "title": "Flesh",
