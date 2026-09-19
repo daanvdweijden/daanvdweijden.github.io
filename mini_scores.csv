@@ -341,3 +341,5 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-15,24513,mini,Joel Fagliano,,227,3:47,100,True,1789457602,,,False,True,0,3,0,checked
 2026-09-16,24473,mini,Adam Aaronson,,80,1:20,100,True,1789553844,,,False,False,0,0,0,clean
 2026-09-18,24523,mini,Joel Fagliano,,93,1:33,100,True,1789743126,,,False,False,0,0,0,clean
+2026-09-17,24505,mini,Christina Iverson,,48,0:48,50,False,,,,False,False,0,0,0,clean
+2026-09-19,24524,mini,Joel Fagliano,,2,0:02,0,False,,,,False,False,0,0,0,clean
