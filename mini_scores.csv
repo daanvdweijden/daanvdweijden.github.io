@@ -343,3 +343,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-18,24523,mini,Joel Fagliano,,93,1:33,100,True,1789743126,,,False,False,0,0,0,clean
 2026-09-17,24505,mini,Christina Iverson,,48,0:48,50,False,,,,False,False,0,0,0,clean
 2026-09-19,24524,mini,Joel Fagliano,,2,0:02,0,False,,,,False,False,0,0,0,clean
+2026-09-20,24519,mini,Tracy Bennett,,208,3:28,100,True,1789927175,,,False,True,0,2,0,checked
