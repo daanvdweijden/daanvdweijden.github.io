@@ -1,6 +1,17 @@
 {
-  "fetchedAt": "2026-09-22T16:45:33.687Z",
+  "fetchedAt": "2026-09-22T22:25:43.244Z",
   "books": [
+    {
+      "id": "230198731",
+      "title": "Overgave op commando",
+      "author": "Nadia de Vries",
+      "imageUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1742665991l/230198731._SY475_.jpg",
+      "rating": 2,
+      "review": "Alhoewel ik dit boek in 1 adem uit heb gelezen blijf ik vooral met verbazing achter. Wat is dit voor boek? Het voelt alsof de schrijfster heel veel wil vertellen, maar zodra het op papier moet er niet veel is om op te schrijven. Hoe schrijf ik a Little Life maar dan gehaast en onverklaard, en op een niet nieuwsgierig makende manier?",
+      "reviewHtml": "Alhoewel ik dit boek in 1 adem uit heb gelezen blijf ik vooral met verbazing achter. Wat is dit voor boek? Het voelt alsof de schrijfster heel veel wil vertellen, maar zodra het op papier moet er niet veel is om op te schrijven. <br /><br />Hoe schrijf ik a Little Life maar dan gehaast en onverklaard, en op een niet nieuwsgierig makende manier?",
+      "readAt": "2026-09-22T00:00:00.000Z",
+      "addedAt": "2026-09-22T20:47:53.000Z"
+    },
     {
       "id": "243927974",
       "title": "Alles voor de reis",
