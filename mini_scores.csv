@@ -345,3 +345,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-19,24524,mini,Joel Fagliano,,2,0:02,0,False,,,,False,False,0,0,0,clean
 2026-09-20,24519,mini,Tracy Bennett,,208,3:28,100,True,1789927175,,,False,True,0,2,0,checked
 2026-09-21,24538,mini,Joel Fagliano,,63,1:03,100,True,1789970920,,,False,False,0,0,0,clean
+2026-09-22,24479,mini,Ian Livengood,,75,1:15,100,True,1790081356,,,False,False,0,0,0,clean
