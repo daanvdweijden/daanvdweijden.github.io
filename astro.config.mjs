@@ -1,9 +1,17 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
-// Minimal config on purpose. We'll add integrations (e.g. an interactive
-// island, sitemap, etc.) only when a moodboard element actually needs them.
+// Pages marked `noindex` in their <Layout> (the footer easter eggs) are kept
+// out of the sitemap too, so crawlers get one consistent signal.
+const NOINDEX = ['/puzzles/', '/books/', '/music/'];
+
 export default defineConfig({
   // Served at the apex custom domain from the daanvdweijden.github.io user-site repo.
   site: 'https://daanvdweijden.com',
+  integrations: [
+    sitemap({
+      filter: (page) => !NOINDEX.some((p) => new URL(page).pathname.startsWith(p)),
+    }),
+  ],
 });

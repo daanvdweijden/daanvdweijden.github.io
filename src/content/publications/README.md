@@ -26,6 +26,10 @@ venueShort: ACRONYM           # optional — the small badge on the list
 type: Conference paper        # optional — e.g. "Journal article", "Workshop paper"
 note: "Equal Author Contribution" # optional — a short italic highlight
 award: "Best Paper Award"     # optional — a prize, rendered as a gold badge
+summary: >-                   # optional — 1–3 plain-language sentences, no jargon
+  What the paper shows, for a non-specialist.
+keyFindings:                  # optional — standalone claim sentences
+  - "X improves Y by Z% on W."
 file: 2024-emnlp-retrieval.pdf # optional — a PDF you host on the site (see below)
 # thumb: papers/thumbs/custom.png  # optional — manual thumbnail override
 links:                        # optional — every entry becomes a button
@@ -33,6 +37,7 @@ links:                        # optional — every entry becomes a button
   arxiv: https://arxiv.org/abs/0000.00000
   doi: 10.1000/xyz123         # bare DOI (no https://) — linked automatically
   code: https://github.com/...
+  data: https://zenodo.org/... # dataset
   slides: https://.../slides.pdf
   poster: https://.../poster.pdf
   video: https://youtu.be/...
@@ -59,9 +64,11 @@ paper's own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 | `type`        |          | Free text, e.g. "Journal article".                           |
 | `note`        |          | Short italic highlight, e.g. "Equal Author Contribution".    |
 | `award`       |          | A prize or honor, e.g. "Best Poster Honorable Mention" — shown as a gold badge (list, paper page, tooltip, cover ribbon), distinct from `note`. |
+| `summary`     |          | Plain-language summary. Shown as "In short" on the paper page, used as the search/share snippet, the JSON-LD `description` and the paper's line in `/llms.txt`. |
+| `keyFindings` |          | List of claim sentences, shown as "Key findings". Write each so it makes sense quoted on its own. |
 | `file`        |          | Filename of a PDF hosted on the site (see below).            |
 | `thumb`       |          | Manual thumbnail override, a path under `public/`.           |
-| `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `slides`, `poster`, `video`, `url`. Order fixed. |
+| `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `data`, `slides`, `poster`, `video`, `url`. Order fixed. |
 | `bibtex`      |          | Raw BibTeX. If omitted, one is generated from the fields.    |
 | `featured`    |          | Reserved for later (e.g. highlighting on the home page).     |
 | `draft`       |          | `true` hides the paper everywhere.                           |
@@ -79,3 +86,12 @@ Generate the thumbnails with `npm run thumbs` and commit the PDF plus the
 generated `public/papers/thumbs/<slug>.png`. See
 [`public/papers/README.md`](../../../public/papers/README.md) for the full
 workflow, including how to replace an auto thumbnail that doesn't look right.
+
+## Discoverability metadata (automatic)
+
+Every paper page gets, from the frontmatter alone: Google Scholar
+`citation_*` tags (Scholar indexes the hosted PDF via `citation_pdf_url`),
+`ScholarlyArticle` JSON-LD, a canonical URL, and Open Graph / Twitter preview
+tags using the thumbnail. Papers also appear in `/sitemap-index.xml` and
+`/llms.txt`. Keep `type` accurate: "Journal article" → journal tag,
+"… report" → institution tag, anything else → conference tag.
