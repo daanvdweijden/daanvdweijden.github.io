@@ -19,6 +19,21 @@ export const site = {
   // One short line that introduces you. Markdown-free, plain text for now.
   tagline: 'PhD Candidate at DDIS, University of Zurich.',
 
+  // Third-person bio for machines: the homepage Person JSON-LD and /llms.txt.
+  // Keep the name format identical to the one on your papers.
+  bio:
+    'Daan van der Weijden is a PhD candidate at the Dynamic and Distributed Information Systems Group (DDIS), University of Zurich, researching computational methods for deliberative democracy.',
+
+  // Research themes, most current first. Feed the Person JSON-LD
+  // (`knowsAbout`) and the themes list in /llms.txt.
+  themes: [
+    'Referendum leaflet summarisation',
+    'Diversity-aware discussion summarisation',
+    'Predicting moderation interventions in online deliberation',
+    'Voting advice applications and conversational agents for political information',
+    'LLM interpretability and reproducibility',
+  ],
+
   socials: [
     { name: 'GitHub', url: 'https://github.com/daanvdweijden/' },
     { name: 'Google Scholar', url: 'https://scholar.google.com/citations?hl=nl&user=vHEl144AAAAJ' },

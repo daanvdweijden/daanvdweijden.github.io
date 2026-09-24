@@ -74,11 +74,25 @@ export function actionLinks(p: Pub): { label: string; href: string }[] {
   if (l.arxiv) out.push({ label: 'arXiv', href: l.arxiv });
   if (l.doi) out.push({ label: 'DOI', href: `https://doi.org/${l.doi}` });
   if (l.code) out.push({ label: 'Code', href: l.code });
+  if (l.data) out.push({ label: 'Data', href: l.data });
   if (l.slides) out.push({ label: 'Slides', href: l.slides });
   if (l.poster) out.push({ label: 'Poster', href: l.poster });
   if (l.video) out.push({ label: 'Video', href: l.video });
   if (l.url) out.push({ label: 'Link', href: l.url });
   return out;
+}
+
+/**
+ * The abstract (the Markdown body) as plain text, for meta descriptions,
+ * JSON-LD and llms.txt. Strips the Markdown that abstracts actually use:
+ * links, emphasis, inline code; collapses whitespace.
+ */
+export function plainAbstract(p: Pub): string {
+  return (p.body ?? '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /** Path to a paper's own page. */

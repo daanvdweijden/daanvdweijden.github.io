@@ -11,6 +11,7 @@ import Layout from '../layouts/Layout.astro';
 import { site } from '../site.config';
 import { getPublications, yearOf, pubHref, isOwner } from '../lib/pubs';
 import { getNews, newsHref, titleParts } from '../lib/news';
+import { personLd, jsonLd } from '../lib/seo';
 
 const pubs = await getPublications();
 
@@ -19,9 +20,17 @@ const news = await getNews();
 const fmtMonth = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+// Person JSON-LD: ties this site to the ORCID/Scholar/GitHub/LinkedIn profiles.
+const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.site!) });
 ---
 
-<Layout>
+<Layout description={site.bio} ogType="profile">
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={personJson}
+  />
   <header class="hero">
     <div class="wrap">
       <h1 class="statement">

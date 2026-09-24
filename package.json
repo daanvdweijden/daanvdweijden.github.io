@@ -11,6 +11,7 @@
     "data:pull": "bash scripts/pull_data.sh"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "@citation-js/core": "^0.7.14",
     "@citation-js/plugin-bibtex": "^0.7.14",
     "@citation-js/plugin-csl": "^0.7.14",

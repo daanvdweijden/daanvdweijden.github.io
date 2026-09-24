@@ -59,12 +59,19 @@ const publications = defineCollection({
         arxiv: z.string().optional(),
         doi: z.string().optional(), // bare DOI, e.g. "10.1000/xyz"; linked automatically
         code: z.string().optional(),
+        data: z.string().optional(), // dataset link, e.g. Zenodo / OSF / HF
         slides: z.string().optional(),
         poster: z.string().optional(),
         video: z.string().optional(),
         url: z.string().optional(), // any other canonical link
       })
       .nullish(), // tolerate `links:` left empty (parses as null)
+    // Plain-language summary (1–3 sentences, no jargon) and key findings as
+    // standalone claim sentences. Both render on the paper page above the
+    // abstract and feed the meta description, JSON-LD and /llms.txt, so write
+    // them the way you'd want a search engine or LLM to quote the paper.
+    summary: z.string().optional(),
+    keyFindings: z.array(z.string()).optional(),
     // Optional raw BibTeX. If omitted, a sensible entry is generated for you.
     bibtex: z.string().optional(),
     featured: z.boolean().default(false),

@@ -10,8 +10,13 @@ import {
   isOwner,
   actionLinks,
   bibtexFor,
+  thumbSrc,
+  localPdfHref,
+  plainAbstract,
   type Pub,
 } from '../../lib/pubs';
+import { site } from '../../site.config';
+import { personLd, jsonLd } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const pubs = await getPublications();
@@ -27,9 +32,80 @@ const { Content } = await render(pub);
 const links = actionLinks(pub);
 const bibtex = bibtexFor(pub);
 const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Boolean);
+const { summary, keyFindings = [] } = pub.data;
+
+// ---- Machine-readable metadata --------------------------------------------
+// Everything below is derived from frontmatter, so a new paper file gets it
+// for free. Absolute URLs throughout: crawlers don't resolve relative ones.
+const abs = (path: string) => new URL(path, Astro.site).href;
+const pageUrl = abs(Astro.url.pathname);
+const pdfUrl = localPdfHref(pub) ? abs(localPdfHref(pub)!) : pub.data.links?.pdf;
+const doi = pub.data.links?.doi;
+const abstract = plainAbstract(pub);
+
+// Search snippet: the plain-language summary when there is one, else the
+// opening of the abstract, clipped at a word boundary.
+const clip = (t: string, n = 160) =>
+  t.length <= n ? t : t.slice(0, t.lastIndexOf(' ', n - 1)).replace(/[,.;:]$/, '') + '…';
+const description = clip(summary ?? abstract);
+
+// Google Scholar reads the Highwire Press `citation_*` tags. The venue tag
+// depends on the kind of publication.
+const d = pub.data.date;
+const pad = (n: number) => String(n).padStart(2, '0');
+const scholarDate = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+const kind = (pub.data.type ?? '').toLowerCase();
+const venueTag = kind.includes('journal')
+  ? 'citation_journal_title'
+  : kind.includes('report')
+    ? 'citation_technical_report_institution'
+    : 'citation_conference_title';
+
+const scholarlyArticle = {
+  '@context': 'https://schema.org',
+  '@type': 'ScholarlyArticle',
+  '@id': `${pageUrl}#article`,
+  headline: pub.data.title,
+  name: pub.data.title,
+  url: pageUrl,
+  mainEntityOfPage: pageUrl,
+  author: pub.data.authors.map((name) =>
+    isOwner(name) ? personLd(Astro.site!) : { '@type': 'Person', name },
+  ),
+  datePublished: d.toISOString().slice(0, 10),
+  isPartOf: { '@type': 'CreativeWork', name: pub.data.venue },
+  abstract,
+  ...(summary && { description: summary }),
+  ...(doi && {
+    identifier: { '@type': 'PropertyValue', propertyID: 'DOI', value: doi },
+    sameAs: `https://doi.org/${doi}`,
+  }),
+  ...(pdfUrl && { encoding: { '@type': 'MediaObject', contentUrl: pdfUrl, encodingFormat: 'application/pdf' } }),
+  ...(thumbSrc(pub) && { image: abs(thumbSrc(pub)!) }),
+  ...(pub.data.links?.code && { isBasedOn: pub.data.links.code }),
+  inLanguage: 'en',
+};
 ---
 
-<Layout title={pub.data.title} description={`${pub.data.venue}, ${yearOf(pub)}`} active="publications">
+<Layout
+  title={pub.data.title}
+  description={description}
+  active="publications"
+  ogType="article"
+  image={thumbSrc(pub) ?? undefined}
+>
+  <Fragment slot="head">
+    <meta name="citation_title" content={pub.data.title} />
+    {pub.data.authors.map((a) => <meta name="citation_author" content={a} />)}
+    <meta name="citation_publication_date" content={scholarDate} />
+    <meta name={venueTag} content={pub.data.venue} />
+    {doi && <meta name="citation_doi" content={doi} />}
+    {pdfUrl && <meta name="citation_pdf_url" content={pdfUrl} />}
+    <meta name="citation_abstract_html_url" content={pageUrl} />
+    <meta name="citation_language" content="en" />
+    <meta property="article:published_time" content={scholarlyArticle.datePublished} />
+    <script type="application/ld+json" set:html={jsonLd(scholarlyArticle)} />
+  </Fragment>
   <main class="wrap paper">
     <a class="back" href={`${import.meta.env.BASE_URL}pubs/`}>← Publications</a>
 
@@ -57,6 +133,22 @@ const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Bo
         </div>
       )}
     </header>
+
+    {summary && (
+      <section class="summary">
+        <h2 class="kicker">In short</h2>
+        <p class="lede">{summary}</p>
+      </section>
+    )}
+
+    {keyFindings.length > 0 && (
+      <section class="findings">
+        <h2 class="kicker">Key findings</h2>
+        <ul>
+          {keyFindings.map((f) => <li>{f}</li>)}
+        </ul>
+      </section>
+    )}
 
     <section class="abstract">
       <h2 class="kicker">Abstract</h2>
@@ -145,6 +237,13 @@ const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Bo
     content: ""; width: 5px; height: 5px; border-radius: 50%; flex: none;
     background: color-mix(in srgb, var(--accent) 65%, transparent);
   }
+
+  .summary, .findings { padding-top: clamp(1.8rem, 5vw, 2.6rem); }
+  .lede, .findings ul { max-width: 48rem; }
+  .lede { margin: 0; font-family: var(--serif); font-size: 1.28rem; line-height: 1.55; }
+  .findings ul { margin: 0; padding-left: 1.1rem; font-size: 1.02rem; }
+  .findings li { margin: 0 0 .5rem; }
+  .findings li::marker { color: var(--accent); }
 
   .abstract { padding: clamp(1.8rem, 5vw, 2.6rem) 0; }
   .prose { font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; }

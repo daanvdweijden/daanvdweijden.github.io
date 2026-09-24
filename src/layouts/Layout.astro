@@ -14,9 +14,24 @@ interface Props {
   hideMarkUntilScroll?: boolean;
   /** Keep a page out of search engines without removing it from the site (e.g. the /puzzles/ easter egg). */
   noindex?: boolean;
+  /** Share-preview image, a path under public/ (defaults to the avatar). */
+  image?: string;
+  /** Open Graph type: 'article' for papers/news, 'website' otherwise. */
+  ogType?: 'website' | 'article' | 'profile';
 }
-const { title, description = site.tagline, active, hideMarkUntilScroll = false, noindex = false } = Astro.props;
+const {
+  title,
+  description = site.tagline,
+  active,
+  hideMarkUntilScroll = false,
+  noindex = false,
+  image = site.avatar,
+  ogType = 'website',
+} = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
+// Absolute URLs for crawlers and link previews, built from `site` in astro.config.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const imageUrl = new URL(image.replace(/^\/+/, ''), new URL(import.meta.env.BASE_URL, Astro.site)).href;
 const year = new Date().getFullYear();
 
 // Internal sections shown in the header nav. Each carries the same accent color
@@ -51,6 +66,21 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+    <!-- Link previews (Open Graph + Twitter/X, Bluesky, LinkedIn, Slack …). -->
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title ?? site.name} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title ?? site.name} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <!-- Page-specific metadata (e.g. Google Scholar tags, JSON-LD). -->
+    <slot name="head" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Newsreader (editorial serif) + Hanken Grotesk (geometric body) + JetBrains Mono. -->
