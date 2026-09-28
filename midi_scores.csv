@@ -191,3 +191,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-18,24302,midi,Aidan Deshong,Brand Spell Check,239,3:59,63,False,,,,False,False,0,0,0,clean
 2026-09-21,24147,midi,Zhou Zhang and Kevin Curry,Make a Beeline For It,140,2:20,46,False,,,,False,False,0,0,0,clean
 2026-09-27,24259,midi,Andy Kravis,Shady Characters,4,0:04,4,False,,,,False,False,0,0,0,clean
+2026-09-28,23838,midi,Ian Livengood,Craft From the Past,508,8:28,100,True,1790583038,,,True,True,7,5,0,revealed
