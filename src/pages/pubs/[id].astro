@@ -1,6 +1,7 @@
 ---
-// A single paper's page: metadata, action buttons, the abstract (the Markdown
-// body), and a copy-able BibTeX block. One page is generated per file in the
+// A single paper's page: metadata and the abstract (the Markdown body) up
+// top, then action buttons, the plain-language panel, one figure from the
+// paper, and a copy-able BibTeX block. One page is generated per file in the
 // `publications` collection.
 import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
@@ -11,6 +12,7 @@ import {
   actionLinks,
   bibtexFor,
   thumbSrc,
+  figureSrc,
   localPdfHref,
   plainAbstract,
   type Pub,
@@ -32,7 +34,8 @@ const { Content } = await render(pub);
 const links = actionLinks(pub);
 const bibtex = bibtexFor(pub);
 const meta = [pub.data.type, pub.data.venueShort, String(yearOf(pub))].filter(Boolean);
-const { summary, keyFindings = [] } = pub.data;
+const { summary, keyFindings = [], figure } = pub.data;
+const figSrc = figureSrc(pub);
 
 // ---- Machine-readable metadata --------------------------------------------
 // Everything below is derived from frontmatter, so a new paper file gets it
@@ -81,7 +84,13 @@ const scholarlyArticle = {
     sameAs: `https://doi.org/${doi}`,
   }),
   ...(pdfUrl && { encoding: { '@type': 'MediaObject', contentUrl: pdfUrl, encodingFormat: 'application/pdf' } }),
-  ...(thumbSrc(pub) && { image: abs(thumbSrc(pub)!) }),
+  // The first-page thumbnail, plus the paper's figure with its caption.
+  image: [
+    ...(thumbSrc(pub) ? [abs(thumbSrc(pub)!)] : []),
+    ...(figure && figSrc
+      ? [{ '@type': 'ImageObject', contentUrl: abs(figSrc), caption: figure.caption, description: figure.alt }]
+      : []),
+  ],
   ...(pub.data.links?.code && { isBasedOn: pub.data.links.code }),
   inLanguage: 'en',
 };
@@ -125,6 +134,11 @@ const scholarlyArticle = {
         {pub.data.note ? <span class="note"> · {pub.data.note}</span> : null}
       </p>
 
+      <section class="abstract">
+        <h2 class="kicker">Abstract</h2>
+        <div class="prose"><Content /></div>
+      </section>
+
       {links.length > 0 && (
         <div class="actions">
           {links.map((l) => (
@@ -154,10 +168,12 @@ const scholarlyArticle = {
       </aside>
     )}
 
-    <section class="abstract">
-      <h2 class="kicker">Abstract</h2>
-      <div class="prose"><Content /></div>
-    </section>
+    {figure && figSrc && (
+      <figure class="fig">
+        <a href={figSrc}><img src={figSrc} alt={figure.alt} loading="lazy" decoding="async" /></a>
+        <figcaption>{figure.caption}</figcaption>
+      </figure>
+    )}
 
     <section class="cite">
       <div class="cite-head">
@@ -244,7 +260,7 @@ const scholarlyArticle = {
 
   /* The plain-language part sits in a tinted panel, in the sans UI face, so
      it reads as "the version for everyone" and not as a second abstract. The
-     abstract below stays plain serif on the page, like the paper itself. */
+     abstract above stays plain serif on the page, like the paper itself. */
   .explainer {
     max-width: 48rem; margin-top: clamp(1.8rem, 5vw, 2.6rem);
     padding: clamp(1.2rem, 3.5vw, 1.8rem) clamp(1.1rem, 3.5vw, 1.9rem);
@@ -260,7 +276,7 @@ const scholarlyArticle = {
   .findings li:last-child { margin-bottom: 0; }
   .findings li::marker { color: var(--accent); }
 
-  .abstract { padding: clamp(1.8rem, 5vw, 2.6rem) 0; }
+  .abstract { margin-top: clamp(1.6rem, 4vw, 2.2rem); }
   .prose { font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; }
   .prose :global(p) { margin: 0 0 1rem; }
   .prose :global(p:last-child) { margin-bottom: 0; }
@@ -271,7 +287,20 @@ const scholarlyArticle = {
   }
   .prose :global(a:hover) { border-bottom-color: var(--accent); }
 
-  .cite { border-top: 1px solid var(--line); padding-top: clamp(1.8rem, 5vw, 2.4rem); }
+  /* One figure from the paper. Figures are drawn for white paper, so the
+     image keeps a white card in dark mode too. */
+  .fig { max-width: 48rem; margin: clamp(1.8rem, 5vw, 2.6rem) 0 0; }
+  .fig a { display: block; }
+  .fig img {
+    display: block; width: 100%; height: auto;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: clamp(.6rem, 2vw, 1rem);
+  }
+  .fig figcaption {
+    margin-top: .8rem; font-family: var(--sans); font-size: .9rem; line-height: 1.5; color: var(--muted);
+  }
+
+  .cite { margin-top: clamp(1.8rem, 5vw, 2.6rem); border-top: 1px solid var(--line); padding-top: clamp(1.8rem, 5vw, 2.4rem); }
   .cite-head { display: flex; align-items: center; justify-content: space-between; }
   .cite-head .kicker { margin-bottom: 0; }
   .copy {

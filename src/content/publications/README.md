@@ -30,6 +30,10 @@ summary: >-                   # optional — 1–3 plain-language sentences, no 
   What the paper shows, for a non-specialist.
 keyFindings:                  # optional — standalone claim sentences
   - "X improves Y by Z% on W."
+figure:                       # optional — one figure cropped from the paper
+  src: papers/figures/2024-emnlp-retrieval.png
+  caption: "Figure 3 from the paper: X beats Y on every benchmark."
+  alt: "Bar chart comparing X and Y across five benchmarks."
 file: 2024-emnlp-retrieval.pdf # optional — a PDF you host on the site (see below)
 # thumb: papers/thumbs/custom.png  # optional — manual thumbnail override
 links:                        # optional — every entry becomes a button
@@ -66,6 +70,7 @@ paper's own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 | `award`       |          | A prize or honor, e.g. "Best Poster Honorable Mention" — shown as a gold badge (list, paper page, tooltip, cover ribbon), distinct from `note`. |
 | `summary`     |          | Plain-language summary. Shown as "In short" on the paper page, used as the search/share snippet, the JSON-LD `description` and the paper's line in `/llms.txt`. |
 | `keyFindings` |          | List of claim sentences, shown as "Key findings". Write each so it makes sense quoted on its own. |
+| `figure`      |          | One figure from the paper: `src` (path under `public/`, e.g. `papers/figures/<slug>.png`), `caption` and `alt`. Shown below the key findings. Write the caption as a standalone claim; it also goes into the JSON-LD. |
 | `file`        |          | Filename of a PDF hosted on the site (see below).            |
 | `thumb`       |          | Manual thumbnail override, a path under `public/`.           |
 | `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `data`, `slides`, `poster`, `video`, `url`. Order fixed. |
@@ -73,7 +78,7 @@ paper's own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 | `featured`    |          | Reserved for later (e.g. highlighting on the home page).     |
 | `draft`       |          | `true` hides the paper everywhere.                           |
 
-The **body** below the frontmatter is the abstract shown on the paper page.
+The **body** below the frontmatter is the abstract, shown at the top of the paper page under the venue.
 
 ## Hosting the PDF + first-page thumbnail
 

@@ -72,6 +72,17 @@ const publications = defineCollection({
     // them the way you'd want a search engine or LLM to quote the paper.
     summary: z.string().optional(),
     keyFindings: z.array(z.string()).optional(),
+    // One figure from the paper, shown below the key findings. `src` is a path
+    // relative to public/, e.g. "papers/figures/2024-playing-with-fire.png".
+    // Write the caption as a standalone claim, like a key finding: it is
+    // visible text crawlers and LLMs can quote.
+    figure: z
+      .object({
+        src: z.string(),
+        caption: z.string(),
+        alt: z.string(),
+      })
+      .optional(),
     // Optional raw BibTeX. If omitted, a sensible entry is generated for you.
     bibtex: z.string().optional(),
     featured: z.boolean().default(false),

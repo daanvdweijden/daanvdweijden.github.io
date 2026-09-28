@@ -15,6 +15,10 @@ keyFindings:
   - "Subliminal learning does not occur in every model: Ministral8B showed essentially no transmission across all preference types and tasks, while Qwen2.5-7B showed a substantially larger effect than Gemma3-4B."
   - "Hidden preferences also transmit subliminally through chess move generation, not only through number sequences, though the effect through chess moves is generally weaker."
   - "Restricting the number task to fewer digits made subliminal transmission of animal preferences in Qwen2.5-7B stronger rather than weaker, contrary to expectation."
+figure:
+  src: papers/figures/2026-subliminal-learning-open-weight.png
+  caption: "Figure 2 (top) from the paper: how strongly student models trained only on number sequences picked up a teacher's hidden preference for each animal, actor and politician, as a log-odds ratio against a student trained on data from an unprimed teacher. Qwen2.5-7B (left) shows strong transmission, Gemma3-4B (middle) weaker transmission, and Ministral8B (right) essentially none."
+  alt: "A three-by-three grid of dot plots, with rows for animals, actors and politicians and columns for the Qwen, Gemma and Ministral models. Qwen's dots sit far right of zero, especially for politicians such as Trump; Ministral's dots all sit at zero."
 file: 2026-subliminal-learning-open-weight.pdf
 links:
   code: https://github.com/daanvdweijden/subliminal-learning-blackboxnlp2026

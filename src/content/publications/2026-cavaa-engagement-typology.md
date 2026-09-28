@@ -16,6 +16,10 @@ keyFindings:
   - "Testers, users who probe a voting advice chatbot's limits instead of seeking advice, have no direct counterpart in earlier typologies of traditional voting advice application users, while Checkers and Seekers resemble existing types."
   - "Only 51.9% of users of the chatbot voting advice tool answered all ten statements, and user type did not significantly predict completion, although Testers had the lowest full completion rate (34.6%)."
   - "A voting advice chatbot persona that asked follow-up questions after each answer led users to complete far fewer statements than a passive one (5.60 vs 9.25 of 10 on average), so users dropped out 3 to 4 statements earlier."
+figure:
+  src: papers/figures/2026-cavaa-engagement-typology.png
+  caption: "Figure 1 from the paper: the ten conversational features that most distinguish each type of user of a chatbot voting advice tool, as standardised difference from the overall mean. Checkers (n=124) mostly give answers and statements, Seekers (n=39) ask about party ideology and political knowledge, and Testers (n=26) ask for the chatbot's own opinion and go off topic."
+  alt: "Three diverging bar charts, one each for Checkers, Seekers and Testers, showing features above the average in orange and below the average in blue."
 file: 2026-cavaa-engagement-typology.pdf
 links:
   doi: 10.1145/3816046.3816272

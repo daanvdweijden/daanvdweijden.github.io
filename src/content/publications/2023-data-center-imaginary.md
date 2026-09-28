@@ -14,6 +14,10 @@ keyFindings:
   - "Two data center imaginaries coexisted on Dutch Twitter: the IT industry's positive picture of an immaterial 'cloud', and a critical 'reactive' imaginary, shared by left-wing, right-wing, journalist and citizen communities, focused on data centers' use of water, energy and farmland."
   - "Journalism and TV coverage, including the satirical programme Zondag met Lubach, drove spikes in Dutch data center tweets and helped move the debate from local to national politics, where it fed into national policy on where hyperscale data centers may be built."
   - "The Dutch Twitter debate over data centers had blind spots: it rarely questioned the wider digital infrastructure, the environmental impact of consumer devices, or society's growing demand for data."
+figure:
+  src: papers/figures/2023-data-center-imaginary.jpg
+  caption: "Figure 2 from the paper: the retweet network of the Dutch Twitter discussion about data centers, January 2020 to March 2022. Each node is an account and colours mark the seven communities found by modularity detection; the IT industry community (red, right) sits almost entirely apart from the other six."
+  alt: "A network graph of Twitter accounts on a black background, forming large green, orange, yellow and blue clusters labelled by community, with a small separate red IT industry cluster on the right."
 file: 2023-data-center-imaginary.pdf
 links:
   doi: 10.1177/20539517231155064

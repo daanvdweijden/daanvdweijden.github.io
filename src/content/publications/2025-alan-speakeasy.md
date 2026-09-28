@@ -24,6 +24,10 @@ venueShort: "WWW '25"
 type: Conference paper
 award: "Demo Paper Third Place Award"
 summary: "Alan's Speakeasy is an open-source website where people chat live with AI chatbots and rate how accurate, complete, quick and human-like their answers are. Across four years of a University of Zurich AI course, 337 people used it to evaluate 114 student-built chatbots."
+figure:
+  src: papers/figures/2025-alan-speakeasy.png
+  caption: "Figure 1 from the paper: the Speakeasy interface. Left, a live chat in which a person asks a student-built chatbot a question about movies; right, the survey that closes each conversation, rating whether the answers were accurate, complete and timely, and whether the other side seemed human. Photo in the chat: Harald Krichel, CC BY-SA 4.0."
+  alt: "Screenshot of a chat window where a user asks a bot what George Clooney looks like and the bot replies with a photo, next to a rating form with multiple-choice questions about the conversation."
 file: 2025-alan-speakeasy.pdf
 links:
   doi: 10.1145/3701716.3715165

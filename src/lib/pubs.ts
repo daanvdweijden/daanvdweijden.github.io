@@ -62,6 +62,12 @@ export function thumbSrc(p: Pub): string | null {
   return existsSync(join(PUBLIC_DIR, rel)) ? `${base}${rel}` : null;
 }
 
+/** URL of the paper's `figure`, or null when it has none. */
+export function figureSrc(p: Pub): string | null {
+  const src = p.data.figure?.src;
+  return src ? `${import.meta.env.BASE_URL}${src.replace(/^\/+/, '')}` : null;
+}
+
 /** Normalises the optional links object into an ordered list of buttons. */
 export function actionLinks(p: Pub): { label: string; href: string }[] {
   const l = p.data.links ?? {};

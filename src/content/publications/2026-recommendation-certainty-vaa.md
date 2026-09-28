@@ -15,6 +15,10 @@ keyFindings:
   - "In a user experiment, voting advice application users shown a preview of their likely candidate recommendations answered significantly more questions before quitting than a control group (68 vs 56 of 75 on average)."
   - "Voting advice application users shown an artificially inflated certainty score stopped answering sooner (49 questions on average) than users shown the real estimate (63), even though they said the display did not influence their decision."
   - "Voting advice application users understood a simple list of likely candidate matches significantly better than a version that also showed each candidate's match probability as a percentage."
+figure:
+  src: papers/figures/2026-recommendation-certainty-vaa.png
+  caption: "Figure 2 from the paper: (a) error of methods that estimate how accurate a voting advice application's early candidate recommendations are, by number of questions answered out of 75. Methods that simulate the voter's remaining answers (Posterior, One-shot) err less than a linearly growing progress bar (Linear) or the historic average (Historic). (b) The true accuracy of each voter's early recommendations (grey lines) varies widely from voter to voter."
+  alt: "Two line charts against number of questions answered. Left: estimation error for several methods, with the Posterior sampling lines lowest and Linear and Historic highest. Right: grey per-voter accuracy curves with average, linear and FastCRA lines on top."
 file: 2026-recommendation-certainty-vaa.pdf
 links:
   doi: 10.17645/pag.11256

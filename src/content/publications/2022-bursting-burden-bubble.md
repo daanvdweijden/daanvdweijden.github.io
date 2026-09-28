@@ -16,6 +16,10 @@ keyFindings:
   - "Burden and statistical parity can disagree about which group is treated unfairly: on a second synthetic dataset, statistical parity pointed to one group as disadvantaged while Burden pointed to the other."
   - "On a sample of the Taiwan credit-card default dataset, statistical parity between women and men was nearly met (1.02), yet women's Burden was almost 1.5 times that of men (1.38 vs 0.94)."
   - "Burden complements rather than replaces statistical parity, and it is far more expensive to compute, since generating a single counterfactual can take minutes."
+figure:
+  src: papers/figures/2022-bursting-burden-bubble.png
+  caption: "Figure 2 from the paper: the two synthetic datasets used to test the Burden fairness metric. Rejected points from each group (grey triangles and black squares) are linked by dotted lines to their counterfactuals (×) across the classifier's decision boundary, and longer lines mean a higher Burden. On dataset D_A, Burden and statistical parity disagree on whether there is unfairness at all; on D_B, they disagree on which group is disadvantaged."
+  alt: "Two scatter plots of synthetic data points on either side of a dashed decision boundary, with dotted lines connecting rejected points to their counterfactuals."
 file: 2022-bursting-burden-bubble.pdf
 links:
   arxiv: https://arxiv.org/abs/2211.11512
