@@ -23,6 +23,7 @@ venue: "Companion Proceedings of the ACM Web Conference 2025 (WWW '25)"
 venueShort: "WWW '25"
 type: Conference paper
 award: "Demo Paper Third Place Award"
+summary: "Alan's Speakeasy is an open-source website where people chat live with AI chatbots and rate how accurate, complete, quick and human-like their answers are. Across four years of a University of Zurich AI course, 337 people used it to evaluate 114 student-built chatbots."
 file: 2025-alan-speakeasy.pdf
 links:
   doi: 10.1145/3701716.3715165

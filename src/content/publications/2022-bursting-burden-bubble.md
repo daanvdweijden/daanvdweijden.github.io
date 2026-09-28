@@ -10,6 +10,12 @@ venue: "Benelux Conference on Artificial Intelligence"
 venueShort: "BNAIC '22"
 type: Preprint
 note: "Presented at BNAIC/BeNeLearn 2022"
+summary: "Two ways of checking whether an AI model treats groups fairly can tell different stories. Burden, which measures how much rejected people would have to change to be accepted, catches unfairness that approval rates miss, and the two can disagree on who is disadvantaged."
+keyFindings:
+  - "On a synthetic dataset where both groups were approved at the same rate (statistical parity of 1.00), the Burden fairness metric still flagged unfairness: one group's Burden was 11.6 against 4.65 for the other."
+  - "Burden and statistical parity can disagree about which group is treated unfairly: on a second synthetic dataset, statistical parity pointed to one group as disadvantaged while Burden pointed to the other."
+  - "On a sample of the Taiwan credit-card default dataset, statistical parity between women and men was nearly met (1.02), yet women's Burden was almost 1.5 times that of men (1.38 vs 0.94)."
+  - "Burden complements rather than replaces statistical parity, and it is far more expensive to compute, since generating a single counterfactual can take minutes."
 file: 2022-bursting-burden-bubble.pdf
 links:
   arxiv: https://arxiv.org/abs/2211.11512

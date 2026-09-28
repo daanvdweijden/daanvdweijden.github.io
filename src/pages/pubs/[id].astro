@@ -134,20 +134,24 @@ const scholarlyArticle = {
       )}
     </header>
 
-    {summary && (
-      <section class="summary">
-        <h2 class="kicker">In short</h2>
-        <p class="lede">{summary}</p>
-      </section>
-    )}
+    {(summary || keyFindings.length > 0) && (
+      <aside class="explainer" aria-label="Plain-language summary">
+        {summary && (
+          <section class="summary">
+            <h2 class="kicker">In short</h2>
+            <p class="lede">{summary}</p>
+          </section>
+        )}
 
-    {keyFindings.length > 0 && (
-      <section class="findings">
-        <h2 class="kicker">Key findings</h2>
-        <ul>
-          {keyFindings.map((f) => <li>{f}</li>)}
-        </ul>
-      </section>
+        {keyFindings.length > 0 && (
+          <section class="findings">
+            <h2 class="kicker">Key findings</h2>
+            <ul>
+              {keyFindings.map((f) => <li>{f}</li>)}
+            </ul>
+          </section>
+        )}
+      </aside>
     )}
 
     <section class="abstract">
@@ -238,11 +242,22 @@ const scholarlyArticle = {
     background: color-mix(in srgb, var(--accent) 65%, transparent);
   }
 
-  .summary, .findings { padding-top: clamp(1.8rem, 5vw, 2.6rem); }
-  .lede, .findings ul { max-width: 48rem; }
-  .lede { margin: 0; font-family: var(--serif); font-size: 1.28rem; line-height: 1.55; }
-  .findings ul { margin: 0; padding-left: 1.1rem; font-size: 1.02rem; }
+  /* The plain-language part sits in a tinted panel, in the sans UI face, so
+     it reads as "the version for everyone" and not as a second abstract. The
+     abstract below stays plain serif on the page, like the paper itself. */
+  .explainer {
+    max-width: 48rem; margin-top: clamp(1.8rem, 5vw, 2.6rem);
+    padding: clamp(1.2rem, 3.5vw, 1.8rem) clamp(1.1rem, 3.5vw, 1.9rem);
+    background: var(--accent-bg); border-radius: 14px;
+  }
+  .explainer .kicker { color: var(--accent); }
+  .explainer .kicker::before { background: var(--accent); }
+  .findings { margin-top: 1.5rem; padding-top: 1.3rem; border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent); }
+  .explainer > :first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+  .lede { margin: 0; font-family: var(--sans); font-size: 1.15rem; line-height: 1.55; font-weight: 500; }
+  .findings ul { margin: 0; padding-left: 1.1rem; font-size: 1rem; line-height: 1.55; }
   .findings li { margin: 0 0 .5rem; }
+  .findings li:last-child { margin-bottom: 0; }
   .findings li::marker { color: var(--accent); }
 
   .abstract { padding: clamp(1.8rem, 5vw, 2.6rem) 0; }

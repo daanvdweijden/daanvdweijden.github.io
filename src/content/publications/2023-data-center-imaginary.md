@@ -8,6 +8,12 @@ date: 2023-02-15
 venue: "Big Data & Society"
 venueShort: "BD&S"
 type: Journal article
+summary: "On Dutch Twitter between 2020 and 2022, data centers shifted from a local planning matter to a national political fight. Journalists, TV shows and politicians from left and right came to share a critical view of the tech industry's clean \"cloud\" story, pushing the government towards new policy."
+keyFindings:
+  - "In a network of 68,613 Dutch tweets about data centers posted between January 2020 and March 2022, the IT industry community was almost entirely cut off from the other six communities in the discussion."
+  - "Two data center imaginaries coexisted on Dutch Twitter: the IT industry's positive picture of an immaterial 'cloud', and a critical 'reactive' imaginary, shared by left-wing, right-wing, journalist and citizen communities, focused on data centers' use of water, energy and farmland."
+  - "Journalism and TV coverage, including the satirical programme Zondag met Lubach, drove spikes in Dutch data center tweets and helped move the debate from local to national politics, where it fed into national policy on where hyperscale data centers may be built."
+  - "The Dutch Twitter debate over data centers had blind spots: it rarely questioned the wider digital infrastructure, the environmental impact of consumer devices, or society's growing demand for data."
 file: 2023-data-center-imaginary.pdf
 links:
   doi: 10.1177/20539517231155064

@@ -10,6 +10,12 @@ venueShort: "CUI '26"
 type: Conference paper
 note: "Equal Author Contribution"
 award: "Best Poster Honorable Mention"
+summary: "People using a chatbot-based voting advice tool fell into three groups: those checking a choice they had already made, undecided voters seeking guidance, and people testing the chatbot itself. The group didn't predict who finished; the chatbot's behaviour did, as follow-up questions made people quit earlier."
+keyFindings:
+  - "Among 189 users of a GPT-based chatbot voting advice tool for the 2024 European Parliament elections, three behaviour-based user types emerged: Checkers (65.6%), Seekers (20.6%) and Testers (13.8%)."
+  - "Testers, users who probe a voting advice chatbot's limits instead of seeking advice, have no direct counterpart in earlier typologies of traditional voting advice application users, while Checkers and Seekers resemble existing types."
+  - "Only 51.9% of users of the chatbot voting advice tool answered all ten statements, and user type did not significantly predict completion, although Testers had the lowest full completion rate (34.6%)."
+  - "A voting advice chatbot persona that asked follow-up questions after each answer led users to complete far fewer statements than a passive one (5.60 vs 9.25 of 10 on average), so users dropped out 3 to 4 statements earlier."
 file: 2026-cavaa-engagement-typology.pdf
 links:
   doi: 10.1145/3816046.3816272

@@ -10,6 +10,12 @@ date: 2025-05-22
 venue: "PLoS One"
 venueShort: "PLOS ONE"
 type: Journal article
+summary: "GPT-4, asked to fill in Switzerland's Smartvote questionnaire as a member of each major party, answered close to how real candidates of those parties did. Training an adaptive survey on these simulated answers before any real users arrive clearly improved its predictions and recommendations for its first users."
+keyFindings:
+  - "When GPT-4 answered the 75-question Smartvote questionnaire as a member of one of eight Swiss parties, its answers were on average closer to that party's typical position than an average real candidate's (mean distance 0.165 vs 0.191), significantly so for six of the eight parties."
+  - "Pre-training an adaptive political survey on GPT-4-generated answers raised initial candidate recommendation accuracy from 24.8% to 42.3% and cut the prediction error for unanswered questions (RMSE) from 0.420 to 0.327, for users answering 30 questions."
+  - "The advantage of pre-training an adaptive survey on GPT-4 data is temporary: a survey trained from scratch caught up after between 85 and 895 real users, depending on how many questions each user answered."
+  - "GPT-4's simulated party answers were less extreme and far less varied than those of real Swiss candidates, and even GPT-4's maximum temperature setting did not restore the diversity of views found within real parties."
 file: 2025-adaptive-political-surveys-gpt4.pdf
 links:
   doi: 10.1371/journal.pone.0322690
