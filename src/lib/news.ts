@@ -42,3 +42,22 @@ export function titleParts(n: NewsItem): { before: string; emphasis: string; aft
   if (i === -1) return { before: title, emphasis: '', after: '' };
   return { before: title.slice(0, i), emphasis: title.slice(i, i + emphasis!.length), after: title.slice(i + emphasis!.length) };
 }
+
+/**
+ * A short plain-text preview of a news item's body, for the /news list.
+ * Strips the Markdown news items use (images, links, emphasis, headings,
+ * inline HTML) and cuts at a word boundary after roughly `max` characters.
+ */
+export function excerpt(n: NewsItem, max = 220): string {
+  const text = (n.body ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^#+\s+/gm, '')
+    .replace(/[*_`]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:.—–-]+$/, '') + '…';
+}
