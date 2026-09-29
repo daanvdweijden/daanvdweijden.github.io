@@ -138,7 +138,7 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
       html:not([data-look='plain']) {
         --tone: #37595f;        /* teal: text-safe on bone (~7:1) */
         --tone-soft: #77a19a;   /* sage: fills/underlines only */
-        --grain: .06;           /* grain opacity: 0 = off, obvious above ~.1 */
+        --grain: .1;            /* grain opacity: 0 = off, obvious above ~.15 */
         --grain-blend: multiply;
       }
       html[data-theme='dark']:not([data-look='plain']) {
