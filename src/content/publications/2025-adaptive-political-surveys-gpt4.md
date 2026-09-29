@@ -23,7 +23,7 @@ figure:
 file: 2025-adaptive-political-surveys-gpt4.pdf
 links:
   doi: 10.1371/journal.pone.0322690
-  pdf: https://arxiv.org/pdf/2503.09311
+  arxiv: https://arxiv.org/abs/2503.09311
 bibtex: |
   @article{bachmann2025adaptive,
     title={Adaptive political surveys and GPT-4: Tackling the cold start problem with simulated user interactions},

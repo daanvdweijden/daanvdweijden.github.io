@@ -23,9 +23,9 @@ figure:
 file: 2022-bursting-burden-bubble.pdf
 links:
   arxiv: https://arxiv.org/abs/2211.11512
-  # The version in the BNAIC/BeNeLearn 2022 proceedings; the arXiv PDF is the
-  # same paper, so linking both here would just duplicate the arXiv button.
-  pdf: https://bnaic2022.uantwerpen.be/wp-content/uploads/BNAICBeNeLearn_2022_submission_4430.pdf
+  # The version in the BNAIC/BeNeLearn 2022 proceedings.
+  url: https://bnaic2022.uantwerpen.be/wp-content/uploads/BNAICBeNeLearn_2022_submission_4430.pdf
+  urlLabel: Proceedings
 bibtex: |
   @article{van2022bursting,
     title={Bursting the Burden Bubble? An Assessment of Sharma et al.'s Counterfactual-based Fairness Metric},

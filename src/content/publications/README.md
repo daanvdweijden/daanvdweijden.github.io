@@ -46,6 +46,7 @@ links:                        # optional — every entry becomes a button
   poster: https://.../poster.pdf
   video: https://youtu.be/...
   url: https://...            # any other canonical link
+  urlLabel: Project site      # optional — button text for `url` (default "Link")
 # bibtex: |                   # optional — omit and one is generated for you
 #   @article{key, ... }
 featured: false               # optional
@@ -73,7 +74,7 @@ paper's own page and supports **Markdown**: emphasis, links, lists, paragraphs.
 | `figure`      |          | One figure from the paper: `src` (path under `public/`, e.g. `papers/figures/<slug>.png`), `caption` and `alt`. Shown below the key findings. Write the caption as a standalone claim; it also goes into the JSON-LD. |
 | `file`        |          | Filename of a PDF hosted on the site (see below).            |
 | `thumb`       |          | Manual thumbnail override, a path under `public/`.           |
-| `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `data`, `slides`, `poster`, `video`, `url`. Order fixed. |
+| `links.*`     |          | `pdf`, `arxiv`, `doi`, `code`, `data`, `slides`, `poster`, `video`, `url` (+ `urlLabel`). Order fixed. |
 | `bibtex`      |          | Raw BibTeX. If omitted, one is generated from the fields.    |
 | `featured`    |          | Reserved for later (e.g. highlighting on the home page).     |
 | `draft`       |          | `true` hides the paper everywhere.                           |

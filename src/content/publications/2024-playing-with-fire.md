@@ -24,6 +24,7 @@ file: 2024-playing-with-fire.pdf
 links:
   pdf: https://research-portal.uu.nl/files/253825703/Playing_With_Fire_research_report_29-04-24.pdf
   url: https://dataschool.nl/en/news/playing-with-fire/
+  urlLabel: Data School
 bibtex: |
   @techreport{bakker2024playing,
     title={Playing with Fire: How the interplay between the Dutch House of Representatives and social media fuels rage},

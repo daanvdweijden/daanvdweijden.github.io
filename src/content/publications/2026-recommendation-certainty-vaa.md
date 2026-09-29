@@ -22,7 +22,6 @@ figure:
 file: 2026-recommendation-certainty-vaa.pdf
 links:
   doi: 10.17645/pag.11256
-  url: https://www.cogitatiopress.com/politicsandgovernance/article/view/11256
 bibtex: |
   @article{bachmann2026estimating,
     title={Estimating the Recommendation Certainty in Candidate-Based Voting Advice Applications},

@@ -84,7 +84,7 @@ export function actionLinks(p: Pub): { label: string; href: string }[] {
   if (l.slides) out.push({ label: 'Slides', href: l.slides });
   if (l.poster) out.push({ label: 'Poster', href: l.poster });
   if (l.video) out.push({ label: 'Video', href: l.video });
-  if (l.url) out.push({ label: 'Link', href: l.url });
+  if (l.url) out.push({ label: l.urlLabel ?? 'Link', href: l.url });
   return out;
 }
 

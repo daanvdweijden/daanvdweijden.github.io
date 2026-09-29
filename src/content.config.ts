@@ -64,6 +64,7 @@ const publications = defineCollection({
         poster: z.string().optional(),
         video: z.string().optional(),
         url: z.string().optional(), // any other canonical link
+        urlLabel: z.string().optional(), // button text for `url`; defaults to "Link"
       })
       .nullish(), // tolerate `links:` left empty (parses as null)
     // Plain-language summary (1–3 sentences, no jargon) and key findings as

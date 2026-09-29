@@ -23,7 +23,6 @@ figure:
 file: 2026-cavaa-engagement-typology.pdf
 links:
   doi: 10.1145/3816046.3816272
-  url: https://dl.acm.org/doi/10.1145/3816046.3816272
 bibtex: |
   @inproceedings{vanderweijden2026towards,
     title={Towards a Typology of User Engagement in Conversational Agent Voting Advice Applications},

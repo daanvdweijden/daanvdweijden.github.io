@@ -33,6 +33,7 @@ links:
   doi: 10.1145/3701716.3715165
   code: https://github.com/Alan-s-Speakeasy/speakeasy
   url: https://alan-s-speakeasy.github.io/Speakeasy-Website/
+  urlLabel: Project site
 bibtex: |
   @inproceedings{rossetto2025alan,
     title={Alan's Speakeasy--An Ecosystem for the Evaluation of Conversational Agents},
