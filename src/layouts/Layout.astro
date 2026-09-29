@@ -61,6 +61,13 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
           var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {}
+        // EXPLORE: ?look=plain turns off the wallpaper palette + grain for
+        // side-by-side comparison (?look=on restores). Remembered per tab.
+        try {
+          var look = new URLSearchParams(location.search).get('look');
+          if (look) sessionStorage.setItem('look', look);
+          if (sessionStorage.getItem('look') === 'plain') document.documentElement.setAttribute('data-look', 'plain');
+        } catch (e) {}
       })();
     </script>
     <title>{pageTitle}</title>
@@ -122,6 +129,48 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
         --p-yellow-bg:#332a10;--p-yellow-fg:#e0b755;
         --heat-1: #1e3a48; --heat-2: #295d78; --heat-3: #4a8fb5;
       }
+
+      /* ---- wallpaper palette (EXPLORE) ----
+         Colours sampled from Daan's desktop gradient: sage #77a19a, mist
+         #c7d0cf, teal #37595f, deep #18252c, ink #0d1617. Three quiet uses:
+         a teal-tinted dark theme, one --tone accent (underlines, selection,
+         focus), and a faint film grain. Tweak the knobs here. */
+      html:not([data-look='plain']) {
+        --tone: #37595f;        /* teal: text-safe on bone (~7:1) */
+        --tone-soft: #77a19a;   /* sage: fills/underlines only */
+        --grain: .06;           /* grain opacity: 0 = off, obvious above ~.1 */
+        --grain-blend: multiply;
+      }
+      html[data-theme='dark']:not([data-look='plain']) {
+        --bg: #111a1c;          /* the wallpaper's night side */
+        --surface: #172326;
+        --ink: #e6ebea;
+        --muted: #93a09f;
+        --line: #24333a;
+        --tone: #9cc3bb;        /* sage, lifted for dark */
+        --tone-soft: #37595f;
+        --grain: .07;
+        --grain-blend: screen;
+      }
+      html:not([data-look='plain']) a {
+        text-decoration-color: color-mix(in srgb, var(--tone-soft) 70%, transparent);
+        text-underline-offset: .18em;
+      }
+      html:not([data-look='plain']) ::selection {
+        background: color-mix(in srgb, var(--tone-soft) 35%, transparent);
+      }
+      html:not([data-look='plain']) :focus-visible {
+        outline: 2px solid var(--tone); outline-offset: 2px; border-radius: 2px;
+      }
+      /* Film grain: a fixed noise layer over everything, drawn by an SVG
+         filter (no image file). Click-through, and hidden in print. */
+      html:not([data-look='plain']) body::after {
+        content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+        opacity: var(--grain); mix-blend-mode: var(--grain-blend);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 2.2 -.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      @media print { body::after { display: none; } }
+
       * { box-sizing: border-box; }
       html, body { margin: 0; }
       /* Always reserve the scrollbar track. Short pages (a one-paragraph news
