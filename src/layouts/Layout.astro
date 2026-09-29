@@ -401,7 +401,11 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
 
       const navBar = document.getElementById('nav-bar');
       if (navBar) {
-        const syncTop = () => navBar.classList.toggle('at-top', window.scrollY < 1);
+        // Stay clear for the first bit of scroll; the homepage headline sits
+        // at least 4rem (64px) below the bar, so 48px turns it solid just
+        // before anything slides underneath.
+        const CLEAR_UNTIL = 48;
+        const syncTop = () => navBar.classList.toggle('at-top', window.scrollY < CLEAR_UNTIL);
         syncTop();
         window.addEventListener('scroll', syncTop, { passive: true });
       }
