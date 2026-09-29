@@ -204,6 +204,11 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
         background: color-mix(in srgb, var(--bg) 86%, transparent);
         backdrop-filter: saturate(140%) blur(8px);
       }
+      /* At the very top of the page the bar has nothing to sit over, so it
+         goes clear, letting the homepage glow run up behind it. It turns
+         solid again as soon as content scrolls underneath. */
+      nav.bar { transition: background-color .2s ease; }
+      nav.bar.at-top { background: transparent; backdrop-filter: none; }
       nav.bar .inner {
         display: flex; justify-content: space-between; align-items: center;
         height: 68px;
@@ -320,7 +325,7 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
     </style>
   </head>
   <body>
-    <nav class="bar">
+    <nav class="bar at-top" id="nav-bar">
       <div class="wrap">
         <div class="inner">
           <a
@@ -392,6 +397,13 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
           try { localStorage.setItem('theme', next); } catch (e) {}
           syncLabel();
         });
+      }
+
+      const navBar = document.getElementById('nav-bar');
+      if (navBar) {
+        const syncTop = () => navBar.classList.toggle('at-top', window.scrollY < 1);
+        syncTop();
+        window.addEventListener('scroll', syncTop, { passive: true });
       }
 
       const heroName = document.getElementById('hero-name');

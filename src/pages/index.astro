@@ -131,13 +131,15 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   /* ---- hero ---- */
   .hero { padding: clamp(4rem, 11vw, 8rem) 0 clamp(2.5rem, 6vw, 4rem); }
   /* EXPLORE: soft wallpaper glow — light falling in from the top-left, the way
-     the sage bleeds into the mist band on the desktop gradient. It peaks
-     around the headline and fades out behind the first row of cards (which
-     are opaque, so only the gaps show it). Colours/strength live in Layout's palette block. */
+     the sage bleeds into the mist band on the desktop gradient. It runs up
+     behind the nav (which is clear while the page is at the top), peaks
+     around the headline, and fades out behind the first row of cards (they
+     are opaque, so only the gaps show it). Colours/strength live in Layout's
+     palette block. */
   .hero { position: relative; isolation: isolate; }
   :global(html:not([data-look='plain'])) .hero::before {
     content: ""; position: absolute; z-index: -1; pointer-events: none;
-    left: 0; right: 0; top: 0; bottom: -10rem;
+    left: 0; right: 0; top: -69px; bottom: -10rem; /* -69px: up behind the nav + its hairline */
     background:
       radial-gradient(ellipse min(1000px, 130vw) min(560px, 80vw) at 10% 30%, var(--glow-a), transparent 65%),
       radial-gradient(ellipse min(760px, 110vw) min(440px, 65vw) at 42% 18%, var(--glow-b), transparent 65%);
