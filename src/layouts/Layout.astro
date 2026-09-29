@@ -140,6 +140,9 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
         --tone-soft: #77a19a;   /* sage: fills/underlines only */
         --grain: .1;            /* grain opacity: 0 = off, obvious above ~.15 */
         --grain-blend: multiply;
+        /* homepage hero glow: sage core + mist halo */
+        --glow-a: color-mix(in srgb, #8fb8ae 24%, transparent);
+        --glow-b: color-mix(in srgb, #b9d3cc 22%, transparent);
       }
       html[data-theme='dark']:not([data-look='plain']) {
         --bg: #111a1c;          /* the wallpaper's night side */
@@ -151,6 +154,8 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
         --tone-soft: #37595f;
         --grain: .07;
         --grain-blend: screen;
+        --glow-a: color-mix(in srgb, #77a19a 16%, transparent);
+        --glow-b: color-mix(in srgb, #37595f 35%, transparent);
       }
       html:not([data-look='plain']) a {
         text-decoration-color: color-mix(in srgb, var(--tone-soft) 70%, transparent);
