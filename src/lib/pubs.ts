@@ -7,6 +7,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { site } from '../site.config';
+import { plainText } from './text';
 
 export type Pub = CollectionEntry<'publications'>;
 
@@ -88,18 +89,8 @@ export function actionLinks(p: Pub): { label: string; href: string }[] {
   return out;
 }
 
-/**
- * The abstract (the Markdown body) as plain text, for meta descriptions,
- * JSON-LD and llms.txt. Strips the Markdown that abstracts actually use:
- * links, emphasis, inline code; collapses whitespace.
- */
-export function plainAbstract(p: Pub): string {
-  return (p.body ?? '')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/[*_`]+/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+/** The abstract (the Markdown body) as plain text. */
+export const plainAbstract = (p: Pub) => plainText(p.body ?? '');
 
 /** Path to a paper's own page. */
 export const pubHref = (p: Pub) => `${import.meta.env.BASE_URL}pubs/${p.id}/`;

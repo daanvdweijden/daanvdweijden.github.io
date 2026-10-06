@@ -18,6 +18,7 @@ import {
   type Pub,
 } from '../../lib/pubs';
 import { site } from '../../site.config';
+import { clip } from '../../lib/text';
 import { personLd, jsonLd } from '../../lib/seo';
 
 export async function getStaticPaths() {
@@ -47,9 +48,7 @@ const doi = pub.data.links?.doi;
 const abstract = plainAbstract(pub);
 
 // Search snippet: the plain-language summary when there is one, else the
-// opening of the abstract, clipped at a word boundary.
-const clip = (t: string, n = 160) =>
-  t.length <= n ? t : t.slice(0, t.lastIndexOf(' ', n - 1)).replace(/[,.;:]$/, '') + '…';
+// opening of the abstract.
 const description = clip(summary ?? abstract);
 
 // Google Scholar reads the Highwire Press `citation_*` tags. The venue tag

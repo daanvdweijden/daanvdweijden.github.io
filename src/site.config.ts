@@ -19,6 +19,10 @@ export const site = {
   // One short line that introduces you. Markdown-free, plain text for now.
   tagline: 'PhD Candidate at DDIS, University of Zurich.',
 
+  // Homepage search/share snippet. Keep it between 25 and 160 characters.
+  description:
+    'Daan van der Weijden, PhD candidate at DDIS, University of Zurich, researching computational methods for deliberative democracy.',
+
   // Third-person bio for machines: the homepage Person JSON-LD and /llms.txt.
   // Keep the name format identical to the one on your papers.
   bio:

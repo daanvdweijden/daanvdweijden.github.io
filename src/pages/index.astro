@@ -25,7 +25,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.site!) });
 ---
 
-<Layout description={site.bio} ogType="profile">
+<Layout description={site.description} ogType="profile">
   <script
     slot="head"
     type="application/ld+json"
