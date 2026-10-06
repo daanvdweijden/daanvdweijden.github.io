@@ -31,20 +31,12 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     type="application/ld+json"
     set:html={personJson}
   />
-  <header class="hero">
-    <div class="wrap">
-      <h1 class="statement">
-        Building AI tools that help democracy <span class="scale-word">scale</span> — so citizens can <span class="feat f-red">understand</span>, <span class="feat f-blue">engage</span>, and <span class="feat f-green">deliberate</span> together.
-      </h1>
-    </div>
-  </header>
-
   <section class="bento">
     <div class="wrap">
       <div class="grid">
         <article class="card c-profile">
           <img class="avatar" src={`${import.meta.env.BASE_URL}${site.avatar}`} alt={`Portrait of ${site.name}`} />
-          <p class="name">{site.name}</p>
+          <h1 class="name">{site.name}</h1>
           <p class="role">{site.role}</p>
           <p class="location">{site.location}</p>
           <div class="profile-links">
@@ -128,21 +120,8 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
 </Layout>
 
 <style>
-  /* ---- hero ---- */
-  .hero { padding: clamp(4rem, 11vw, 8rem) 0 clamp(2.5rem, 6vw, 4rem); }
-  h1.statement {
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(2.3rem, 6vw, 4rem); line-height: 1.1; letter-spacing: -0.025em;
-    margin: 0; max-width: 22ch;
-  }
-  .feat { font-style: italic; }
-  .f-red { color: var(--p-red-fg); }
-  .f-blue { color: var(--p-blue-fg); }
-  .f-green { color: var(--p-green-fg); }
-  .scale-word { font-style: italic; }
-
   /* ---- bento ---- */
-  section.bento { padding: clamp(1rem, 3vw, 2rem) 0 clamp(4rem, 9vw, 7rem); }
+  section.bento { padding: clamp(2.5rem, 7vw, 4.5rem) 0 clamp(4rem, 9vw, 7rem); }
   .grid {
     display: grid; gap: 16px;
     grid-template-columns: repeat(6, 1fr);
@@ -182,7 +161,7 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   .inline-link:hover { color: var(--accent, var(--ink)); }
 
   .avatar { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; object-fit: cover; border: 1px solid var(--line); margin-bottom: 1.1rem; }
-  .c-profile .name { font-family: var(--serif); font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
+  .c-profile .name { font-family: var(--serif); font-weight: 400; font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
   .c-profile .role { color: var(--muted); margin: 0 0 .3rem; font-size: .95rem; }
   .c-profile .location {
     font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
