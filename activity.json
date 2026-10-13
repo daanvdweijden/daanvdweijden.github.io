@@ -52,6 +52,8 @@
       "date": "2026-10-13",
       "played": [
         "mini",
+        "midi",
+        "connections",
         "crux",
         "precies-vier",
         "sudoku"
@@ -61,6 +63,7 @@
       "date": "2026-10-12",
       "played": [
         "mini",
+        "midi",
         "connections",
         "cijferblok",
         "crux"
@@ -70,6 +73,7 @@
       "date": "2026-10-11",
       "played": [
         "mini",
+        "midi",
         "connections",
         "crux"
       ]

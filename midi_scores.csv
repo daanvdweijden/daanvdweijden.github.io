@@ -193,3 +193,6 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-09-27,24259,midi,Andy Kravis,Shady Characters,4,0:04,4,False,,,,False,False,0,0,0,clean
 2026-09-28,23838,midi,Ian Livengood,Craft From the Past,508,8:28,100,True,1790583038,,,True,True,7,5,0,revealed
 2026-10-01,24394,midi,Ian Livengood,Close Encounters of the Crossword Kind,475,7:55,100,True,1790848193,,,True,True,13,1,0,revealed
+2026-10-11,24052,midi,Rena Cohen,Young at Heart,499,8:19,100,True,1791922865,,,False,False,0,0,0,clean
+2026-10-12,24390,midi,Victor Schmitt,I Started It!,379,6:19,100,True,1791921383,,,False,True,0,5,0,checked
+2026-10-13,24172,midi,Alina Abidi,Chopped Cheese,270,4:30,100,True,1791919196,,,False,False,0,0,0,clean
