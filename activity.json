@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-13",
+  "generated": "2026-10-14",
   "mini_streak": 368,
   "game_meta": {
     "crux": {
@@ -56,7 +56,8 @@
         "connections",
         "crux",
         "precies-vier",
-        "sudoku"
+        "sudoku",
+        "vorto"
       ]
     },
     {
@@ -66,7 +67,8 @@
         "midi",
         "connections",
         "cijferblok",
-        "crux"
+        "crux",
+        "vorto"
       ]
     },
     {
