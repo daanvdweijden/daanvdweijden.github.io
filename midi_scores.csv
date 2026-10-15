@@ -196,3 +196,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-10-11,24052,midi,Rena Cohen,Young at Heart,499,8:19,100,True,1791922865,,,False,False,0,0,0,clean
 2026-10-12,24390,midi,Victor Schmitt,I Started It!,379,6:19,100,True,1791921383,,,False,True,0,5,0,checked
 2026-10-13,24172,midi,Alina Abidi,Chopped Cheese,270,4:30,100,True,1791919196,,,False,False,0,0,0,clean
+2026-10-15,23819,midi,Zhou Zhang and Kevin Curry,Fall Colors,511,8:31,100,True,1792075257,,,True,True,0,0,0,autocheck
