@@ -49,6 +49,13 @@
   },
   "days": [
     {
+      "date": "2026-10-16",
+      "played": [
+        "crux",
+        "precies-vier"
+      ]
+    },
+    {
       "date": "2026-10-15",
       "played": [
         "mini",
