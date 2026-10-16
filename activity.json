@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-16",
-  "mini_streak": 370,
+  "mini_streak": 371,
   "game_meta": {
     "crux": {
       "label": "Crux",
@@ -51,6 +51,9 @@
     {
       "date": "2026-10-16",
       "played": [
+        "mini",
+        "wordle",
+        "connections",
         "crux",
         "precies-vier"
       ]
