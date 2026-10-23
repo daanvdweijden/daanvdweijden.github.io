@@ -201,3 +201,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-10-19,24467,midi,Geoffrey Schorkopf and Olivia Mitra Framke,Bottom Lines,236,3:56,97,False,,,,False,False,0,0,0,clean
 2026-10-20,24395,midi,Aidan Deshong,Double Coverage,258,4:18,73,False,,,,True,True,0,10,0,checked
 2026-10-22,24468,midi,Ian Livengood,Fill in the Blanks,232,3:52,100,True,1792693873,,,True,True,2,0,0,revealed
+2026-10-23,24063,midi,Erica Hsiung Wojcik,Heavens to Betsy,346,5:46,100,True,1792744803,,,True,True,0,9,0,checked
