@@ -71,6 +71,7 @@
       "date": "2026-10-21",
       "played": [
         "mini",
+        "midi",
         "connections",
         "crux",
         "precies-vier",
@@ -82,7 +83,8 @@
       "played": [
         "mini",
         "midi",
-        "wordle"
+        "wordle",
+        "crux"
       ]
     },
     {
@@ -109,7 +111,8 @@
       "date": "2026-10-17",
       "played": [
         "mini",
-        "connections"
+        "connections",
+        "crux"
       ]
     },
     {
@@ -137,6 +140,7 @@
       "played": [
         "mini",
         "midi",
+        "crux",
         "vorto"
       ]
     },
@@ -175,7 +179,8 @@
     {
       "date": "2026-10-10",
       "played": [
-        "mini"
+        "mini",
+        "crux"
       ]
     },
     {
@@ -220,7 +225,8 @@
     {
       "date": "2026-10-04",
       "played": [
-        "mini"
+        "mini",
+        "crux"
       ]
     },
     {
