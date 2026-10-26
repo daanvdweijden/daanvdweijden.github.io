@@ -51,13 +51,16 @@
     {
       "date": "2026-10-26",
       "played": [
-        "mini"
+        "mini",
+        "crux",
+        "precies-vier"
       ]
     },
     {
       "date": "2026-10-25",
       "played": [
-        "mini"
+        "mini",
+        "crux"
       ]
     },
     {
@@ -65,6 +68,7 @@
       "played": [
         "mini",
         "midi",
+        "crux",
         "vorto"
       ]
     },
