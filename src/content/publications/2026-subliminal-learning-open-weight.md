@@ -22,12 +22,21 @@ figure:
 file: 2026-subliminal-learning-open-weight.pdf
 links:
   code: https://github.com/daanvdweijden/subliminal-learning-blackboxnlp2026
+  url: https://aclanthology.org/2026.blackboxnlp-1.62/
+  urlLabel: ACL Anthology
 bibtex: |
-  @inproceedings{vanderweijden2026reproducing,
-    title={Reproducing and Evaluating the Generalizability of Subliminal Learning in Open-Weight Models},
-    author={van der Weijden, Daan and Brack, Nathan and B{\'a}ez Santamar{\'i}a, Selene},
-    booktitle={The 9th BlackboxNLP Workshop Special Track: Reproducibility and Reliability in Interpretability Analyses},
-    year={2026}
+  @inproceedings{van-der-weijden-etal-2026-reproducing,
+    title = "Reproducing and Evaluating the Generalizability of Subliminal Learning in Open-Weight Models",
+    author = "van der Weijden, Daan and Brack, Nathan and B{\'a}ez Santamar{\'i}a, Selene",
+    editor = "Arad, Dana and Belinkov, Yonatan and Chen, Hanjie and Feldhus, Nils and Mueller, Aaron and Mohebbi, Hosein and Sarti, Gabriele and Tutek, Martin",
+    booktitle = "Proceedings of the 9th {B}lackbox{NLP} Workshop: Analyzing and Interpreting Neural Networks for {NLP}",
+    month = oct,
+    year = "2026",
+    address = "Budapest, Hungary",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.blackboxnlp-1.62/",
+    pages = "1113--1120",
+    ISBN = "979-8-89176-476-7"
   }
 draft: false
 ---
