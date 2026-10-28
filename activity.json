@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-28",
-  "mini_streak": 382,
+  "mini_streak": 383,
   "game_meta": {
     "crux": {
       "label": "Crux",
@@ -30,6 +30,10 @@
       "label": "Precies vier",
       "source": "nrc"
     },
+    "briljant": {
+      "label": "Briljant",
+      "source": "nrc"
+    },
     "mini": {
       "label": "NYT Mini",
       "source": "nyt"
@@ -51,6 +55,9 @@
     {
       "date": "2026-10-28",
       "played": [
+        "mini",
+        "midi",
+        "briljant",
         "crux"
       ]
     },
@@ -59,6 +66,7 @@
       "played": [
         "mini",
         "midi",
+        "briljant",
         "cijferblok",
         "crux",
         "precies-vier",
@@ -71,6 +79,7 @@
       "played": [
         "mini",
         "midi",
+        "briljant",
         "crux",
         "precies-vier"
       ]
@@ -79,6 +88,7 @@
       "date": "2026-10-25",
       "played": [
         "mini",
+        "briljant",
         "crux"
       ]
     },
@@ -97,6 +107,7 @@
         "mini",
         "midi",
         "connections",
+        "briljant",
         "crux",
         "precies-vier"
       ]
@@ -106,6 +117,7 @@
       "played": [
         "mini",
         "midi",
+        "briljant",
         "crux",
         "precies-vier"
       ]

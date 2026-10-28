@@ -206,3 +206,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-10-24,24474,midi,Ian Livengood,Gaming the System,168,2:48,20,False,,,,False,False,0,0,0,clean
 2026-10-27,24556,midi,Ian Livengood,License Plate Game,367,6:07,100,True,1793142006,,,True,True,0,9,0,checked
 2026-10-26,24241,midi,Natan Last,Break a Leg,386,6:26,100,True,1793143799,,,True,True,0,3,0,checked
+2026-10-28,24444,midi,Rena Cohen,Snakes in the Grass,317,5:17,77,False,,,,True,True,0,0,0,autocheck
