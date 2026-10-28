@@ -257,6 +257,7 @@ export const GAME_COLORS: Record<string, string> = {
   vorto: '#9fd727',
   cijferblok: '#dd246f',
   'precies-vier': '#dc246f',
+  briljant: '#31d1ff',
   sudoku: '#8a8f98',
   'aan-zet': '#8a8f98',
   koprol: '#8a8f98',
@@ -265,6 +266,7 @@ export const GAME_COLORS: Record<string, string> = {
 /** Games we ship a real inline icon for (see src/assets/puzzle-icons). */
 export const ICON_SLUGS = new Set([
   'mini', 'midi', 'wordle', 'connections', 'crux', 'cijferblok', 'vorto', 'precies-vier',
+  'briljant',
 ]);
 
 /** Longest run of consecutive days ending at `generated` on which anything was solved. */

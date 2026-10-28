@@ -7,7 +7,7 @@ read from the CSVs the fetchers already maintain (no live API calls here):
 
   * NRC  — Crux (data/crux_scores.csv) and every other hub game
            (data/nrc_games.csv: Vorto, Precies vier, Sudoku, Cijferblok,
-           Koprol, Aan Zet, Scrypto, In het midden, Woordzoeker)
+           Koprol, Aan Zet, Scrypto, In het midden, Woordzoeker, Briljant)
   * NYT  — Mini + Midi (data/*_scores.csv) and Wordle / Connections / Strands
            (data/nyt_games.csv)
 
@@ -42,6 +42,7 @@ NRC_GAME_LABELS = {
     "scrypto":       "Scrypto",
     "in-het-midden": "In het midden",
     "woordzoeker":   "Woordzoeker",
+    "briljant":      "Briljant",
 }
 
 
