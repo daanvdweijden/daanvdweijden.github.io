@@ -53,6 +53,13 @@
   },
   "days": [
     {
+      "date": "2026-10-29",
+      "played": [
+        "briljant",
+        "crux"
+      ]
+    },
+    {
       "date": "2026-10-28",
       "played": [
         "mini",
