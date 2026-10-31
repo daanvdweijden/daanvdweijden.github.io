@@ -210,3 +210,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-10-29,23396,midi,Ian Livengood,Raking It In,297,4:57,85,False,,,,False,False,0,0,0,clean
 2026-10-30,24037,midi,Hanh Huynh,Double-Teamed,456,7:36,100,True,1793355098,,,False,False,0,0,0,clean
 2026-10-25,24464,midi,Sam Ezersky,A Spike Lee Joint,441,7:21,100,True,1793440045,,,False,True,0,1,0,checked
+2026-10-31,24386,midi,Alina Abidi,Jump Scare,273,4:33,84,False,,,,False,False,0,0,0,clean
