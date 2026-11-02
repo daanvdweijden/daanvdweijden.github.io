@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-01",
+  "generated": "2026-11-02",
   "mini_streak": 387,
   "game_meta": {
     "crux": {
@@ -64,7 +64,8 @@
       "date": "2026-10-31",
       "played": [
         "mini",
-        "midi"
+        "midi",
+        "crux"
       ]
     },
     {
