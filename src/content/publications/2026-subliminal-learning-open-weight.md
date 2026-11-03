@@ -21,6 +21,7 @@ figure:
   alt: "A three-by-three grid of dot plots, with rows for animals, actors and politicians and columns for the Qwen, Gemma and Ministral models. Qwen's dots sit far right of zero, especially for politicians such as Trump; Ministral's dots all sit at zero."
 file: 2026-subliminal-learning-open-weight.pdf
 links:
+  doi: 10.18653/2026.blackboxnlp-1.62
   code: https://github.com/daanvdweijden/subliminal-learning-blackboxnlp2026
   url: https://aclanthology.org/2026.blackboxnlp-1.62/
   urlLabel: ACL Anthology
@@ -35,6 +36,7 @@ bibtex: |
     address = "Budapest, Hungary",
     publisher = "Association for Computational Linguistics",
     url = "https://aclanthology.org/2026.blackboxnlp-1.62/",
+    doi = "10.18653/2026.blackboxnlp-1.62",
     pages = "1113--1120",
     ISBN = "979-8-89176-476-7"
   }
