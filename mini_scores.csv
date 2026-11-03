@@ -387,3 +387,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-10-31,24518,mini,Joel Fagliano,"""Hybrid Candies""",109,1:49,100,True,1793454610,,,False,False,0,0,0,clean
 2026-11-01,24672,mini,Joel Fagliano,,107,1:47,100,True,1793527624,,,False,False,0,0,0,clean
 2026-11-02,24689,mini,Joel Fagliano,,124,2:04,71,False,,,,False,False,0,0,0,clean
+2026-11-03,24638,mini,Sam Ezersky,,85,1:25,100,True,1793686624,,,False,False,0,0,0,clean
