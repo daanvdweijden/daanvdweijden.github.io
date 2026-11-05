@@ -52,6 +52,13 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
       (function () {
+        // Colour scheme: the system setting by default (pure CSS, below). A
+        // choice made in the footer switch is stored and applied before first
+        // paint so there's no flash of the other palette.
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           document.documentElement.classList.add('motion');
         }
@@ -106,10 +113,24 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-yellow-bg:#f6ecc0;--p-yellow-fg:#7d6200;
         --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
-      /* Follows the visitor's system setting; anything that doesn't report
-         one (older browsers, some embeds) gets the light palette above. */
+      /* Dark palette. Applied when the visitor picked Dark in the footer
+         switch, or (with no choice stored) when the system asks for dark.
+         Anything that reports no preference gets the light palette above.
+         The two blocks must stay identical. */
+      html[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #141413;
+        --ink: #ecebe6;
+        --muted: #8f8e88;
+        --line: #2e2d2a;
+        --accent: #e0472f;
+        --p-red-bg: #3a2420;  --p-red-fg: #eea596;
+        --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
+        --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
+        --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+      }
       @media (prefers-color-scheme: dark) {
-        :root {
+        html:not([data-theme='light']) {
           color-scheme: dark;
           --bg: #141413;
           --ink: #ecebe6;
@@ -272,6 +293,15 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       footer a { text-decoration: none; }
       footer a:hover { color: var(--ink); text-decoration: underline; }
       footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+      footer .fmeta { display: flex; gap: .5rem 2rem; flex-wrap: wrap; }
+      /* Colour scheme switch: three plain words, the active one in ink. */
+      .theme-switch { display: inline-flex; gap: .7rem; }
+      .theme-switch[hidden] { display: none; }
+      .theme-switch button {
+        font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
+      }
+      .theme-switch button:hover { color: var(--ink); }
+      .theme-switch button[aria-pressed='true'] { color: var(--ink); }
     </style>
   </head>
   <body>
@@ -299,8 +329,13 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <footer>
       <div class="wrap">
         <div class="row">
-          <span>
-            © {year} {site.name}
+          <span class="fmeta">
+            <span>© {year} {site.name}</span>
+            <span class="theme-switch" role="group" aria-label="Colour scheme" hidden>
+              <button type="button" data-theme-choice="auto" aria-pressed="true">Auto</button>
+              <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+              <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+            </span>
           </span>
           <span class="flinks">
             {site.socials.map((s) => <a href={s.url}>{s.name}</a>)}
@@ -358,6 +393,33 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
           revealUpTo(items.filter((el) => el.getBoundingClientRect().top < window.innerHeight));
         }, { passive: true });
         for (const el of items) io.observe(el);
+      }
+
+      // Colour scheme switch (footer). Auto clears the stored choice so the
+      // site follows the system again; Light/Dark are remembered per device.
+      // Hidden without JS, where it couldn't work anyway.
+      const themeSwitch = document.querySelector<HTMLElement>('.theme-switch');
+      if (themeSwitch) {
+        const buttons = [...themeSwitch.querySelectorAll<HTMLButtonElement>('button')];
+        const sync = () => {
+          const current = document.documentElement.getAttribute('data-theme') ?? 'auto';
+          for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current));
+        };
+        for (const b of buttons) {
+          b.addEventListener('click', () => {
+            const choice = b.dataset.themeChoice;
+            if (choice === 'light' || choice === 'dark') {
+              document.documentElement.setAttribute('data-theme', choice);
+              try { localStorage.setItem('theme', choice); } catch (e) {}
+            } else {
+              document.documentElement.removeAttribute('data-theme');
+              try { localStorage.removeItem('theme'); } catch (e) {}
+            }
+            sync();
+          });
+        }
+        sync();
+        themeSwitch.hidden = false;
       }
 
       // Mobile menu: close on Escape or a click outside it.
