@@ -264,7 +264,8 @@ const grids = [
   .feature-meta { display: flex; flex-direction: column; min-width: 0; }
   .feature-rank { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
   .feature-title { font-size: clamp(1.2rem, 2.2vw, 1.5rem); line-height: 1.2; letter-spacing: -.01em; margin-top: .2rem; }
-  .feature:hover .feature-title { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1px; }
+  .feature-title { text-decoration: underline transparent 1px; text-underline-offset: .2em; }
+  .feature:hover .feature-title { text-decoration-color: var(--accent); }
   .feature-sub { color: var(--muted); font-size: .9rem; margin-top: .15rem; }
 
   .rank-list { list-style: none; margin: 0; padding: 0; }
@@ -274,7 +275,8 @@ const grids = [
   }
   .rank-num { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
   .rank-list a { text-decoration: none; min-width: 0; }
-  .rank-list a:hover .rank-title { text-decoration: underline; text-decoration-color: var(--accent); }
+  .rank-title { text-decoration: underline transparent 1px; text-underline-offset: .2em; }
+  .rank-list a:hover .rank-title { text-decoration-color: var(--accent); }
   .rank-sub { color: var(--muted); font-size: .9rem; margin-left: .5rem; }
 
   /* ---- cover grids ---- */

@@ -183,6 +183,15 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       }
       a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: .2em; }
       a:hover { text-decoration-thickness: 2px; }
+      /* Hover states appear at once and ease back when the pointer leaves:
+         a soft fade-out that should hardly register. */
+      a, button, .feature-title, .rank-title {
+        transition: color .3s ease-out, text-decoration-color .3s ease-out, text-decoration-thickness .3s ease-out;
+      }
+      a:hover, button:hover, a:hover .feature-title, a:hover .rank-title { transition-duration: 0s; }
+      @media (prefers-reduced-motion: reduce) {
+        a, button, .feature-title, .rank-title { transition: none; }
+      }
       img { max-width: 100%; height: auto; display: block; }
       ::selection { background: var(--accent); color: #fff; }
       :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -274,8 +283,9 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         padding: .2rem 0 .7rem;
       }
       .list .meta { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
-      .list a { text-decoration: none; }
-      .list a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+      /* Underline kept but transparent, so it can fade out after hover. */
+      .list a { text-decoration-line: underline; text-decoration-color: transparent; }
+      .list a:hover { text-decoration-color: var(--accent); }
       .list .sub { display: block; color: var(--muted); font-size: .9rem; margin-top: .1rem; }
 
       /* Long-form text (news posts, abstracts). */
@@ -316,8 +326,8 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         padding: 1.4rem 0 2.5rem; border-top: 1px solid var(--ink);
         font-size: .875rem; color: var(--muted);
       }
-      footer a { text-decoration: none; }
-      footer a:hover { color: var(--ink); text-decoration: underline; }
+      footer a { text-decoration-line: underline; text-decoration-color: transparent; }
+      footer a:hover { color: var(--ink); text-decoration-color: currentColor; }
       footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
       footer .fmeta { display: flex; gap: .5rem 2rem; flex-wrap: wrap; }
       /* Colour scheme switch: three plain words, the active one in ink. */
