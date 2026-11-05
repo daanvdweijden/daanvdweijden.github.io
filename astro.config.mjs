@@ -6,8 +6,8 @@ import sitemap from '@astrojs/sitemap';
 // out of the sitemap too, so crawlers get one consistent signal.
 const NOINDEX = ['/puzzles/', '/books/', '/music/'];
 
-// Optional sub-path build, e.g. SITE_BASE=/rework/ for the redesign preview
-// that the main deploy publishes at daanvdweijden.com/rework/. Unset = root.
+// Optional sub-path build, e.g. SITE_BASE=/preview/ for a design preview
+// published next to the live site. Unset = root.
 const BASE = process.env.SITE_BASE || '/';
 
 // Markdown content links and images are written root-relative (/pubs/…,

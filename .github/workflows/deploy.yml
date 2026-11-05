@@ -44,24 +44,6 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # Redesign preview: build the `design/swiss` branch under /rework/ and
-      # ship it inside the same Pages artifact, at daanvdweijden.com/rework/.
-      # It gets its own copy of the puzzle data. Never blocks the main deploy:
-      # if the branch is gone or its build fails, the live site still ships.
-      # Remove this step (and the branch) once the redesign is merged.
-      - name: Build redesign preview at /rework/
-        continue-on-error: true
-        run: |
-          git fetch --depth=1 origin design/swiss
-          git worktree add --detach "$RUNNER_TEMP/rework" FETCH_HEAD
-          cp -R data "$RUNNER_TEMP/rework/data"
-          cd "$RUNNER_TEMP/rework"
-          npm ci
-          # Build in the worktree's own dist/: an outDir outside the project
-          # breaks Astro's prerender module resolution.
-          SITE_BASE=/rework/ npm run build
-          mv dist "$GITHUB_WORKSPACE/dist/rework"
-
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
