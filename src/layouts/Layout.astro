@@ -310,38 +310,54 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     </footer>
 
     <script>
-      // Soft landing: reveal [data-reveal] blocks as they scroll into view.
-      // Blocks already on screen at load get a short stagger so the first
-      // view settles top to bottom.
+      // Soft landing: reveal [data-reveal] blocks as they scroll into view,
+      // strictly top to bottom. Blocks reveal as one queue: when any block
+      // becomes due, every unrevealed block above it is revealed too, and
+      // each one starts STEP ms after the previous one started, however the
+      // reveals were batched (first view, fast scroll, restored scroll on
+      // refresh). Blocks already scrolled past above the viewport take no
+      // slot in the queue, since nobody sees them settle.
       // Fallback: without IntersectionObserver or a real viewport (some
       // embedded/headless views), never leave content hidden.
       if (!('IntersectionObserver' in window) || window.innerHeight === 0) {
         document.documentElement.classList.remove('motion');
       }
       if (document.documentElement.classList.contains('motion')) {
+        const STEP = 90;
         const items = [...document.querySelectorAll<HTMLElement>('[data-reveal]')];
-        let onScreen = 0;
-        const reveal = (el: Element) => { io.unobserve(el); el.classList.add('is-in'); };
-        const io = new IntersectionObserver((entries) => {
-          for (const e of entries) {
-            // Visible now, or already scrolled past (a jump to the bottom, a
-            // restored scroll position): either way it belongs on screen.
-            if (e.isIntersecting || e.boundingClientRect.bottom < 0) reveal(e.target);
+        let done = 0;      // items[0..done) are revealed
+        let nextSlot = 0;  // earliest time (performance.now) the next visible block may start
+        const revealThrough = (last: number) => {
+          const now = performance.now();
+          for (; done <= last; done++) {
+            const el = items[done];
+            io.unobserve(el);
+            let delay = 0;
+            if (el.getBoundingClientRect().bottom > 0) {
+              delay = Math.max(0, nextSlot - now);
+              nextSlot = now + delay + STEP;
+            }
+            el.style.setProperty('--reveal-delay', `${Math.round(delay)}ms`);
+            el.classList.add('is-in');
           }
+        };
+        const revealUpTo = (due: Element[]) => {
+          const last = Math.max(-1, ...due.map((el) => items.indexOf(el as HTMLElement)));
+          if (last >= done) revealThrough(last);
+        };
+        const io = new IntersectionObserver((entries) => {
+          // Visible now, or already scrolled past (a jump to the bottom, a
+          // restored scroll position): either way it belongs on screen.
+          revealUpTo(entries
+            .filter((e) => e.isIntersecting || e.boundingClientRect.bottom < 0)
+            .map((e) => e.target));
         }, { rootMargin: '0px 0px -8% 0px' });
         // A fast jump can skip a block without it ever intersecting; sweep
         // anything above the fold whenever the user scrolls.
         addEventListener('scroll', () => {
-          for (const el of items) {
-            if (!el.classList.contains('is-in') && el.getBoundingClientRect().top < window.innerHeight) reveal(el);
-          }
+          revealUpTo(items.filter((el) => el.getBoundingClientRect().top < window.innerHeight));
         }, { passive: true });
-        for (const el of items) {
-          if (el.getBoundingClientRect().top < window.innerHeight) {
-            el.style.setProperty('--reveal-delay', `${Math.min(onScreen++, 4) * 90}ms`);
-          }
-          io.observe(el);
-        }
+        for (const el of items) io.observe(el);
       }
 
       // Mobile menu: close on Escape or a click outside it.
