@@ -85,6 +85,26 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   </main>
 </Layout>
 
+<script>
+  // Tap to colour the portrait on touch screens (the hover state elsewhere).
+  const portrait = document.querySelector('.portrait');
+  portrait?.addEventListener('click', () => {
+    if (matchMedia('(hover: none)').matches) portrait.classList.toggle('is-color');
+  });
+  // Once the opening slide has finished, switch back to the normal (snappier)
+  // hover transitions. The timer is a fallback for when the events don't fire
+  // (e.g. the page loaded in a background tab).
+  const settle = () => portrait?.classList.add('settled');
+  const img = portrait?.querySelector('img');
+  for (const type of ['transitionend', 'transitioncancel'] as const) {
+    img?.addEventListener(type, (e) => { if (e.propertyName === 'translate') settle(); });
+  }
+  const hero = document.querySelector('.hero');
+  if (hero) new MutationObserver((_, mo) => {
+    if (hero.classList.contains('is-in')) { mo.disconnect(); setTimeout(settle, 2000); }
+  }).observe(hero, { attributes: true, attributeFilter: ['class'] });
+</script>
+
 <style>
   /* Rows, labels, lists and the lede are shared styles in Layout.astro. */
   .row.hero { border-top: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem); align-items: end; }
@@ -109,15 +129,23 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     background: var(--accent);
     transition: transform .7s cubic-bezier(.22, .61, .36, 1);
   }
-  /* The block starts a little offset and slides home just after the photo
-     appears, like a print layer landing in register. This uses the separate
-     `translate` property so it never interferes with the hover `transform`. */
-  :global(html.motion) .hero .block {
-    translate: 14px 14px;
+  /* Opening: the hover state played in reverse. The page opens with photo and
+     block pulled apart and the photo in colour; both then slide home together
+     as the photo fades to gray. This uses the separate `translate`/`scale`
+     properties so it never interferes with the hover `transform`. The slower
+     intro timing only applies until the script marks the portrait `.settled`. */
+  :global(html.motion) .hero:not(.is-in) .portrait img { translate: -3% -3%; scale: 1.05; filter: none; }
+  :global(html.motion) .hero:not(.is-in) .portrait .block { translate: 8% 20%; }
+  :global(html.motion) .portrait:not(.settled) img {
+    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
+                scale 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
+                filter 1.4s ease .3s,
+                transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  :global(html.motion) .portrait:not(.settled) .block {
     transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
                 transform .7s cubic-bezier(.22, .61, .36, 1);
   }
-  :global(html.motion) .hero:global(.is-in) .block { translate: none; }
 
   /* Hover: the photo and block pull apart (photo up-left, block down-right)
      and the photo regains its colour. Only on devices that really hover (no
@@ -125,6 +153,12 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   @media (hover: hover) {
     .portrait:hover img { filter: none; transform: translate(-3%, -3%) scale(1.05); }
     .portrait:hover .block { transform: translate(8%, 20%); }
+  }
+  /* Touch screens have no hover, so a tap toggles the same state instead. */
+  @media (hover: none) {
+    .portrait { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .portrait.is-color img { filter: none; transform: translate(-3%, -3%) scale(1.05); }
+    .portrait.is-color .block { transform: translate(8%, 20%); }
   }
   @media (prefers-reduced-motion: reduce) {
     .portrait .block { transition: none; }
