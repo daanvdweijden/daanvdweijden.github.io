@@ -1,7 +1,8 @@
 ---
 // A 24-hour histogram of when solves are completed (local Amsterdam time).
-// Morning hours and the late-night tail are drawn in ink, the rest muted, so
-// the two clusters read at a glance. Inline SVG, scales to its container.
+// The busiest hours (the top PEAK hours by solve count, computed from the
+// data) are drawn in ink and the rest muted, so the peaks read at a glance.
+// Inline SVG, scales to its container.
 interface Props {
   hist: number[]; // length 24, index = local hour
 }
@@ -12,18 +13,21 @@ const bw = W / 24;
 const max = Math.max(...hist, 1);
 const barH = (v: number) => (v / max) * (H - padTop - padBot);
 
-const zone = (h: number): 'morning' | 'night' | 'day' =>
-  h >= 7 && h <= 11 ? 'morning' : (h >= 22 || h <= 1) ? 'night' : 'day';
+// Highlight the PEAK busiest hours. Ties at the cut-off are included, and
+// empty hours never count.
+const PEAK = 5;
+const cutoff = [...hist].sort((a, b) => b - a)[PEAK - 1] ?? 0;
+const isPeak = (v: number) => v > 0 && v >= cutoff;
 const TICKS: [number, string][] = [[0, '12a'], [6, '6a'], [12, '12p'], [18, '6p'], [23, '11p']];
 const hourLabel = (h: number) => (h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`);
 ---
 
-<svg viewBox={`0 0 ${W} ${H}`} class="tod" role="img" aria-label="Solves by hour of day, peaking late morning with a near-midnight spike">
+<svg viewBox={`0 0 ${W} ${H}`} class="tod" role="img" aria-label="Solves by hour of day, busiest hours highlighted">
   {hist.map((v, h) => (
     <rect
       x={h * bw + 1} y={H - padBot - barH(v)}
       width={bw - 2} height={barH(v)}
-      class:list={['bar', zone(h)]}
+      class:list={['bar', { peak: isPeak(v) }]}
       data-tip={`${v} solves at ${hourLabel(h)}`}
       tabindex="0"
     />
@@ -36,8 +40,8 @@ const hourLabel = (h: number) => (h === 0 ? '12am' : h < 12 ? `${h}am` : h === 1
 <style>
   .tod { display: block; width: 100%; height: auto; }
   .bar { transition: fill .12s ease; cursor: default; outline: none; }
-  rect.bar.morning, rect.bar.night { fill: var(--ink); }
-  rect.bar.day { fill: color-mix(in srgb, var(--ink) 25%, var(--bg)); }
+  rect.bar { fill: color-mix(in srgb, var(--ink) 25%, var(--bg)); }
+  rect.bar.peak { fill: var(--ink); }
   rect.bar:hover, rect.bar:focus-visible { fill: var(--accent); }
   .axis { font-family: var(--font); font-size: 7.5px; fill: var(--muted); }
 </style>
