@@ -50,14 +50,8 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Resolve the theme before first paint so there's no light flash on a dark preference. -->
     <script is:inline>
       (function () {
-        try {
-          var stored = localStorage.getItem('theme');
-          var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {}
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           document.documentElement.classList.add('motion');
         }
@@ -112,17 +106,21 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-yellow-bg:#f6ecc0;--p-yellow-fg:#7d6200;
         --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
-      html[data-theme='dark'] {
-        color-scheme: dark;
-        --bg: #141413;
-        --ink: #ecebe6;
-        --muted: #8f8e88;
-        --line: #2e2d2a;
-        --accent: #e0472f;
-        --p-red-bg: #3a2420;  --p-red-fg: #eea596;
-        --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
-        --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
-        --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+      /* Follows the visitor's system setting; anything that doesn't report
+         one (older browsers, some embeds) gets the light palette above. */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #141413;
+          --ink: #ecebe6;
+          --muted: #8f8e88;
+          --line: #2e2d2a;
+          --accent: #e0472f;
+          --p-red-bg: #3a2420;  --p-red-fg: #eea596;
+          --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
+          --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
+          --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+        }
       }
 
       * { box-sizing: border-box; }
@@ -161,10 +159,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         content: ""; display: inline-block; width: .5em; height: .5em;
         margin-right: .4em; background: var(--accent); vertical-align: .08em;
       }
-      .theme-toggle {
-        font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
-      }
-      .theme-toggle:hover { color: var(--ink); }
       /* Menu: on wide screens the <details> is a passthrough (its box is
          removed and the summary hidden) so the links sit inline. On phones it
          becomes a two-line hamburger that drops the links down as a plain
@@ -195,7 +189,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
           background: var(--bg); border-bottom: 1px solid var(--line);
           font-size: 1.15rem; animation: menu-in .35s cubic-bezier(.22, .61, .36, 1);
         }
-        .menu[open] nav.links a, .menu[open] .theme-toggle { padding: .3rem 0; }
+        .menu[open] nav.links a { padding: .3rem 0; }
       }
       @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
       @media (prefers-reduced-motion: reduce) { .menu[open] nav.links { animation: none; } }
@@ -294,7 +288,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
               {nav.map((l) => (
                 <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.name}</a>
               ))}
-              <button id="theme-toggle" class="theme-toggle" type="button">Dark</button>
             </nav>
           </details>
         </div>
@@ -356,23 +349,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       if (menu) {
         addEventListener('keydown', (e) => { if (e.key === 'Escape') menu.open = false; });
         addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
-      }
-
-      // Theme toggle: flip data-theme on <html>, persist the choice, keep the label honest.
-      const themeToggle = document.getElementById('theme-toggle');
-      if (themeToggle) {
-        const sync = () => {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          themeToggle.textContent = isDark ? 'Light' : 'Dark';
-          themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
-        };
-        sync();
-        themeToggle.addEventListener('click', () => {
-          const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          try { localStorage.setItem('theme', next); } catch (e) {}
-          sync();
-        });
       }
     </script>
   </body>
