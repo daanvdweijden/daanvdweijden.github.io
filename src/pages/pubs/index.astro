@@ -15,7 +15,7 @@ const groups = groupByYear(await getPublications());
       <div></div>
       <div>
         <h1 class="page-title">Publications</h1>
-        <p class="page-intro">Peer-reviewed work. Follow a title for links and citation.</p>
+        <p class="page-intro">Peer-reviewed work.</p>
       </div>
     </section>
 
@@ -37,7 +37,7 @@ const groups = groupByYear(await getPublications());
                       <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
                     ))}
                   </span>
-                  <span class="sub">
+                  <span class="sub venue">
                     {p.data.venue}{p.data.note ? ` · ${p.data.note}` : ''}
                   </span>
                   {p.data.award && <span class="sub award">{p.data.award}</span>}
@@ -59,8 +59,11 @@ const groups = groupByYear(await getPublications());
 <style>
   .pubs > li { padding-bottom: 1.8rem; }
   .title { font-size: 1.08rem; line-height: 1.35; }
-  .authors { color: var(--muted); }
-  .author.me { color: var(--ink); }
+  /* Authors in ink with my name in bold; the venue below is muted italic,
+     so the two never run together. */
+  .list .authors { color: var(--ink); margin-top: .3rem; }
+  .author.me { font-weight: 650; }
+  .list .venue { font-style: italic; margin-top: .25rem; }
   .award { color: var(--accent); }
   .actions { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .5rem; font-size: .9rem; }
   .list .actions a { text-decoration: underline; text-decoration-color: var(--line); }

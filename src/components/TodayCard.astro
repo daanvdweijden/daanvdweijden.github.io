@@ -29,7 +29,6 @@ const games = day.played.map((slug) => ({ slug, label: activity.game_meta[slug]?
 
   <p class="foot">
     {formatDay(day.date)}, {games.length} {games.length === 1 ? 'puzzle' : 'puzzles'}
-    {games.length > 0 && <span> · hover one for its name</span>}
   </p>
 </div>
 
