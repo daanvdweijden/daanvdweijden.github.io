@@ -13,7 +13,6 @@ import {
   getActivity,
   buildCells,
   currentAnyStreak,
-  currentStreakDates,
   today,
   totalPuzzlesSolved,
   fastestMini,
@@ -32,7 +31,6 @@ import {
 const a = getActivity();
 const cells = buildCells(a);
 const streak = currentAnyStreak(a);
-const streakDates = currentStreakDates(a);
 const total = totalPuzzlesSolved(a);
 const fastMini = fastestMini();
 const todayMini = todayMiniSeconds(a);
@@ -95,8 +93,7 @@ const share = (slices: HintSlice[], key: string) => {
     <section class="row" data-reveal>
       <h2 class="label">Activity</h2>
       <div>
-        <Heatmap cells={cells} activity={a} streakDates={streakDates} solveTimes={solveTimes} />
-        <p class="note">Outlined days are the current streak.</p>
+        <Heatmap cells={cells} activity={a} solveTimes={solveTimes} />
       </div>
     </section>
 

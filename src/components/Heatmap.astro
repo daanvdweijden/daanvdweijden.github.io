@@ -2,17 +2,16 @@
 // Responsive contribution calendar. Unlike a fixed GitHub grid, this fills its
 // container and drops the OLDEST week-columns when the box is too narrow —
 // never scrolls sideways. Each day has a rich hover/focus tooltip (games +
-// solve times); the live streak run is ringed. All client-side layout reads a
+// solve times). All client-side layout reads a
 // JSON island so the markup stays tiny.
 import { formatDay, type Cell, type Activity } from '../lib/puzzles';
 
 interface Props {
   cells: Cell[]; // continuous, oldest-first
   activity: Activity;
-  streakDates: Set<string>;
   solveTimes: Record<string, Record<string, string>>; // date -> {slug: 'm:ss'}
 }
-const { cells, activity, streakDates, solveTimes } = Astro.props;
+const { cells, activity, solveTimes } = Astro.props;
 
 const bucket = (c: number) => (c <= 0 ? 0 : c === 1 ? 1 : c === 2 ? 2 : c <= 4 ? 3 : 4);
 
@@ -21,7 +20,6 @@ const days = cells.map((c) => ({
   d: c.date,
   label: formatDay(c.date, true),
   b: bucket(c.count),
-  streak: streakDates.has(c.date),
   items: c.played.map((slug) => ({
     n: activity.game_meta[slug]?.label ?? slug,
     t: solveTimes[c.date]?.[slug] ?? null,
@@ -37,7 +35,7 @@ const payload = JSON.stringify(days);
 
 <script>
   interface Item { n: string; t: string | null }
-  interface Day { d: string; label: string; b: number; streak: boolean; items: Item[] }
+  interface Day { d: string; label: string; b: number; items: Item[] }
 
   const GAP = 3, MIN_CELL = 13, MAX_CELL = 18; // px
 
@@ -93,7 +91,7 @@ const payload = JSON.stringify(days);
           rect.setAttribute('height', cell.toFixed(2));
           
           if (day) {
-            rect.setAttribute('class', 'cell' + (day.streak ? ' streak' : ''));
+            rect.setAttribute('class', 'cell');
             rect.dataset.b = String(day.b);
             (rect as any)._day = day;
             rect.setAttribute('tabindex', '0');
@@ -137,7 +135,6 @@ const payload = JSON.stringify(days);
           .map((it) => `<div class="t-row"><span>${it.n}</span>${it.t ? `<span class="t-time">${it.t}</span>` : ''}</div>`)
           .join('');
       }
-      if (day.streak) html += '<div class="t-streak">On the current streak</div>';
       tip.innerHTML = html;
       tip.style.opacity = '1';
       const r = cell.getBoundingClientRect();
@@ -175,7 +172,6 @@ const payload = JSON.stringify(days);
   .heatmap :global(rect.cell[data-b='2']) { fill: color-mix(in srgb, var(--accent) 52%, var(--bg)); }
   .heatmap :global(rect.cell[data-b='3']) { fill: color-mix(in srgb, var(--accent) 76%, var(--bg)); }
   .heatmap :global(rect.cell[data-b='4']) { fill: var(--accent); }
-  .heatmap :global(rect.cell.streak) { stroke: var(--ink); stroke-width: 1; }
   .heatmap :global(rect.cell:focus-visible) { stroke: var(--ink); stroke-width: 2; }
 
   :global(.heatmap-tip) {
@@ -189,5 +185,4 @@ const payload = JSON.stringify(days);
   :global(.heatmap-tip .t-row) { display: flex; justify-content: space-between; gap: 1rem; }
   :global(.heatmap-tip .t-time) { color: var(--muted); font-variant-numeric: tabular-nums; }
   :global(.heatmap-tip .t-empty) { color: var(--muted); }
-  :global(.heatmap-tip .t-streak) { color: var(--muted); margin-top: .25rem; }
 </style>
