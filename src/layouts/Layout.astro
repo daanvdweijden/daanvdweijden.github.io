@@ -55,10 +55,35 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         // Colour scheme: the system setting by default (pure CSS, below). A
         // choice made in the footer switch is stored and applied before first
         // paint so there's no flash of the other palette.
-        try {
-          var t = localStorage.getItem('theme');
-          if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-        } catch (e) {}
+        //
+        // The choice is kept in localStorage, a cookie and window.name. Mobile
+        // Safari with "Block All Cookies" (and some in-app browsers) throws
+        // on localStorage, so it can't be the only place; window.name survives
+        // same-tab navigation even when all storage is blocked.
+        var ok = function (v) { return v === 'light' || v === 'dark' ? v : null; };
+        var store = {
+          get: function () {
+            try { var l = ok(localStorage.getItem('theme')); if (l) return l; } catch (e) {}
+            try { var c = ok((document.cookie.match(/(?:^|; )theme=(\w+)/) || [])[1]); if (c) return c; } catch (e) {}
+            return ok((window.name.match(/^theme=(\w+)$/) || [])[1]);
+          },
+          set: function (v) {
+            v = ok(v);
+            try { v ? localStorage.setItem('theme', v) : localStorage.removeItem('theme'); } catch (e) {}
+            try { document.cookie = 'theme=' + (v || '') + '; path=/; SameSite=Lax; max-age=' + (v ? 31536000 : 0); } catch (e) {}
+            if (!window.name || /^theme=/.test(window.name)) window.name = v ? 'theme=' + v : '';
+          },
+          apply: function () {
+            var v = store.get();
+            if (v) document.documentElement.setAttribute('data-theme', v);
+            else document.documentElement.removeAttribute('data-theme');
+          },
+        };
+        window.__theme = store;
+        store.apply();
+        // A page restored from the back/forward cache keeps the theme it had
+        // when it was left; re-read the stored choice.
+        window.addEventListener('pageshow', function (e) { if (e.persisted) store.apply(); });
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           document.documentElement.classList.add('motion');
         }
@@ -408,18 +433,14 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         };
         for (const b of buttons) {
           b.addEventListener('click', () => {
-            const choice = b.dataset.themeChoice;
-            if (choice === 'light' || choice === 'dark') {
-              document.documentElement.setAttribute('data-theme', choice);
-              try { localStorage.setItem('theme', choice); } catch (e) {}
-            } else {
-              document.documentElement.removeAttribute('data-theme');
-              try { localStorage.removeItem('theme'); } catch (e) {}
-            }
+            const theme = (window as any).__theme;
+            theme.set(b.dataset.themeChoice);
+            theme.apply();
             sync();
           });
         }
         sync();
+        window.addEventListener('pageshow', (e) => { if (e.persisted) sync(); });
         themeSwitch.hidden = false;
       }
 
