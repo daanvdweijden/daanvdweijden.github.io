@@ -1,0 +1,6 @@
+#!/bin/sh
+# Compress staged images (see scripts/compress_images.mjs) and re-stage them.
+files=$(git diff --cached --name-only --diff-filter=AM | grep -iE '\.(jpe?g|png|webp)$')
+[ -z "$files" ] && exit 0
+echo "$files" | tr '\n' '\0' | xargs -0 node scripts/compress_images.mjs || exit 1
+echo "$files" | tr '\n' '\0' | xargs -0 git add
