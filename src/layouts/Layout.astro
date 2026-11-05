@@ -251,14 +251,25 @@ const section = Astro.url.pathname.slice(base.length).split('/')[0] || 'home';
            --bw/--bh  size        --bt/--bb  offset from top / bottom
            --bo       how far past the gutter it reaches under the title */
       .row.page-head { isolation: isolate; position: relative; z-index: 1; }
-      .row.page-head > div:first-child:empty { position: relative; }
+      /* Only the block itself reacts to the pointer, not the whole empty
+         column: the column ignores it and the block (its ::before) takes it,
+         which still counts as hovering the column. */
+      .row.page-head > div:first-child:empty { position: relative; pointer-events: none; }
       .row.page-head > div:first-child:empty::before {
         content: ""; position: absolute; z-index: -1; background: var(--accent);
         width: var(--bw, 3rem); height: var(--bh, 3rem);
         top: var(--bt, auto); bottom: var(--bb, auto);
         right: calc(-1 * var(--col-gap) - var(--bo, 0rem));
         box-shadow: var(--bs, none);
-        transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s;
+        pointer-events: auto;
+        transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
+                    transform .7s cubic-bezier(.22, .61, .36, 1);
+      }
+      /* Hover: like the homepage portrait, the layers pull apart; here the
+         block slides away from the title (down-left). Uses `transform` so it
+         never fights the landing `translate`. Real-hover devices only. */
+      @media (hover: hover) {
+        .row.page-head > div:first-child:empty:hover::before { transform: translate(-.6rem, .45rem); }
       }
       [data-section='news']    .page-head { --bw: 4.5rem; --bh: 4.5rem; --bt: -1.4rem; --bo: .3rem; }
       [data-section='pubs']    .page-head { --bw: 1.5rem; --bh: 11rem; --bt: -2.5rem; --bo: -.4rem; }
