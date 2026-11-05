@@ -13,10 +13,10 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 <Layout title="News" active="news">
   <main class="wrap">
     <section class="row page-head" data-reveal>
-      <p class="label">News</p>
+      <div></div>
       <div>
-        <h1 class="page-title">Talks, papers, and other things that happened.</h1>
-        <p class="page-intro">Follow a title for the full note.</p>
+        <h1 class="page-title">News</h1>
+        <p class="page-intro">Talks, awards, and other announcements. Follow a title for the full note.</p>
       </div>
     </section>
 
@@ -51,5 +51,10 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .title { font-size: 1.08rem; }
   .tag { display: block; }
   .tag::first-letter { text-transform: uppercase; }
-  .sub { line-height: 1.5; margin-top: .3rem; max-width: 36em; }
+  /* Previews always take exactly two lines, so items stack evenly. */
+  .sub {
+    line-height: 1.5; margin-top: .3rem; max-width: 36em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    overflow: hidden; min-height: 3em;
+  }
 </style>

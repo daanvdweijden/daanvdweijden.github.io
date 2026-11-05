@@ -161,11 +161,40 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
       }
       .theme-toggle:hover { color: var(--ink); }
-      /* Phones: name block on top, nav on one line under it. */
+      /* Menu: on wide screens the <details> is a passthrough (its box is
+         removed and the summary hidden) so the links sit inline. On phones it
+         becomes a two-line hamburger that drops the links down as a plain
+         list under the header. Modern engines wrap closed <details> content
+         in ::details-content, which display:contents does not defeat, so it
+         is forced visible on wide screens. */
+      .menu { display: contents; }
+      .menu > summary { display: none; }
+      .menu::details-content { content-visibility: visible; }
+
       @media (max-width: 600px) {
-        header.top .inner { flex-direction: column; gap: .9rem; }
-        nav.links { justify-content: flex-start; gap: .2rem 1.1rem; }
+        header.top { position: relative; }
+        header.top .inner { align-items: center; }
+        .menu { display: block; }
+        .menu > summary {
+          display: grid; place-items: center; width: 36px; height: 36px; margin-right: -6px;
+          list-style: none; cursor: pointer; color: var(--ink);
+        }
+        .menu > summary::-webkit-details-marker { display: none; }
+        .menu svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .menu .i-close, .menu[open] .i-open { display: none; }
+        .menu[open] .i-close { display: block; }
+        .menu nav.links { display: none; }
+        .menu[open] nav.links {
+          display: flex; flex-direction: column; align-items: flex-start; gap: .1rem;
+          position: absolute; left: 0; right: 0; top: 100%; z-index: 20;
+          padding: .4rem clamp(1.25rem, 3vw, 2.25rem) 1.4rem;
+          background: var(--bg); border-bottom: 1px solid var(--line);
+          font-size: 1.15rem; animation: menu-in .35s cubic-bezier(.22, .61, .36, 1);
+        }
+        .menu[open] nav.links a, .menu[open] .theme-toggle { padding: .3rem 0; }
       }
+      @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
+      @media (prefers-reduced-motion: reduce) { .menu[open] nav.links { animation: none; } }
 
       /* ---- shared page grid ----
          Every page is a stack of the same two-column rows: a narrow left
@@ -213,7 +242,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       .prose code { font-size: .9em; }
 
       /* Emphasised part of a news title (set per item in front matter). */
-      .hl { font-style: normal; }
+      .hl { font-style: normal; color: var(--accent); }
 
       .back { font-size: .9rem; color: var(--muted); text-decoration: none; }
       .back:hover { color: var(--ink); }
@@ -252,12 +281,18 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       <div class="wrap">
         <div class="inner">
           <a class="mark" href={base}>{site.name}<span>{site.role}, {site.university}</span></a>
-          <nav class="links" aria-label="Main">
-            {nav.map((l) => (
-              <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.name}</a>
-            ))}
-            <button id="theme-toggle" class="theme-toggle" type="button">Dark</button>
-          </nav>
+          <details class="menu">
+            <summary aria-label="Menu">
+              <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18" /></svg>
+              <svg class="i-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+            </summary>
+            <nav class="links" aria-label="Main">
+              {nav.map((l) => (
+                <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.name}</a>
+              ))}
+              <button id="theme-toggle" class="theme-toggle" type="button">Dark</button>
+            </nav>
+          </details>
         </div>
       </div>
     </header>
@@ -310,6 +345,13 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
           }
           io.observe(el);
         }
+      }
+
+      // Mobile menu: close on Escape or a click outside it.
+      const menu = document.querySelector<HTMLDetailsElement>('details.menu');
+      if (menu) {
+        addEventListener('keydown', (e) => { if (e.key === 'Escape') menu.open = false; });
+        addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
       }
 
       // Theme toggle: flip data-theme on <html>, persist the choice, keep the label honest.
