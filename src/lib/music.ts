@@ -187,10 +187,11 @@ export async function getMusicStats(opts: { range?: string; afterDays?: number }
 
 export async function getMusicData(): Promise<MusicData> {
   const [albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats, stats30d] = await Promise.all([
-    getTopAlbums({ limit: 12 }),
-    getTopAlbums({ limit: 6, afterDays: 365 }),
+    // Every list is a top 10.
+    getTopAlbums({ limit: 10 }),
+    getTopAlbums({ limit: 10, afterDays: 365 }),
     getTopAlbums({ limit: 10, afterDays: 30 }),
-    getTopArtists({ limit: 15, afterDays: 30 }),
+    getTopArtists({ limit: 10, afterDays: 30 }),
     getTopTracks({ limit: 10, afterDays: 30 }),
     getMusicStats(),
     getMusicStats({ afterDays: 30 }),

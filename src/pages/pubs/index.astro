@@ -59,11 +59,11 @@ const groups = groupByYear(await getPublications());
 <style>
   .pubs > li { padding-bottom: 1.8rem; }
   .title { font-size: 1.08rem; line-height: 1.35; }
-  /* Authors in ink with my name in bold; the venue below is muted italic,
+  /* Co-authors muted, my name bold in ink; the venue below is ink italic,
      so the two never run together. */
-  .list .authors { color: var(--ink); margin-top: .3rem; }
-  .author.me { font-weight: 650; }
-  .list .venue { font-style: italic; margin-top: .25rem; }
+  .list .authors { color: var(--muted); margin-top: .3rem; }
+  .author.me { color: var(--ink); font-weight: 650; }
+  .list .venue { color: var(--ink); font-style: italic; margin-top: .25rem; }
   .award { color: var(--accent); }
   .actions { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .5rem; font-size: .9rem; }
   .list .actions a { text-decoration: underline; text-decoration-color: var(--line); }
