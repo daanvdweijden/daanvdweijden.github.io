@@ -15,6 +15,7 @@
     "@citation-js/core": "^0.7.14",
     "@citation-js/plugin-bibtex": "^0.7.14",
     "@citation-js/plugin-csl": "^0.7.14",
+    "@fontsource-variable/archivo": "^5.3.0",
     "astro": "^7.1.6",
     "fast-xml-parser": "^5.9.3",
     "gsap": "^3.15.0",

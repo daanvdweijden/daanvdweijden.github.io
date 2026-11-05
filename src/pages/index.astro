@@ -1,238 +1,138 @@
 ---
-// Home — minimalist editorial layout ("Premium Utilitarian Minimalism").
-// Warm-bone canvas, editorial serif + geometric sans, flat bento grid, 1px
-// hairline borders, muted pastel tags. No motion — static by design.
+// Home. One asymmetric two-column grid: a narrow left column for the portrait
+// and small labels, a wide right column where all text starts on the same
+// vertical line. The single loud element is the flat colour block that the
+// grayscale portrait overlaps (multiply blend), borrowed from Swiss posters.
 //
-// All content is data-driven:
-//   • profile + links  → src/site.config.ts   (from the old Hugo site)
-//   • publications     → src/data/publications.bib
+// Data:
+//   • profile + links  → src/site.config.ts
+//   • publications     → src/content/publications
 //   • news             → src/content/news/*.md
 import Layout from '../layouts/Layout.astro';
 import { site } from '../site.config';
-import { getPublications, yearOf, pubHref, isOwner } from '../lib/pubs';
+import { getPublications, yearOf, pubHref } from '../lib/pubs';
 import { getNews, newsHref, titleParts } from '../lib/news';
 import { personLd, jsonLd } from '../lib/seo';
 
-const pubs = await getPublications();
-
-// News feed, newest first. The card shows the latest few; "All →" has the rest.
-const news = await getNews();
-const fmtMonth = (d: Date) =>
-  d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+const base = import.meta.env.BASE_URL;
+const pubs = (await getPublications()).slice(0, 4);
+const news = (await getNews()).slice(0, 4);
+const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
-// Person JSON-LD: ties this site to the ORCID/Scholar/GitHub/LinkedIn profiles.
 const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.site!) });
 ---
 
 <Layout description={site.description} ogType="profile">
-  <script
-    slot="head"
-    type="application/ld+json"
-    set:html={personJson}
-  />
-  <section class="bento">
-    <div class="wrap">
-      <div class="grid">
-        <article class="card c-profile">
-          <img class="avatar" src={`${import.meta.env.BASE_URL}${site.avatar}`} alt={`Portrait of ${site.name}`} />
-          <h1 class="name">{site.name}</h1>
-          <p class="role">{site.role}</p>
-          <p class="location">{site.location}</p>
-          <div class="profile-links">
-            <a class="profile-link" href={`${import.meta.env.BASE_URL}cv/`}>CV</a>
-            {site.socials
-              .filter((s) => ['GitHub', 'Google Scholar', 'ORCID', 'LinkedIn', 'Email'].includes(s.name))
-              .map((s) => <a class="profile-link" href={s.url}>{s.name}</a>)}
-          </div>
-        </article>
+  <script slot="head" type="application/ld+json" set:html={personJson} />
 
-        <article class="card c-about" data-cursor="red">
-          <p class="kicker">About</p>
-          <p>
-            I'm a PhD candidate at the <a href={site.affiliation.url} class="inline-link">{site.affiliation.name}</a> group
-            at the {site.university}, working on artificial intelligence and its impact on democracy. AI has the potential to strengthen democracy, but also to undermine it, and navigating that tension is what my research aims to address.
-          </p>
-          <p>
-            My research applies computational methods to societal problems. Sometimes to understand
-            what's driving them, sometimes to build tools that help address them. I come from a background
-            spanning Linguistics (BA) and Artificial Intelligence (BSc, MSc), which led me to the
-            interdisciplinary <a href="https://d3-project.ch" class="inline-link">Digital Deliberative Democracy (D3)</a> project,
-            where I collaborate directly with PoliSci and Law fellows.
-          </p>
-          <p>
-            Right now, I'm building AI tools to help citizens participate in digital democracy. This means making complex legal texts more accessible for a larger population, facilitating online deliberation without drowning out minority voices, and finding ways to automatically keep those discussions productive at scale.
-          </p>
-          <p>
-            Beyond my research, I try to be engaged in the university as well, as the{' '}
-            <a href="https://www.ifi.uzh.ch/en/department/people/representatives.html" class="inline-link">PhD representative of the IFI department</a>,
-            and until 2026 as a member of the assembly of the OEC faculty. I was furthermore part of the{' '}
-            <a href="https://www.dsi.uzh.ch/en/current/news/2026/congrats-ep-2026.html" class="inline-link">DSI PhD Excellence programme</a>,
-            allowing me to meet the incredibly smart and talented people of my cohort.
-          </p>
-          <p>
-            Outside of work, I love to run next to the Limmat, swim in a Badi, hang with my fiancee and our two cats. 
-            During my small breaks I like to do my <a href="/puzzles" class="inline-link">daily puzzles</a>, 
-            during bigger breaks I try to <a href="/books" class="inline-link">read a book</a>{' '}
-            or get lost in <a href="/music" class="inline-link">my music</a>.
-            Always down for a new game!
-          </p>
-        </article>
+  <main class="wrap">
+    <section data-reveal class="row hero">
+      <figure class="portrait">
+        <span class="block" aria-hidden="true"></span>
+        <img src={`${base}${site.avatar}`} alt={`Portrait of ${site.name}`} width="800" height="800" />
+      </figure>
+      <h1 class="lede">
+        I research how artificial intelligence can strengthen democracy, and
+        how it can undermine it.
+      </h1>
+    </section>
 
-        <article class="card c-pubs" data-cursor="blue">
-          <div class="card-head">
-            <p class="kicker">Publications</p>
-            <a class="see-all" href={`${import.meta.env.BASE_URL}pubs/`}>All →</a>
-          </div>
-          {pubs.slice(0, 3).map((p) => (
-            <div class="pub">
-              <a class="pt-link" href={pubHref(p)}>
-                <p class="pt">{p.data.title}</p>
-                <p class="pa">
-                  {p.data.authors.map((a, i) => (
-                    <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
-                  ))}
-                </p>
-                <p class="pv">{[p.data.venue, yearOf(p)].filter(Boolean).join(' · ')}</p>
-              </a>
-            </div>
-          ))}
-        </article>
+    <section data-reveal class="row">
+      <h2 class="label">Now</h2>
+      <p class="body">PhD candidate at <a href={site.affiliation.url}>{site.affiliation.name}</a>, {site.university}, in the interdisciplinary <a href="https://d3-project.ch">Digital Deliberative Democracy (D3)</a> project, working on AI for citizen participation and deliberation, and on the ways it can undermine democracy. Also the <a href="https://www.ifi.uzh.ch/en/department/people/representatives.html">PhD representative</a> of the IFI department.</p>
+    </section>
 
-        <article class="card c-news" data-cursor="green">
-          <div class="card-head">
-            <p class="kicker">News</p>
-            <a class="see-all" href={`${import.meta.env.BASE_URL}news/`}>All →</a>
-          </div>
-          {news.slice(0, 5).map((n) => {
-            const { before, emphasis, after } = titleParts(n);
-            return (
-              <a class="news-item" href={newsHref(n)}>
-                <time datetime={iso(n.data.date)}>{fmtMonth(n.data.date)}</time>
-                {before}{emphasis && <em class="hl">{emphasis}</em>}{after}
-              </a>
-            );
-          })}
-        </article>
-      </div>
-    </div>
-  </section>
+    <section data-reveal class="row">
+      <h2 class="label">Before</h2>
+      <p class="body">Linguistics (BA) and Artificial Intelligence (BSc, MSc). Member of the OEC faculty assembly until 2026, and part of the <a href="https://www.dsi.uzh.ch/en/current/news/2026/congrats-ep-2026.html">DSI PhD Excellence programme</a>.</p>
+    </section>
+
+    <section data-reveal class="row">
+      <h2 class="label">Off work</h2>
+      <p class="body">I run along the Limmat, swim in a Badi, and spend evenings with my fiancée and our two cats. In between: <a href={`${base}puzzles/`}>daily puzzles</a>, <a href={`${base}books/`}>books</a> and <a href={`${base}music/`}>music</a>. Always up for a new game.</p>
+    </section>
+
+    <section data-reveal class="row">
+      <h2 class="label">News <a href={`${base}news/`}>All</a></h2>
+      <ol class="list">
+        {news.map((n) => {
+          const { before, emphasis, after } = titleParts(n);
+          return (
+            <li>
+              <time class="meta" datetime={iso(n.data.date)}>{fmtDate(n.data.date)}</time>
+              <a href={newsHref(n)}>{before}{emphasis && <em class="hl">{emphasis}</em>}{after}</a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+
+    <section data-reveal class="row">
+      <h2 class="label">Publications <a href={`${base}pubs/`}>All</a></h2>
+      <ol class="list">
+        {pubs.map((p) => (
+          <li>
+            <span class="meta">{yearOf(p)}</span>
+            <span>
+              <a href={pubHref(p)}>{p.data.title}</a>
+              {p.data.venue && <span class="sub">{p.data.venue}</span>}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </main>
 </Layout>
 
 <style>
-  /* ---- bento ---- */
-  section.bento { padding: clamp(2.5rem, 7vw, 4.5rem) 0 clamp(4rem, 9vw, 7rem); }
-  .grid {
-    display: grid; gap: 16px;
-    grid-template-columns: repeat(6, 1fr);
-    grid-auto-rows: minmax(0, auto);
-  }
-  .card {
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: 12px; padding: clamp(1.4rem, 3vw, 2rem);
-  }
-  .c-profile { grid-column: span 2; display: flex; flex-direction: column; }
-  .c-about { grid-column: span 4; }
-  .c-pubs { grid-column: span 4; }
-  .c-news { grid-column: span 2; }
+  /* Rows, labels, lists and the lede are shared styles in Layout.astro. */
+  .row.hero { border-top: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem); align-items: end; }
 
-  .card-head { display: flex; justify-content: space-between; align-items: baseline; }
-  .see-all { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); text-decoration: none; transition: color .2s; }
-  .see-all:hover { color: var(--accent, var(--ink)); }
+  /* The portrait: a grayscale photo overlapping a flat colour block. The
+     figure is its own isolated group and the photo multiplies onto it, so the
+     photo takes on the colour only where it covers the block and stays plain
+     gray everywhere else (in both themes). */
+  .portrait {
+    position: relative; isolation: isolate; margin: 0;
+    aspect-ratio: 1 / 1; width: min(100%, 26rem);
+  }
+  .portrait img {
+    position: absolute; left: 0; top: 0; width: 78%; height: 78%;
+    object-fit: cover; object-position: 50% 30%;
+    filter: grayscale(1) contrast(1.08);
+    mix-blend-mode: multiply;
+    transition: filter .7s ease, transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  .portrait .block {
+    position: absolute; left: 38%; right: 0; top: 38%; bottom: 0;
+    background: var(--accent);
+    transition: transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  /* The block starts a little offset and slides home just after the photo
+     appears, like a print layer landing in register. This uses the separate
+     `translate` property so it never interferes with the hover `transform`. */
+  :global(html.motion) .hero .block {
+    translate: 14px 14px;
+    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
+                transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  :global(html.motion) .hero:global(.is-in) .block { translate: none; }
 
-  .kicker {
-    display: inline-flex; align-items: center; gap: .5rem;
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
-    letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
+  /* Hover: the photo and block pull apart (photo up-left, block down-right)
+     and the photo regains its colour. Only on devices that really hover (no
+     sticky state on touch). */
+  @media (hover: hover) {
+    .portrait:hover img { filter: none; transform: translate(-3%, -3%) scale(1.05); }
+    .portrait:hover .block { transform: translate(8%, 20%); }
   }
-  /* Each card carries an accent color: the leading kicker dot below, plus the
-     link-hover hint within that card. */
-  .kicker::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
-    background: var(--accent, var(--muted));
+  @media (prefers-reduced-motion: reduce) {
+    .portrait .block { transition: none; }
+    .portrait img { transition: filter .7s ease; }
   }
-  .c-about { --accent: var(--p-red-fg); }
-  .c-pubs  { --accent: var(--p-blue-fg); }
-  .c-news  { --accent: var(--p-green-fg); }
-  .card h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 .6rem; }
-  .card p { margin: 0 0 .6rem; }
-  .card p:last-child { margin-bottom: 0; }
-  .inline-link { border-bottom: 1px solid var(--accent, var(--line)); text-decoration: none; transition: color .2s, border-color .2s; }
-  .inline-link:hover { color: var(--accent, var(--ink)); }
-
-  .avatar { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; object-fit: cover; border: 1px solid var(--line); margin-bottom: 1.1rem; }
-  .c-profile .name { font-family: var(--serif); font-weight: 400; font-size: 1.35rem; letter-spacing: -0.02em; margin: 0 0 .15rem; }
-  .c-profile .role { color: var(--muted); margin: 0 0 .3rem; font-size: .95rem; }
-  .c-profile .location {
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--muted); margin: 0 0 1.1rem;
-  }
-  .profile-links { display: flex; flex-direction: column; gap: .5rem; margin-top: auto; }
-  .profile-link {
-    font-family: var(--mono); font-size: .78rem; color: var(--muted);
-    text-decoration: none; border-bottom: 1px solid var(--line); width: fit-content;
-    transition: color .2s;
-  }
-  .profile-link:hover { color: var(--ink); }
-
-  .tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; }
-  .tag {
-    font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em;
-    padding: .28rem .6rem; border-radius: 9999px;
-  }
-  .t-red { background: var(--p-red-bg); color: var(--p-red-fg); }
-  .t-blue { background: var(--p-blue-bg); color: var(--p-blue-fg); }
-  .t-green { background: var(--p-green-bg); color: var(--p-green-fg); }
-  .t-yellow { background: var(--p-yellow-bg); color: var(--p-yellow-fg); }
-
-  .pub { padding: 1rem 0; border-bottom: 1px solid var(--line); }
-  .pub:last-child { border-bottom: 0; padding-bottom: 0; }
-  .pub:first-of-type { padding-top: 0; }
-  .pub a.pt-link { text-decoration: none; display: block; }
-  .pub .pt { font-family: var(--serif); font-size: 1.1rem; letter-spacing: -0.01em; margin: 0 0 .2rem; transition: color .2s; }
-  .pub a.pt-link:hover .pt { color: var(--accent, var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
-  .pub .pa { font-size: .9rem; color: var(--muted); margin: 0; }
-  .pub .author.me { color: var(--p-blue-fg); font-weight: 600; }
-  .pub .pv { font-family: var(--mono); font-size: .72rem; color: var(--muted); margin: .35rem 0 0; text-transform: uppercase; letter-spacing: .06em; }
-
-  .news-item {
-    display: block; font-size: .92rem; padding: .85rem 0; border-bottom: 1px solid var(--line);
-    text-decoration: none; transition: color .2s;
-  }
-  .news-item:hover { color: var(--accent, var(--ink)); text-decoration: underline; text-underline-offset: 3px; }
-  .news-item:last-child { border-bottom: 0; padding-bottom: 0; }
-  .news-item:first-of-type { padding-top: 0; }
-  .news-item time { font-family: var(--mono); font-size: .7rem; color: var(--muted); display: block; margin-bottom: .3rem; }
-  .news-item .hl { color: var(--p-green-fg); font-style: normal; font-weight: 600; }
 
   @media (max-width: 760px) {
-    .grid { grid-template-columns: repeat(2, 1fr); }
-    .c-profile, .c-about, .c-pubs, .c-news { grid-column: span 2; grid-row: auto; }
-
-    /* Stacked full-width: a square avatar would swallow the viewport. Reflow the
-       profile card so the text (name, role, location, links) leads on the left
-       and the avatar shrinks to a small square on the right — the card stays
-       compact and the bio below is easy to reach. */
-    .c-profile {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) clamp(96px, 26vw, 148px);
-      /* The avatar spans all rows; a flexible bottom row soaks up any height it
-         has beyond the text, so name/role/location stay tightly grouped at the
-         top instead of being spread out to match the avatar's square. */
-      grid-template-rows: auto auto auto 1fr;
-      grid-template-areas:
-        "name  img"
-        "role  img"
-        "loc   img"
-        ".     img";
-      column-gap: 1.25rem;
-      align-items: start;
-    }
-    .c-profile .avatar { grid-area: img; width: 100%; margin: 0; align-self: start; }
-    .c-profile .name { grid-area: name; }
-    .c-profile .role { grid-area: role; }
-    .c-profile .location { grid-area: loc; margin-bottom: 0; }
-    /* Links live in the footer too — drop them here to keep the stacked card compact. */
-    .c-profile .profile-links { display: none; }
+    .row.hero { row-gap: 2rem; }
+    .portrait { width: min(100%, 20rem); }
   }
 </style>

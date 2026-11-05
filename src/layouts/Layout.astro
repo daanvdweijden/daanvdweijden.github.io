@@ -1,16 +1,18 @@
 ---
-// Shared shell for every page: <head> + design tokens + nav bar + footer.
-// Pages provide their own <style> for page-specific layout. This keeps the
-// minimal editorial look identical across Home, Publications, etc.
+// Shared shell for every page: <head> + design tokens + header + footer.
+// Deliberately plain: paper background, one grotesk (Archivo), small corner
+// header. The one loud element lives on
+// the homepage (the colour block behind the portrait).
 import { site } from '../site.config';
-import '../styles/cursors.css';
+import '@fontsource-variable/archivo/wght.css';
+import '@fontsource-variable/archivo/wght-italic.css';
 
 interface Props {
   title?: string;
   description?: string;
   /** Which internal nav item is the current page, e.g. 'publications'. */
   active?: string;
-  /** When true, the header wordmark stays hidden while #hero-name is on screen, then fades in once it scrolls past the nav. */
+  /** Kept for page compatibility; the header no longer hides the name. */
   hideMarkUntilScroll?: boolean;
   /** Keep a page out of search engines without removing it from the site (e.g. the /puzzles/ easter egg). */
   noindex?: boolean;
@@ -23,7 +25,6 @@ const {
   title,
   description = site.tagline,
   active,
-  hideMarkUntilScroll = false,
   noindex = false,
   image = site.avatar,
   ogType = 'website',
@@ -33,41 +34,38 @@ const pageTitle = title ? `${title} · ${site.name}` : site.name;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const imageUrl = new URL(image.replace(/^\/+/, ''), new URL(import.meta.env.BASE_URL, Astro.site)).href;
 const year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL;
 
-// Internal sections shown in the header nav. Each carries the same accent color
-// as its section elsewhere on the site (kicker dots, eyebrows), so the active
-// nav item is marked with a colored dot + matching text/underline.
-const internal = [
-  { name: 'News', href: `${import.meta.env.BASE_URL}news/`, key: 'news', hue: 'green' },
-  { name: 'Publications', href: `${import.meta.env.BASE_URL}pubs/`, key: 'publications', hue: 'blue' },
-  { name: 'CV', href: `${import.meta.env.BASE_URL}cv/`, key: 'cv', hue: 'red' },
+const nav = [
+  { name: 'Home', href: base, key: 'home' },
+  { name: 'News', href: `${base}news/`, key: 'news' },
+  { name: 'Publications', href: `${base}pubs/`, key: 'publications' },
+  { name: 'CV', href: `${base}cv/`, key: 'cv' },
 ];
-// Section pages (News/Publications/CV) tint the cursor dot with their own accent
-// throughout, instead of just the homepage bento cards. styles/cursors.css keys
-// off this attribute; the bento cards use [data-cursor] for the same effect.
-const pageAccent = internal.find((l) => l.key === active)?.hue;
+const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
 ---
 
 <!doctype html>
-<html lang="en" data-page-accent={pageAccent}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Resolve the theme before first paint so there's no light flash on a dark preference. -->
     <script is:inline>
       (function () {
-        try {
-          var stored = localStorage.getItem('theme');
-          var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {}
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.documentElement.classList.add('motion');
+        }
       })();
     </script>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    {/* The /rework/ preview build must never compete with the live site in search. */}
+    {(noindex || base !== '/') && <meta name="robots" content="noindex,nofollow" />}
     <link rel="canonical" href={canonical} />
-    <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="icon" href={`${base}favicon-32.png`} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
     <!-- Link previews (Open Graph + Twitter/X, Bluesky, LinkedIn, Slack …). -->
     <meta property="og:site_name" content={site.name} />
     <meta property="og:type" content={ogType} />
@@ -81,253 +79,220 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
     <meta name="twitter:image" content={imageUrl} />
     <!-- Page-specific metadata (e.g. Google Scholar tags, JSON-LD). -->
     <slot name="head" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Newsreader (editorial serif) + Hanken Grotesk (geometric body) + JetBrains Mono. -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap"
-      rel="stylesheet"
-    />
     <style is:global>
       :root {
         color-scheme: light;
-        --bg: #fbfbfa;          /* warm bone */
-        --surface: #ffffff;
-        --ink: #1f1f1f;         /* never pure black */
-        --muted: #787774;
-        --line: #eaeaea;        /* hairline */
-        --sans: 'Hanken Grotesk', 'Helvetica Neue', sans-serif;
-        --serif: 'Newsreader', Georgia, serif;
-        --mono: 'JetBrains Mono', 'SF Mono', monospace;
-        /* washed-out pastel accents (semantic only) */
-        --p-red-bg: #fdebec;  --p-red-fg: #9f2f2d;
-        --p-blue-bg: #e1f3fe; --p-blue-fg: #1f6c9f;
-        --p-green-bg: #edf3ec;--p-green-fg: #346538;
-        --p-yellow-bg:#fbf3db;--p-yellow-fg:#956400;
-        /* heatmap intensity ramp (bucket 0 = --line, bucket 4 = --p-blue-fg) */
-        --heat-1: #dbeefc; --heat-2: #aedbf5; --heat-3: #7cc3ec;
-        /* wallpaper accent (sampled from Daan's desktop gradient): underlines,
-           selection, focus */
-        --tone: #37595f;        /* teal: text-safe on bone (~7:1) */
-        --tone-soft: #77a19a;   /* sage: fills/underlines only */
-        --grain: .1;            /* film-grain opacity: 0 = off, obvious above ~.15 */
-        --grain-blend: multiply;
-      }
-      /* Dark theme — same tokens, dimmed. Set via data-theme on <html> by the
-         inline head script (persisted in localStorage, defaults to OS setting). */
-      html[data-theme='dark'] {
-        color-scheme: dark;
-        --bg: #111a1c;          /* teal-black: the wallpaper's night side */
-        --surface: #172326;
-        --ink: #e6ebea;         /* never pure white */
-        --muted: #93a09f;
-        --line: #24333a;        /* hairline */
-        --p-red-bg: #3a2422;  --p-red-fg: #f0a8a4;
-        --p-blue-bg: #16303c; --p-blue-fg: #8ec9ec;
-        --p-green-bg:#1e2f21; --p-green-fg:#8fca94;
-        --p-yellow-bg:#332a10;--p-yellow-fg:#e0b755;
-        --heat-1: #1e3a48; --heat-2: #295d78; --heat-3: #4a8fb5;
-        --tone: #9cc3bb;        /* sage, lifted for dark */
-        --tone-soft: #37595f;
-        --grain: .07;
-        --grain-blend: screen;
-      }
+        --bg: #efeee9;          /* paper */
+        --ink: #161616;
+        --muted: #6e6d68;
+        --line: #d6d4cd;
+        /* The one colour. Vermilion from the poster circles; the sage
+           alternative is #8fae9f (light) / #7f9d8f (dark). */
+        --accent: #e8482e;
+        --font: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
 
-      a {
-        text-decoration-color: color-mix(in srgb, var(--tone-soft) 70%, transparent);
-        text-underline-offset: .18em;
+        /* Legacy tokens still used by the inner pages (news, pubs, cv,
+           puzzles, books, music). Mapped onto the new palette so those pages
+           stay readable until they get their own pass. */
+        --surface: var(--bg);
+        --serif: var(--font);
+        --sans: var(--font);
+        --mono: var(--font);
+        --tone: var(--ink);
+        --tone-soft: var(--muted);
+        --p-red-bg: #f3dcd6;  --p-red-fg: #a23a28;
+        --p-blue-bg: #dce6ee; --p-blue-fg: #2d5a7b;
+        --p-green-bg: #e1e8dc;--p-green-fg: #3f6436;
+        --p-yellow-bg:#f6ecc0;--p-yellow-fg:#7d6200;
+        --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
-      ::selection {
-        background: color-mix(in srgb, var(--tone-soft) 35%, transparent);
+      /* Follows the visitor's system setting; anything that doesn't report
+         one (older browsers, some embeds) gets the light palette above. */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #141413;
+          --ink: #ecebe6;
+          --muted: #8f8e88;
+          --line: #2e2d2a;
+          --accent: #e0472f;
+          --p-red-bg: #3a2420;  --p-red-fg: #eea596;
+          --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
+          --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
+          --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+        }
       }
-      :focus-visible {
-        outline: 2px solid var(--tone); outline-offset: 2px; border-radius: 2px;
-      }
-      /* Film grain: a fixed noise layer over everything, drawn by an SVG
-         filter (no image file). Click-through, and hidden in print. */
-      body::after {
-        content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
-        opacity: var(--grain); mix-blend-mode: var(--grain-blend);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 2.2 -.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      }
-      @media print { body::after { display: none; } }
 
       * { box-sizing: border-box; }
       html, body { margin: 0; }
-      /* Always reserve the scrollbar track. Short pages (a one-paragraph news
-         item) don't scroll, so without this they'd be ~15px wider than every
-         other page and the whole centered layout would jump sideways on
-         navigation. */
       html { scrollbar-gutter: stable; }
       body {
         background: var(--bg);
         color: var(--ink);
-        font-family: var(--sans);
-        line-height: 1.6;
+        font-family: var(--font);
+        font-size: 17px;
+        line-height: 1.5;
         -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-        transition: background-color .25s ease, color .25s ease;
       }
-      a { color: inherit; }
+      a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+      a:hover { text-decoration-thickness: 2px; }
       img { max-width: 100%; height: auto; display: block; }
+      ::selection { background: var(--accent); color: #fff; }
+      :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-      .wrap { max-width: 64rem; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 2rem); }
+      .wrap { max-width: 78rem; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.25rem); }
 
-      /* ---- nav ---- */
-      nav.bar {
-        border-bottom: 1px solid var(--line);
-        position: sticky; top: 0; z-index: 5;
-        background: color-mix(in srgb, var(--bg) 86%, transparent);
-        backdrop-filter: saturate(140%) blur(8px);
+      /* ---- header ----
+         Two small corner blocks, like the credits on a poster: who on the
+         left, where to go on the right. No rule, no big wordmark. */
+      header.top .inner {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: 1rem 2rem; padding: 1.5rem 0; font-size: .9rem; line-height: 1.35;
       }
-      nav.bar .inner {
-        display: flex; justify-content: space-between; align-items: center;
-        height: 68px;
+      .mark { text-decoration: none; }
+      .mark span { display: block; color: var(--muted); }
+      nav.links { display: flex; gap: .2rem 1.4rem; flex-wrap: wrap; justify-content: flex-end; }
+      nav.links a { text-decoration: none; color: var(--muted); }
+      nav.links a:hover { color: var(--ink); }
+      nav.links a[aria-current='page'] { color: var(--ink); }
+      nav.links a[aria-current='page']::before {
+        content: ""; display: inline-block; width: .5em; height: .5em;
+        margin-right: .4em; background: var(--accent); vertical-align: .08em;
       }
-      .mark { font-family: var(--serif); font-size: 1.05rem; font-weight: 500; text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; opacity: 1; transition: opacity .2s ease; }
-      .mark--pending { opacity: 0; pointer-events: none; }
-      .navlinks { display: flex; gap: clamp(.8rem, 2vw, 1.4rem); align-items: center; }
-      .navlinks a {
-        font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-        letter-spacing: .08em; color: var(--muted); text-decoration: none; transition: color .2s;
-      }
-      .navlinks a:hover { color: var(--ink); }
-      .navlinks a.internal { color: var(--ink); }
-      /* Active section: swap the neutral underline for the section's own accent —
-         a colored leading dot plus matching text and underline. */
-      .navlinks a.active {
-        display: inline-flex; align-items: center; gap: .4rem;
-        color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 2px;
-      }
-      .navlinks a.active:hover { color: var(--accent); }
-      .navlinks a.active::before {
-        content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
-        background: var(--accent);
-      }
+      /* Menu: on wide screens the <details> is a passthrough (its box is
+         removed and the summary hidden) so the links sit inline. On phones it
+         becomes a two-line hamburger that drops the links down as a plain
+         list under the header. Modern engines wrap closed <details> content
+         in ::details-content, which display:contents does not defeat, so it
+         is forced visible on wide screens. */
+      .menu { display: contents; }
+      .menu > summary { display: none; }
+      .menu::details-content { content-visibility: visible; }
 
-      /* ---- responsive nav (hamburger via native <details>) ----
-         Wide screens: the disclosure is a transparent passthrough — its box is
-         removed with display:contents so the links render inline, and the
-         summary/hamburger is hidden. Narrow screens (below): the disclosure box
-         returns, so the native <details> open/closed behavior shows or hides the
-         dropdown with no JS. */
-      .nav-menu { display: contents; }
-      .nav-menu > summary { display: none; }
-      .nav-items { display: flex; gap: clamp(.8rem, 2vw, 1.4rem); align-items: center; }
-      /* Modern engines wrap a closed <details>'s content in a ::details-content
-         pseudo with content-visibility:hidden — and display:contents above does
-         NOT defeat it. On wide screens the links must always show (the disclosure
-         is only a passthrough), so force the pseudo visible. On narrow screens the
-         dropdown's show/hide is driven explicitly by .nav-items display below, so
-         this override is harmless there. */
-      .nav-menu::details-content { content-visibility: visible; }
-
-      @media (max-width: 620px) {
-        .nav-menu { display: block; position: relative; }
-        /* hamburger — styled to match the theme toggle */
-        .nav-menu > summary {
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 30px; height: 30px; list-style: none; cursor: pointer;
-          border: 1px solid var(--line); border-radius: 7px; color: var(--muted);
-          transition: color .2s, border-color .2s;
+      @media (max-width: 600px) {
+        header.top { position: relative; }
+        header.top .inner { align-items: center; }
+        .menu { display: block; }
+        .menu > summary {
+          display: grid; place-items: center; width: 36px; height: 36px; margin-right: -6px;
+          list-style: none; cursor: pointer; color: var(--ink);
         }
-        .nav-menu > summary::-webkit-details-marker { display: none; }
-        .nav-menu > summary:hover,
-        .nav-menu[open] > summary { color: var(--ink); border-color: var(--muted); }
-        .nav-menu > summary svg { width: 18px; height: 18px; }
-        /* swap hamburger ↔ close glyph on open */
-        .nav-menu .i-close { display: none; }
-        .nav-menu[open] .i-menu { display: none; }
-        .nav-menu[open] .i-close { display: block; }
-        /* dropdown panel — hidden until the disclosure is open. Explicit display
-           control (rather than leaning on the UA's closed-<details> hiding, which
-           our base .nav-items{display:flex} would override). */
-        .nav-items {
-          display: none;
-          position: absolute; top: calc(100% + .55rem); right: 0;
-          flex-direction: column; align-items: stretch; gap: .1rem;
-          min-width: 10rem; padding: .3rem;
-          background: var(--surface); border: 1px solid var(--line);
-          border-radius: 10px; box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+        .menu > summary::-webkit-details-marker { display: none; }
+        .menu svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .menu .i-close, .menu[open] .i-open { display: none; }
+        .menu[open] .i-close { display: block; }
+        .menu nav.links { display: none; }
+        .menu[open] nav.links {
+          display: flex; flex-direction: column; align-items: flex-end; gap: .1rem;
+          position: absolute; left: 0; right: 0; top: 100%; z-index: 20;
+          padding: .4rem clamp(1.25rem, 3vw, 2.25rem) 1.4rem;
+          background: var(--bg); border-bottom: 1px solid var(--line);
+          font-size: 1.15rem; animation: menu-in .35s cubic-bezier(.22, .61, .36, 1);
         }
-        .nav-menu[open] .nav-items { display: flex; }
-        .nav-items a { padding: .55rem .7rem; border-radius: 7px; }
-        .nav-items a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-        /* active item: drop the underline in the panel, keep the accent dot + color */
-        .nav-items a.active { border-bottom: none; padding-bottom: .55rem; }
+        .menu[open] nav.links a { padding: .3rem 0; }
+      }
+      @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
+      @media (prefers-reduced-motion: reduce) { .menu[open] nav.links { animation: none; } }
+
+      /* ---- shared page grid ----
+         Every page is a stack of the same two-column rows: a narrow left
+         column for small labels (or the portrait), a wide right column where
+         all text starts on one vertical line. */
+      .row {
+        display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        column-gap: clamp(2rem, 6vw, 6rem);
+        padding: 1.6rem 0; border-top: 1px solid var(--line);
+      }
+      .row > * { min-width: 0; }
+      .label { font-size: .9rem; font-weight: 400; color: var(--muted); margin: .2rem 0 0; }
+      .label a { margin-left: .6rem; color: var(--muted); }
+      .label a:hover { color: var(--ink); }
+
+      /* Page header on inner pages: big title in the right column. */
+      .row.page-head { border-top: 0; padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3.5rem); }
+      .page-title, .lede {
+        font-size: clamp(1.75rem, 3.4vw, 2.85rem); font-weight: 400; line-height: 1.15;
+        letter-spacing: -.02em; margin: 0; max-width: 17em;
+      }
+      .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
+
+      .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
+      .body a, .prose a { text-decoration-color: var(--muted); }
+      .body a:hover, .prose a:hover { text-decoration-color: var(--accent); }
+
+      /* Dated list: a narrow meta column (date / year) and the item. */
+      .list { list-style: none; margin: 0; padding: 0; max-width: 42em; }
+      .list > li {
+        display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem;
+        padding: .2rem 0 .7rem;
+      }
+      .list .meta { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
+      .list a { text-decoration: none; }
+      .list a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+      .list .sub { display: block; color: var(--muted); font-size: .9rem; margin-top: .1rem; }
+
+      /* Long-form text (news posts, abstracts). */
+      .prose { font-size: 1.08rem; line-height: 1.65; max-width: 38em; }
+      .prose > :first-child { margin-top: 0; }
+      .prose h2, .prose h3 { font-size: 1.15rem; font-weight: 500; margin: 2rem 0 .5rem; }
+      .prose img { margin: 1.5rem 0; }
+      .prose blockquote { margin: 1.2rem 0; padding-left: 1rem; border-left: 2px solid var(--accent); color: var(--muted); }
+      .prose code { font-size: .9em; }
+
+      /* Emphasised part of a news title (set per item in front matter). */
+      .hl { font-style: normal; color: var(--accent); }
+
+      .back { font-size: .9rem; color: var(--muted); text-decoration: none; }
+      .back:hover { color: var(--ink); }
+
+      @media (max-width: 760px) {
+        .row { grid-template-columns: 1fr; row-gap: .5rem; }
       }
 
-      /* theme toggle — sits at the right end of the nav links */
-      .theme-toggle {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 30px; height: 30px; padding: 0; margin-left: .2rem;
-        background: none; border: 1px solid var(--line); border-radius: 7px;
-        color: var(--muted); cursor: pointer;
-        transition: color .2s, border-color .2s;
+      /* ---- soft landing ----
+         Anything marked [data-reveal] starts slightly transparent and a few
+         pixels low, and eases into place when it enters the viewport. Kept
+         small on purpose: it should feel like the page settling, not like an
+         animation. Only active when JS runs and motion is allowed (.motion). */
+      html.motion [data-reveal] {
+        opacity: 0; transform: translateY(12px);
+        transition: opacity .9s cubic-bezier(.22, .61, .36, 1), transform .9s cubic-bezier(.22, .61, .36, 1);
+        transition-delay: var(--reveal-delay, 0ms);
       }
-      .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
-      .theme-toggle svg { width: 16px; height: 16px; }
-      .theme-toggle .i-sun { display: none; }
-      html[data-theme='dark'] .theme-toggle .i-sun { display: block; }
-      html[data-theme='dark'] .theme-toggle .i-moon { display: none; }
-
-      /* The custom cursor dot lives in styles/cursors.css — it's a native
-         `cursor: url()` image, so there's no overlay element or JS here. */
+      html.motion [data-reveal].is-in { opacity: 1; transform: none; }
+      @media print { html.motion [data-reveal] { opacity: 1; transform: none; } }
 
       /* ---- footer ---- */
-      footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; margin-top: 2rem; }
-      footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-family: var(--mono); font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-      footer a { text-decoration: none; }
-      footer a:hover { color: var(--ink); }
-      footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
-      /* Easter eggs next to the copyright line: one small monochrome icon per
-         hidden page (puzzles / books / music), each in its own accent. Muted
-         until hover so they read as texture, not navigation. */
-      footer .egg {
-        display: inline-flex; vertical-align: -.2em;
-        color: var(--egg, var(--p-blue-fg)); opacity: .5; margin-left: .5rem;
-        transition: opacity .2s;
+      footer { margin-top: clamp(4rem, 10vw, 8rem); }
+      footer .row {
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem 2rem;
+        padding: 1.4rem 0 2.5rem; border-top: 1px solid var(--ink);
+        font-size: .875rem; color: var(--muted);
       }
-      footer .egg svg { width: 14px; height: 14px; }
-      footer .egg:hover { opacity: 1; }
-      footer .egg--puzzles { --egg: var(--p-red-fg); }
-      footer .egg--books   { --egg: var(--p-green-fg); }
-      footer .egg--music   { --egg: var(--p-blue-fg); }
+      footer a { text-decoration: none; }
+      footer a:hover { color: var(--ink); text-decoration: underline; }
+      footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
     </style>
   </head>
   <body>
-    <nav class="bar">
+    <header class="top">
       <div class="wrap">
         <div class="inner">
-          <a
-            class:list={['mark', { 'mark--pending': hideMarkUntilScroll }]}
-            id="nav-mark"
-            href={import.meta.env.BASE_URL}
-          >{site.name}</a>
-          <div class="navlinks">
-            <details class="nav-menu">
-              <summary class="hamburger" aria-label="Open menu" title="Menu">
-                <svg class="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                <svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </summary>
-              <div class="nav-items">
-                {internal.map((l) => (
-                  <a
-                    class:list={['internal', { active: active === l.key }]}
-                    href={l.href}
-                    style={active === l.key ? `--accent: var(--p-${l.hue}-fg)` : undefined}
-                  >{l.name}</a>
-                ))}
-              </div>
-            </details>
-            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Toggle theme">
-              <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-              <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
-            </button>
-          </div>
+          <a class="mark" href={base}>{site.name}<span>{site.role}, {site.university}</span></a>
+          <details class="menu">
+            <summary aria-label="Menu">
+              <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18" /></svg>
+              <svg class="i-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+            </summary>
+            <nav class="links" aria-label="Main">
+              {nav.map((l) => (
+                <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.name}</a>
+              ))}
+            </nav>
+          </details>
         </div>
       </div>
-    </nav>
+    </header>
 
     <slot />
 
@@ -336,15 +301,6 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
         <div class="row">
           <span>
             © {year} {site.name}
-            <a class="egg egg--puzzles" href={`${import.meta.env.BASE_URL}puzzles/`} aria-label="puzzle stats" title="a small puzzle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12a2 2 0 0 1 2 2v4a2.6 2.6 0 1 1 0 4v4a2 2 0 0 1-2 2h-4a2.6 2.6 0 1 0-4 0H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg>
-            </a>
-            <a class="egg egg--books" href={`${import.meta.env.BASE_URL}books/`} aria-label="reading log" title="books I read">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            </a>
-            <a class="egg egg--music" href={`${import.meta.env.BASE_URL}music/`} aria-label="listening log" title="music I play">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-            </a>
           </span>
           <span class="flinks">
             {site.socials.map((s) => <a href={s.url}>{s.name}</a>)}
@@ -354,32 +310,61 @@ const pageAccent = internal.find((l) => l.key === active)?.hue;
     </footer>
 
     <script>
-      // Theme toggle: flip data-theme on <html>, persist the choice, keep the label honest.
-      const themeToggle = document.getElementById('theme-toggle');
-      if (themeToggle) {
-        const syncLabel = () => {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          themeToggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+      // Soft landing: reveal [data-reveal] blocks as they scroll into view,
+      // strictly top to bottom. Blocks reveal as one queue: when any block
+      // becomes due, every unrevealed block above it is revealed too, and
+      // each one starts STEP ms after the previous one started, however the
+      // reveals were batched (first view, fast scroll, restored scroll on
+      // refresh). Blocks already scrolled past above the viewport take no
+      // slot in the queue, since nobody sees them settle.
+      // Fallback: without IntersectionObserver or a real viewport (some
+      // embedded/headless views), never leave content hidden.
+      if (!('IntersectionObserver' in window) || window.innerHeight === 0) {
+        document.documentElement.classList.remove('motion');
+      }
+      if (document.documentElement.classList.contains('motion')) {
+        const STEP = 90;
+        const items = [...document.querySelectorAll<HTMLElement>('[data-reveal]')];
+        let done = 0;      // items[0..done) are revealed
+        let nextSlot = 0;  // earliest time (performance.now) the next visible block may start
+        const revealThrough = (last: number) => {
+          const now = performance.now();
+          for (; done <= last; done++) {
+            const el = items[done];
+            io.unobserve(el);
+            let delay = 0;
+            if (el.getBoundingClientRect().bottom > 0) {
+              delay = Math.max(0, nextSlot - now);
+              nextSlot = now + delay + STEP;
+            }
+            el.style.setProperty('--reveal-delay', `${Math.round(delay)}ms`);
+            el.classList.add('is-in');
+          }
         };
-        syncLabel();
-        themeToggle.addEventListener('click', () => {
-          const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          try { localStorage.setItem('theme', next); } catch (e) {}
-          syncLabel();
-        });
+        const revealUpTo = (due: Element[]) => {
+          const last = Math.max(-1, ...due.map((el) => items.indexOf(el as HTMLElement)));
+          if (last >= done) revealThrough(last);
+        };
+        const io = new IntersectionObserver((entries) => {
+          // Visible now, or already scrolled past (a jump to the bottom, a
+          // restored scroll position): either way it belongs on screen.
+          revealUpTo(entries
+            .filter((e) => e.isIntersecting || e.boundingClientRect.bottom < 0)
+            .map((e) => e.target));
+        }, { rootMargin: '0px 0px -8% 0px' });
+        // A fast jump can skip a block without it ever intersecting; sweep
+        // anything above the fold whenever the user scrolls.
+        addEventListener('scroll', () => {
+          revealUpTo(items.filter((el) => el.getBoundingClientRect().top < window.innerHeight));
+        }, { passive: true });
+        for (const el of items) io.observe(el);
       }
 
-      const heroName = document.getElementById('hero-name');
-      const mark = document.getElementById('nav-mark');
-      if (heroName && mark) {
-        const nav = document.querySelector('nav.bar');
-        const navHeight = nav ? nav.getBoundingClientRect().height : 68;
-        const observer = new IntersectionObserver(
-          ([entry]) => mark.classList.toggle('mark--pending', entry.isIntersecting),
-          { rootMargin: `-${navHeight}px 0px 0px 0px` }
-        );
-        observer.observe(heroName);
+      // Mobile menu: close on Escape or a click outside it.
+      const menu = document.querySelector<HTMLDetailsElement>('details.menu');
+      if (menu) {
+        addEventListener('keydown', (e) => { if (e.key === 'Escape') menu.open = false; });
+        addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
       }
     </script>
   </body>

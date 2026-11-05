@@ -4,7 +4,7 @@
 // never scrolls sideways. Each day has a rich hover/focus tooltip (games +
 // solve times); the live streak run is ringed. All client-side layout reads a
 // JSON island so the markup stays tiny.
-import { GAME_COLORS, formatDay, type Cell, type Activity } from '../lib/puzzles';
+import { formatDay, type Cell, type Activity } from '../lib/puzzles';
 
 interface Props {
   cells: Cell[]; // continuous, oldest-first
@@ -24,7 +24,6 @@ const days = cells.map((c) => ({
   streak: streakDates.has(c.date),
   items: c.played.map((slug) => ({
     n: activity.game_meta[slug]?.label ?? slug,
-    c: GAME_COLORS[slug] ?? '#8a8f98',
     t: solveTimes[c.date]?.[slug] ?? null,
   })),
 }));
@@ -37,7 +36,7 @@ const payload = JSON.stringify(days);
 </div>
 
 <script>
-  interface Item { n: string; c: string; t: string | null }
+  interface Item { n: string; t: string | null }
   interface Day { d: string; label: string; b: number; streak: boolean; items: Item[] }
 
   const GAP = 3, MIN_CELL = 13, MAX_CELL = 18; // px
@@ -92,7 +91,6 @@ const payload = JSON.stringify(days);
           rect.setAttribute('y', y.toFixed(2));
           rect.setAttribute('width', cell.toFixed(2));
           rect.setAttribute('height', cell.toFixed(2));
-          rect.setAttribute('rx', '3'); // Match border-radius
           
           if (day) {
             rect.setAttribute('class', 'cell' + (day.streak ? ' streak' : ''));
@@ -136,10 +134,10 @@ const payload = JSON.stringify(days);
         html += '<div class="t-empty">nothing solved</div>';
       } else {
         html += day.items
-          .map((it) => `<div class="t-row"><span class="t-dot" style="background:${it.c}"></span>${it.n}${it.t ? ` · ${it.t}` : ''}</div>`)
+          .map((it) => `<div class="t-row"><span>${it.n}</span>${it.t ? `<span class="t-time">${it.t}</span>` : ''}</div>`)
           .join('');
       }
-      if (day.streak) html += '<div class="t-streak">· on streak</div>';
+      if (day.streak) html += '<div class="t-streak">On the current streak</div>';
       tip.innerHTML = html;
       tip.style.opacity = '1';
       const r = cell.getBoundingClientRect();
@@ -166,37 +164,30 @@ const payload = JSON.stringify(days);
 </script>
 
 <style>
-  /* The week columns and cells are created in the client script, so they never
-     receive Astro's scoped-style attribute — style them via :global(), kept
-     under .heatmap so nothing leaks. */
+  /* The cells are created in the client script, so they never receive Astro's
+     scoped-style attribute — style them via :global(), kept under .heatmap so
+     nothing leaks. Flat squares; intensity is the accent mixed into the paper. */
   .heatmap { width: 100%; min-width: 0; }
   .heatmap :global(.cal) { display: flex; justify-content: flex-start; }
-  .heatmap :global(rect.cell) {
-    fill: var(--line); outline: none; cursor: default;
-  }
+  .heatmap :global(rect.cell) { fill: var(--line); outline: none; cursor: default; }
   .heatmap :global(rect.cell.pad) { fill: transparent; }
-  .heatmap :global(rect.cell[data-b='1']) { fill: var(--heat-1); }
-  .heatmap :global(rect.cell[data-b='2']) { fill: var(--heat-2); }
-  .heatmap :global(rect.cell[data-b='3']) { fill: var(--heat-3); }
-  .heatmap :global(rect.cell[data-b='4']) { fill: var(--p-blue-fg); }
-  /* SVG handles fractional strokes perfectly symmetrically */
-  .heatmap :global(rect.cell.streak) { 
-    stroke: color-mix(in srgb, var(--ink) 45%, transparent); 
-    stroke-width: 1.5; 
-  }
+  .heatmap :global(rect.cell[data-b='1']) { fill: color-mix(in srgb, var(--accent) 28%, var(--bg)); }
+  .heatmap :global(rect.cell[data-b='2']) { fill: color-mix(in srgb, var(--accent) 52%, var(--bg)); }
+  .heatmap :global(rect.cell[data-b='3']) { fill: color-mix(in srgb, var(--accent) 76%, var(--bg)); }
+  .heatmap :global(rect.cell[data-b='4']) { fill: var(--accent); }
+  .heatmap :global(rect.cell.streak) { stroke: var(--ink); stroke-width: 1; }
   .heatmap :global(rect.cell:focus-visible) { stroke: var(--ink); stroke-width: 2; }
 
   :global(.heatmap-tip) {
     position: absolute; z-index: 60; pointer-events: none;
-    background: var(--surface); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 9px;
-    box-shadow: 0 6px 22px color-mix(in srgb, var(--ink) 14%, transparent);
-    padding: .5rem .6rem; font-size: .78rem; max-width: 220px;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line);
+    padding: .45rem .6rem; font-size: .8rem; line-height: 1.4; min-width: 9rem; max-width: 240px;
     opacity: 0; transition: opacity .12s ease;
   }
-  :global(.heatmap-tip .t-date) { font-family: var(--mono); font-size: .66rem; color: var(--muted); margin-bottom: .35rem; }
-  :global(.heatmap-tip .t-row) { display: flex; align-items: center; gap: .4rem; margin: .12rem 0; }
-  :global(.heatmap-tip .t-dot) { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+  :global(.heatmap-tip .t-date) { color: var(--muted); margin-bottom: .25rem; }
+  :global(.heatmap-tip .t-row) { display: flex; justify-content: space-between; gap: 1rem; }
+  :global(.heatmap-tip .t-time) { color: var(--muted); font-variant-numeric: tabular-nums; }
   :global(.heatmap-tip .t-empty) { color: var(--muted); }
-  :global(.heatmap-tip .t-streak) { font-family: var(--mono); font-size: .62rem; color: var(--muted); margin-top: .35rem; }
+  :global(.heatmap-tip .t-streak) { color: var(--muted); margin-top: .25rem; }
 </style>

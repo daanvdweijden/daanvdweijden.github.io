@@ -54,98 +54,101 @@ const share = (slices: HintSlice[], key: string) => {
 ---
 
 <Layout title="Puzzles" description="A daily puzzle log — for me, mostly." noindex>
-  <main class="wrap page">
-    <header class="page-head">
-      <p class="eyebrow">PERSONAL</p>
-      <h1>Daily Puzzles</h1>
-      <p class="lede">
-        A running log of the daily puzzles I solve. NYT Mini is the standard, but trying to do some additional NYT and NRC puzzles as well. Last updated {formatDay(a.generated, true)}.
-      </p>
-    </header>
-
-    <section class="stats">
-      <div class="stat">
-        <p class="stat-num">{total}</p>
-        <p class="stat-label">Puzzles solved</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{streak}</p>
-        <p class="stat-label">Day streak · any puzzle</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{todayMini !== null ? formatSeconds(todayMini) : '—'}</p>
-        <p class="stat-label">Mini time · today</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{formatSeconds(thisMonthAvg)}</p>
-        <p class="stat-label">Mini avg · this month</p>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <div></div>
+      <div>
+        <h1 class="page-title">Daily puzzles</h1>
+        <p class="page-intro">
+          A running log of the daily puzzles I solve. NYT Mini is the standard, but trying to do some additional NYT and NRC puzzles as well. Last updated {formatDay(a.generated, true)}.
+        </p>
       </div>
     </section>
 
-    <section class="today-row">
-      <div class="bento-card">
-        <TodayCard day={todayDay} activity={a} />
-      </div>
-      <div class="bento-card">
-        <p class="kicker">Activity · hover a day</p>
-        <div class="hm-wrap">
-          <Heatmap cells={cells} activity={a} streakDates={streakDates} solveTimes={solveTimes} />
+    <section class="row" data-reveal>
+      <h2 class="label">At a glance</h2>
+      <dl class="stats">
+        <div>
+          <dt>Puzzles solved</dt>
+          <dd>{total}</dd>
         </div>
+        <div>
+          <dt>Day streak, any puzzle</dt>
+          <dd>{streak}</dd>
+        </div>
+        <div>
+          <dt>Mini time today</dt>
+          <dd>{todayMini !== null ? formatSeconds(todayMini) : '—'}</dd>
+        </div>
+        <div>
+          <dt>Mini average this month</dt>
+          <dd>{formatSeconds(thisMonthAvg)}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Today</h2>
+      <TodayCard day={todayDay} activity={a} />
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Activity</h2>
+      <div>
+        <Heatmap cells={cells} activity={a} streakDates={streakDates} solveTimes={solveTimes} />
+        <p class="note">Outlined days are the current streak.</p>
       </div>
     </section>
 
-    <section class="pair">
-      <div class="bento-card">
-        <p class="kicker">Mini solve time · monthly avg</p>
-        <TrendChart points={monthly} pb={fastMini} />
-      </div>
-      <div class="bento-card">
-        <p class="kicker">When I actually solve · Mini</p>
-        <TimeOfDay hist={hist} />
-      </div>
+    <section class="row" data-reveal>
+      <h2 class="label">Mini solve time, monthly average</h2>
+      <div class="chart"><TrendChart points={monthly} pb={fastMini} /></div>
     </section>
 
-    <section class="pair">
-      <div class="bento-card">
-        <p class="kicker">Mini avg by weekday</p>
-        <WeekdayBars data={weekday} />
-      </div>
-      <div class="bento-card">
-        <p class="kicker">How I solve · clean vs. cheats</p>
-        <div class="splits">
-          {[
-            { name: 'Mini', slices: miniSplit },
-            { name: 'Midi', slices: midiSplit },
-          ].map(({ name, slices }) => {
-            const total = hintTotal(slices);
-            return (
-              <div class="split-block">
-                <p class="split-head">{name} — {share(slices, 'clean')}% clean</p>
-                <div class="split">
-                  {slices.map((s) => (
-                    <span
-                      class={`seg ${s.key}`}
-                      style={`width:${(s.count / total) * 100}%`}
-                      data-tip={`${s.label}: ${s.count} (${Math.round((s.count / total) * 100)}%)`}
-                    ></span>
-                  ))}
-                </div>
-                <div class="split-legend">
-                  {slices.map((s) => (
-                    <span class="lg"><i class={`dot ${s.key}`}></i>{s.label} {s.count}</span>
-                  ))}
-                </div>
+    <section class="row" data-reveal>
+      <h2 class="label">When I solve the Mini</h2>
+      <div class="chart"><TimeOfDay hist={hist} /></div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Mini average by weekday</h2>
+      <div class="chart"><WeekdayBars data={weekday} /></div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Clean or assisted</h2>
+      <div class="splits">
+        {[
+          { name: 'Mini', slices: miniSplit },
+          { name: 'Midi', slices: midiSplit },
+        ].map(({ name, slices }) => {
+          const total = hintTotal(slices);
+          return (
+            <div>
+              <p class="split-head">{name}, {share(slices, 'clean')}% clean</p>
+              <div class="split">
+                {slices.map((s) => (
+                  <span
+                    class={`seg ${s.key}`}
+                    style={`width:${(s.count / total) * 100}%`}
+                    data-tip={`${s.label}: ${s.count} (${Math.round((s.count / total) * 100)}%)`}
+                  ></span>
+                ))}
               </div>
-            );
-          })}
-        </div>
+              <p class="split-legend">
+                {slices.map((s) => (
+                  <span class="lg"><i class={`sw ${s.key}`}></i>{s.label} {s.count}</span>
+                ))}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </section>
 
     <div id="chart-tip" class="chart-tip" role="tooltip"></div>
   </main>
 </Layout>
-
 <script>
   const tip = document.getElementById('chart-tip');
   if (tip) {
@@ -180,88 +183,51 @@ const share = (slices: HintSlice[], key: string) => {
 </script>
 
 <style>
-  /* Only set vertical padding -- the `padding` shorthand would zero out the
-     horizontal padding `.wrap` provides, pulling content outside the header. */
-  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+  /* Rows, labels and the page head are shared styles in Layout.astro. */
+  h2.label { font-size: .9rem; }
 
-  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
-  .eyebrow {
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
-  }
-  .page-head h1 {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
-  }
-  .lede { margin: 1rem 0 0; max-width: 54ch; color: var(--muted); }
-
-  .kicker {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
-    letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem;
-  }
-
-  /* ---- stat row ---- */
+  /* ---- at a glance: big numbers, small captions, no boxes ---- */
   .stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 2rem;
+    margin: 0;
   }
-  .stat {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: 1.2rem 1.4rem;
+  .stats > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+  .stats dd {
+    margin: 0; font-size: 2.2rem; font-weight: 400; line-height: 1.05;
+    letter-spacing: -.02em; font-variant-numeric: tabular-nums;
   }
-  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
-  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+  .stats dt { font-size: .85rem; color: var(--muted); margin-top: .4rem; line-height: 1.3; }
 
-  /* ---- shared card ---- */
-  .bento-card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: clamp(1.4rem, 3vw, 1.9rem);
-    display: flex; flex-direction: column;
-  }
+  .note { font-size: .85rem; color: var(--muted); margin: .9rem 0 0; }
+  .chart { max-width: 34rem; }
 
-  .today-row { display: grid; grid-template-columns: 1fr 1.7fr; gap: 16px; margin-bottom: 1.5rem; }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-
-  .hm-wrap { flex: 1; display: flex; align-items: center; min-width: 0; }
-  .hm-wrap :global(.heatmap) { width: 100%; }
-
-  /* ---- clean vs assisted breakdown ---- */
-  .splits { display: flex; flex-direction: column; gap: 1.4rem; margin-top: .2rem; }
-  .split-head { font-size: .9rem; margin: 0 0 .5rem; }
-  .split {
-    display: flex; height: 12px; border-radius: 6px;
-    background: var(--line); overflow: hidden;
-  }
+  /* ---- clean vs assisted ---- */
+  .splits { display: flex; flex-direction: column; gap: 1.6rem; max-width: 34rem; }
+  .split-head { margin: 0 0 .5rem; }
+  .split { display: flex; height: 10px; background: var(--line); }
   .split .seg { height: 100%; }
-  /* clean → checked → autocheck → revealed, greenest (unaided) to reddest (revealed) */
-  .seg.clean, .dot.clean { background: var(--p-green-fg); }
-  .seg.checked, .dot.checked { background: var(--p-blue-fg); }
-  .seg.autocheck, .dot.autocheck { background: var(--p-yellow-fg); }
-  .seg.revealed, .dot.revealed { background: var(--p-red-fg); }
-  .seg { background: var(--muted); } /* fallback for any unexpected hint_type */
+  /* Least to most assisted: ink → muted → line, with the accent for reveals. */
+  .seg, .sw { background: var(--muted); } /* fallback for an unexpected hint_type */
+  .seg.clean, .sw.clean { background: var(--ink); }
+  .seg.checked, .sw.checked { background: color-mix(in srgb, var(--ink) 55%, var(--bg)); }
+  .seg.autocheck, .sw.autocheck { background: color-mix(in srgb, var(--ink) 25%, var(--bg)); }
+  .seg.revealed, .sw.revealed { background: var(--accent); }
   .split-legend {
-    display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin-top: .5rem;
-    font-family: var(--mono); font-size: .68rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: .2rem 1.2rem; margin: .55rem 0 0;
+    font-size: .85rem; color: var(--muted);
   }
-  .split-legend .lg { display: inline-flex; align-items: center; gap: .34rem; }
-  .dot {
-    width: 8px; height: 8px; border-radius: 2px; flex: none;
-    background: var(--muted); /* fallback */
-  }
+  .split-legend .lg { display: inline-flex; align-items: center; gap: .4rem; }
+  .sw { width: .6em; height: .6em; flex: none; }
 
-  @media (max-width: 760px) {
-    .today-row, .pair { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 680px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   .chart-tip {
     position: absolute; z-index: 60; pointer-events: none;
-    background: var(--surface); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 6px;
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 12%, transparent);
-    padding: .35rem .6rem; font-size: .75rem; white-space: nowrap;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line);
+    padding: .3rem .55rem; font-size: .8rem; white-space: nowrap;
     opacity: 0; transition: opacity .12s ease;
   }
 </style>

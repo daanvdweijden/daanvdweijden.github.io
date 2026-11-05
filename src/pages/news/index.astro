@@ -1,51 +1,42 @@
 ---
-// News — a year-grouped feed. Each entry shows a short preview of the body
-// and links to the item's own page (/news/<slug>/). Data comes from the
-// `news` collection.
+// News: one row per year (year as the label), each item with its date and
+// tag in the meta column and a short preview under the title. Data comes from
+// the `news` collection.
 import Layout from '../../layouts/Layout.astro';
 import { excerpt, getNews, groupByYear, newsHref, titleParts } from '../../lib/news';
 
 const groups = groupByYear(await getNews());
-const fmtDate = (d: Date) =>
-  d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
 <Layout title="News" active="news">
-  <main class="wrap page">
-    <header class="page-head">
-      <p class="eyebrow">Updates</p>
-      <h1>News</h1>
-      <p class="lede">
-        Talks, awards, and other announcements. Follow a title for the full note.
-      </p>
-    </header>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <div></div>
+      <div>
+        <h1 class="page-title">News</h1>
+        <p class="page-intro">Talks, awards, and other announcements.</p>
+      </div>
+    </section>
 
     {groups.map((g) => (
-      <section class="year-row">
-        <div class="year-sep">
-          <span class="year">{g.year}</span>
-          <span class="rule" aria-hidden="true"></span>
-        </div>
-
-        <ol class="entries">
+      <section class="row" data-reveal>
+        <h2 class="label">{g.year}</h2>
+        <ol class="list news">
           {g.items.map((n) => {
             const { before, emphasis, after } = titleParts(n);
-            const preview = excerpt(n);
+            const preview = excerpt(n, 160);
             return (
-              <li class="entry">
-                <p class="meta">
+              <li>
+                <span class="meta">
                   <time datetime={iso(n.data.date)}>{fmtDate(n.data.date)}</time>
-                  {n.data.tag && <span class="badge">{n.data.tag}</span>}
-                </p>
-
-                <h2 class="title">
-                  <a href={newsHref(n)}>{before}{emphasis && <em class="hl">{emphasis}</em>}{after}</a>
-                </h2>
-
-                {preview && <p class="preview">{preview}</p>}
-
-                <a class="page-link" href={newsHref(n)}>Read →</a>
+                  {n.data.tag && <span class="tag">{n.data.tag}</span>}
+                </span>
+                <div>
+                  <a class="title" href={newsHref(n)}>{before}{emphasis && <em class="hl">{emphasis}</em>}{after}</a>
+                  {preview && <span class="sub">{preview}</span>}
+                </div>
               </li>
             );
           })}
@@ -56,80 +47,14 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 </Layout>
 
 <style>
-  /* Only set vertical padding -- the `padding` shorthand would zero out the
-     horizontal padding `.wrap` provides, pulling content outside the header. */
-  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
-
-  .page-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
-  /* Accent dot echoes the homepage kicker index (News = green). */
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: .5rem;
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
-  }
-  .eyebrow::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
-    background: var(--p-green-fg);
-  }
-  .page-head h1 {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
-  }
-  .lede { margin: 1rem 0 0; max-width: 52ch; color: var(--muted); }
-
-  .year-row {
-    padding: clamp(2.4rem, 5vw, 3.4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
-  }
-  .year-sep {
-    display: grid;
-    grid-template-columns: 7rem 1fr;
-    column-gap: clamp(1rem, 3vw, 2.5rem);
-    align-items: center;
-    margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
-  }
-  .year {
-    grid-column: 1;
-    font-family: var(--serif); font-size: 1.6rem; line-height: 1;
-    color: var(--muted); letter-spacing: -0.02em;
-  }
-  .rule { grid-column: 2; height: 1px; background: var(--line); }
-
-  .entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: clamp(1.4rem, 3.5vw, 2rem); }
-  .entry { display: block; }
-
-  .meta { display: flex; align-items: center; gap: .6rem; margin: 0 0 .5rem; }
-  .meta time {
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .05em; color: var(--muted);
-  }
-  .badge {
-    display: inline-block;
-    font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
-    color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: .2rem .5rem;
-  }
-
-  .title {
-    font-family: var(--serif); font-weight: 500; font-size: clamp(1.15rem, 2.5vw, 1.4rem);
-    line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 .5rem;
-  }
-  .title a { text-decoration: none; transition: color .2s; }
-  .title a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .title .hl { color: var(--p-green-fg); font-style: normal; }
-
-  .preview {
-    margin: 0 0 .6rem; max-width: 68ch;
-    color: var(--muted); line-height: 1.55;
-  }
-
-  .page-link {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
-    color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: color .2s;
-  }
-  .page-link:hover { border-bottom-color: var(--line); }
-
-  @media (max-width: 680px) {
-    .year-row { padding-top: 1.5rem; }
-    .year-sep { grid-template-columns: 4.5rem 1fr; column-gap: 1rem; margin-bottom: 1.5rem; }
-    .year { font-size: 1.3rem; }
+  .news > li { padding-bottom: 1.4rem; }
+  .title { font-size: 1.08rem; }
+  .tag { display: block; }
+  .tag::first-letter { text-transform: uppercase; }
+  /* Previews always take exactly two lines, so items stack evenly. */
+  .sub {
+    line-height: 1.5; margin-top: .3rem; max-width: 36em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    overflow: hidden; min-height: 3em;
   }
 </style>

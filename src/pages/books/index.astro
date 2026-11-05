@@ -1,4 +1,7 @@
 ---
+// Reading log. Same row grid as the rest of the site: stats, the review panel,
+// then one row per year with that year's covers. Covers sit in grayscale and
+// take on their colour on hover, an echo of the homepage portrait.
 import Layout from '../../layouts/Layout.astro';
 import { getReadBooks, type Book } from '../../lib/books';
 
@@ -6,19 +9,24 @@ const books = await getReadBooks();
 const total = books.length;
 
 // calculate some stats
-const withReviews = books.filter((b) => b.review.length > 0).length;
 const ratings = books.filter((b) => b.rating > 0).map((b) => b.rating);
 const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : '0';
 
+const yearOf = (b: Book) => new Date(b.readAt || b.addedAt).getFullYear();
 const currentYear = new Date().getFullYear();
-const readThisYear = books.filter((b) => {
-  if (!b.readAt && !b.addedAt) return false;
-  const d = new Date(b.readAt || b.addedAt);
-  return d.getFullYear() === currentYear;
-}).length;
+const readThisYear = books.filter((b) => (b.readAt || b.addedAt) && yearOf(b) === currentYear).length;
 const fiveStarReads = books.filter((b) => b.rating === 5).length;
 
 const latestReview = books.find((b) => b.review && b.review.trim().length > 0) || null;
+
+// Books arrive newest first; group consecutive runs by year, one row each.
+const years: { year: number; books: Book[] }[] = [];
+for (const book of books) {
+  const year = yearOf(book);
+  const last = years[years.length - 1];
+  if (last && last.year === year) last.books.push(book);
+  else years.push({ year, books: [book] });
+}
 
 // format date helper
 const formatDate = (dateStr: string | null) => {
@@ -26,123 +34,98 @@ const formatDate = (dateStr: string | null) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 };
+const stars = (n: number) => (n > 0 ? `${'★'.repeat(n)}${'☆'.repeat(5 - n)}` : '');
+
+let coverIndex = 0;
 ---
 
-<Layout title="Reading Log" description="A log of books I've read." noindex>
-  <main class="wrap page">
-    <header class="page-head">
-      <p class="eyebrow">PERSONAL</p>
-      <h1>Reading Log</h1>
-      <p class="lede">
-        A running list of books I've read, fetched straight from my Goodreads. Hover over a book for a quick look, or click it to open the full review below (reviews are in Dutch only).
-      </p>
-    </header>
-
-    <section class="stats">
-      <div class="stat">
-        <p class="stat-num">{total}</p>
-        <p class="stat-label">Total Books</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{readThisYear}</p>
-        <p class="stat-label">Read in {currentYear}</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{fiveStarReads}</p>
-        <p class="stat-label">5-Star Reads</p>
-      </div>
-      <div class="stat">
-        <p class="stat-num">{avgRating}</p>
-        <p class="stat-label">Avg Rating</p>
+<Layout title="Reading log" description="A log of books I've read." noindex>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <div></div>
+      <div>
+        <h1 class="page-title">Reading log</h1>
+        <p class="page-intro">
+          A running list of books I've read, fetched straight from my Goodreads. Reviews are in Dutch only.
+        </p>
       </div>
     </section>
 
-    <section class="books-section">
-      <div class="bento-card">
-        <p class="kicker">Library · Click a cover to read the review</p>
-        <div class="book-grid">
-          {books.map((book, index) => {
-            const year = new Date(book.readAt || book.addedAt).getFullYear();
-            const prevBook = index > 0 ? books[index - 1] : null;
-            const prevYear = prevBook ? new Date(prevBook.readAt || prevBook.addedAt).getFullYear() : year;
-            const yearChanged = index === 0 || year !== prevYear;
-
-            return (
-              <>
-                {yearChanged && (
-                  <div class="year-divider">
-                    <span class="year-text">{year}</span>
-                  </div>
-                )}
-                <div
-                  class="book-card"
-                  tabindex="0"
-                  role="button"
-                  aria-label={`Show my review of ${book.title}`}
-                  data-title={book.title}
-                  data-author={book.author}
-                  data-rating={book.rating}
-                  data-date={formatDate(book.readAt || book.addedAt)}
-                  data-review-html={book.reviewHtml}
-                  data-image={book.imageUrl}
-                >
-                  <div class="cover-wrapper">
-                    {book.imageUrl ? (
-                      <img src={book.imageUrl} alt={`Cover of ${book.title}`} loading={index < 5 ? "eager" : "lazy"} />
-                    ) : (
-                      <div class="no-cover">
-                        <span class="no-cover-title">{book.title}</span>
-                      </div>
-                    )}
-                    <div class="spine-highlight"></div>
-                  </div>
-                </div>
-              </>
-            );
-          })}
-        </div>
-      </div>
+    <section class="row" data-reveal>
+      <h2 class="label">In numbers</h2>
+      <dl class="stats">
+        <div><dt>Books</dt><dd>{total}</dd></div>
+        <div><dt>Read in {currentYear}</dt><dd>{readThisYear}</dd></div>
+        <div><dt>Five-star reads</dt><dd>{fiveStarReads}</dd></div>
+        <div><dt>Average rating</dt><dd>{avgRating}</dd></div>
+      </dl>
     </section>
 
     {latestReview && (
-      <section class="latest-review-section" id="review-section" tabindex="-1">
-        <div class="bento-card latest-review-card">
-          <p class="kicker" id="review-kicker">Latest Review</p>
-          <div class="latest-review-content">
-            <div class="latest-cover-wrapper" id="review-cover">
-              {latestReview.imageUrl ? (
-                <img src={latestReview.imageUrl} alt={`Cover of ${latestReview.title}`} />
-              ) : (
-                <div class="no-cover">
-                  <span class="no-cover-title">{latestReview.title}</span>
-                </div>
-              )}
-            </div>
-            <div class="latest-review-details">
-              <h2 class="latest-title" id="review-title">{latestReview.title}</h2>
-              <p class="latest-author" id="review-author">by {latestReview.author}</p>
-              <div class="latest-meta">
-                <span class="latest-rating" id="review-rating" aria-label={`${latestReview.rating} out of 5 stars`}>
-                  {latestReview.rating > 0 ? `${'★'.repeat(latestReview.rating)}${'☆'.repeat(5 - latestReview.rating)}` : ''}
-                </span>
-                <span class="latest-date" id="review-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
+      <section class="row review" id="review-section" tabindex="-1" data-reveal>
+        <h2 class="label" id="review-kicker">Latest review</h2>
+        <div class="review-content">
+          <div class="review-cover" id="review-cover">
+            {latestReview.imageUrl ? (
+              <img src={latestReview.imageUrl} alt={`Cover of ${latestReview.title}`} />
+            ) : (
+              <div class="no-cover">
+                <span class="no-cover-title">{latestReview.title}</span>
               </div>
-              <div class="latest-divider"></div>
-              <div class="latest-review-text" id="review-text" set:html={latestReview.reviewHtml} />
-            </div>
+            )}
+          </div>
+          <div class="review-details">
+            <h3 class="review-title" id="review-title">{latestReview.title}</h3>
+            <p class="review-author" id="review-author">by {latestReview.author}</p>
+            <p class="review-meta">
+              <span class="review-rating" id="review-rating" aria-label={`${latestReview.rating} out of 5 stars`}>
+                {stars(latestReview.rating)}
+              </span>
+              <span id="review-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
+            </p>
+            <div class="review-text" id="review-text" set:html={latestReview.reviewHtml} />
           </div>
         </div>
       </section>
     )}
 
-    <div id="book-tip" class="book-tip" role="tooltip">
-      <div class="tip-head">
-        <h3 id="tip-title">Title</h3>
-        <span id="tip-rating" class="tip-rating"></span>
-      </div>
-      <p id="tip-author" class="tip-author">Author</p>
-      <p id="tip-date" class="tip-date">Date</p>
-      <div class="tip-divider"></div>
+    {years.map(({ year, books: yearBooks }) => (
+      <section class="row" data-reveal>
+        <h2 class="label">{year}<span class="count">{yearBooks.length} {yearBooks.length === 1 ? 'book' : 'books'}</span></h2>
+        <div class="book-grid">
+          {yearBooks.map((book) => {
+            const index = coverIndex++;
+            return (
+              <div
+                class="book-card"
+                tabindex="0"
+                role="button"
+                aria-label={`Show my review of ${book.title}`}
+                data-title={book.title}
+                data-author={book.author}
+                data-rating={book.rating}
+                data-date={formatDate(book.readAt || book.addedAt)}
+                data-review-html={book.reviewHtml}
+                data-image={book.imageUrl}
+              >
+                {book.imageUrl ? (
+                  <img src={book.imageUrl} alt={`Cover of ${book.title}`} loading={index < 8 ? 'eager' : 'lazy'} />
+                ) : (
+                  <div class="no-cover">
+                    <span class="no-cover-title">{book.title}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ))}
+
+    <div id="book-tip" class="tip" role="tooltip">
+      <p id="tip-title" class="tip-title">Title</p>
+      <p id="tip-author" class="tip-sub">Author</p>
+      <p class="tip-sub"><span id="tip-rating" class="tip-rating"></span> <span id="tip-date">Date</span></p>
       <p id="tip-hint" class="tip-hint">Click to read the review</p>
     </div>
   </main>
@@ -159,21 +142,21 @@ const formatDate = (dateStr: string | null) => {
   if (tip && tipTitle && tipAuthor && tipDate && tipRating && tipHint) {
     const show = (el: Element) => {
       const data = (el as HTMLElement).dataset;
-      
+
       tipTitle.textContent = data.title || '';
       tipAuthor.textContent = `by ${data.author || ''}`;
-      tipDate.textContent = `Finished: ${data.date || ''}`;
-      
+      tipDate.textContent = `Finished ${data.date || ''}`;
+
       const rating = parseInt(data.rating || '0', 10);
       tipRating.textContent = rating > 0 ? '★'.repeat(rating) : '';
-      
-      // The review itself lives in the card below now — the tip just says
+
+      // The review itself lives in the review row — the tip just says
       // whether there's one to open.
       tipHint.textContent = data.reviewHtml ? 'Click to read the review' : 'No review for this one';
 
       // Stays pointer-events: none (as the stylesheet has it): the tip is
       // parked right over the cover it describes, and anything clickable here
-      // would swallow the click that opens the review below.
+      // would swallow the click that opens the review.
       tip.style.opacity = '1';
 
       const r = el.getBoundingClientRect();
@@ -181,7 +164,7 @@ const formatDate = (dateStr: string | null) => {
       let left = r.left + r.width / 2 - tw / 2;
       left = Math.max(16, Math.min(left, window.innerWidth - tw - 16));
       tip.style.left = left + 'px';
-      
+
       // try placing above
       let top = window.scrollY + r.top - tip.offsetHeight - 12;
       // if too high, place below
@@ -190,7 +173,7 @@ const formatDate = (dateStr: string | null) => {
       }
       tip.style.top = top + 'px';
     };
-    
+
     const hide = () => {
       tip.style.opacity = '0';
     };
@@ -221,7 +204,7 @@ const formatDate = (dateStr: string | null) => {
 </script>
 
 <script>
-  // Clicking a cover swaps the card below from "latest review" to that book's.
+  // Clicking a cover swaps the review row from "latest review" to that book's.
   // Everything it needs already rides along on the card's data attributes, so
   // there's no second fetch and no per-book page.
   const section = document.getElementById('review-section');
@@ -239,7 +222,7 @@ const formatDate = (dateStr: string | null) => {
     const select = (card: HTMLElement) => {
       const data = card.dataset;
 
-      kicker.textContent = 'Selected Review';
+      kicker.textContent = 'Selected review';
       title.textContent = data.title || '';
       author.textContent = `by ${data.author || ''}`;
       date.textContent = `Finished ${data.date || ''}`;
@@ -294,377 +277,123 @@ const formatDate = (dateStr: string | null) => {
 </script>
 
 <style>
-  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+  /* Rows, labels and the page head are shared styles in Layout.astro. */
 
-  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
-  .eyebrow {
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
-  }
-  .page-head h1 {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
-  }
-  .lede { margin: 1rem 0 0; max-width: 54ch; color: var(--muted); }
-
-  .kicker {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
-    letter-spacing: .12em; color: var(--muted); margin: 0 0 1.5rem;
-  }
-
-  /* ---- stats ---- */
+  /* ---- stats: big numbers, small captions, no boxes ---- */
   .stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-    margin: clamp(2rem, 5vw, 3rem) 0 1.5rem;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem 2rem;
+    margin: 0; max-width: 42em;
   }
-  .stat {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: 1.2rem 1.4rem;
+  .stats div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+  .stats dd {
+    margin: 0; font-size: 2.2rem; font-weight: 400; line-height: 1.1;
+    letter-spacing: -.02em; font-variant-numeric: tabular-nums;
   }
-  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
-  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+  .stats dt { color: var(--muted); font-size: .9rem; margin-top: .3rem; }
 
-  /* ---- shared card ---- */
-  .bento-card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: clamp(1.4rem, 3vw, 1.9rem);
-    display: flex; flex-direction: column;
-  }
+  /* ---- year rows ---- */
+  .count { display: block; color: var(--muted); }
+  .label .count { font-size: inherit; }
 
-  /* ---- books grid ---- */
-  .books-section { margin-bottom: 1.5rem; }
-  
   .book-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 20px;
-    overflow-x: auto;
-    padding-top: 16px;
-    padding-bottom: 24px; /* Space for scrollbar and hover effects */
-    margin-top: -16px;
-    margin-bottom: -12px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--muted) transparent;
-    align-items: center; /* align books and dividers nicely */
-  }
-  
-  .book-grid::-webkit-scrollbar {
-    height: 8px;
-  }
-  .book-grid::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .book-grid::-webkit-scrollbar-thumb {
-    background-color: var(--muted);
-    border-radius: 4px;
-  }
-
-  .year-divider {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 220px; /* approximates the cover height */
-    padding: 0 4px;
-    flex-shrink: 0;
-  }
-  
-  .year-divider::before,
-  .year-divider::after {
-    content: '';
-    width: 1px;
-    flex: 1;
-    background: var(--line);
-  }
-  
-  .year-text {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    padding: 12px 0;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 1.1rem .9rem;
   }
 
   .book-card {
-    width: 160px; /* Double size */
-    flex-shrink: 0;
-    cursor: pointer;
-    outline: none;
-    position: relative; /* important for z-index on hover */
+    position: relative; aspect-ratio: 2 / 3; cursor: pointer;
+    background: var(--line); overflow: hidden;
   }
+  .book-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .book-card img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.05);
+    transition: filter .4s ease;
+  }
+  .book-card:hover img, .book-card:focus-visible img, .book-card.is-selected img { filter: none; }
 
-  .book-card:hover, .book-card:focus-visible {
-    z-index: 10;
-  }
-
-  .cover-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    border-radius: 4px 8px 8px 4px; /* classic book shape */
-    box-shadow: -2px 0 5px rgba(0,0,0,0.2), 3px 4px 10px rgba(0,0,0,0.15);
-    overflow: hidden;
-    background: var(--line);
-    transform-origin: left center;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-  }
-  
-  .book-card:hover .cover-wrapper, .book-card:focus-visible .cover-wrapper {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: -3px 0 8px rgba(0,0,0,0.25), 6px 12px 20px rgba(0,0,0,0.2);
-  }
-
-  /* The cover whose review is currently open below. */
-  .book-card.is-selected .cover-wrapper {
-    outline: 2px solid var(--ink);
-    outline-offset: 3px;
-  }
-
-  .cover-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .spine-highlight {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
-    z-index: 2;
-    border-radius: 4px 0 0 4px;
-  }
+  /* The cover whose review is currently open. */
+  .book-card.is-selected { outline: 2px solid var(--accent); outline-offset: 3px; }
 
   .no-cover {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
-    padding: 8px;
-    text-align: center;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: .5rem; text-align: center; background: var(--line);
   }
-  
   .no-cover-title {
-    font-family: var(--serif);
-    font-size: 0.65rem;
-    font-weight: bold;
-    color: var(--ink);
-    line-height: 1.2;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: .7rem; line-height: 1.2; color: var(--ink);
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  /* ---- latest review ---- */
-  .latest-review-section { margin-bottom: 1.5rem; }
+  /* ---- review row ---- */
+  .review { scroll-margin-top: 1rem; }
+  .review:focus { outline: none; }
+  .review-content { display: flex; gap: clamp(1.2rem, 3vw, 2rem); align-items: flex-start; max-width: 42em; }
 
-  .latest-review-content {
-    display: flex;
-    gap: clamp(1.4rem, 3vw, 2.2rem);
-    align-items: flex-start;
+  .review-cover {
+    width: 7.5rem; flex-shrink: 0; aspect-ratio: 2 / 3;
+    overflow: hidden; background: var(--line);
   }
-
-  .latest-cover-wrapper {
-    width: 160px;
-    flex-shrink: 0;
-    aspect-ratio: 2 / 3;
-    border-radius: 4px 8px 8px 4px;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.2), 3px 4px 10px rgba(0,0,0,0.15);
-    overflow: hidden;
-    background: var(--line);
-  }
-
   /* :global because clicking a book replaces this cover from JS, and injected
      nodes carry no scope attribute. Same for the .no-cover fallback. */
-  .latest-cover-wrapper :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  .review-cover :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .review-cover :global(.no-cover) {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    padding: .5rem; text-align: center; background: var(--line);
   }
+  .review-cover :global(.no-cover-title) { font-size: .75rem; line-height: 1.2; color: var(--ink); }
 
-  .latest-cover-wrapper :global(.no-cover) {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
-    padding: 8px;
-    text-align: center;
+  .review-details { flex: 1; min-width: 0; }
+  .review-title {
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 400; letter-spacing: -.01em;
+    line-height: 1.2; margin: 0;
   }
-
-  .latest-cover-wrapper :global(.no-cover-title) {
-    font-family: var(--serif);
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--ink);
-    line-height: 1.2;
+  .review-author { color: var(--muted); margin: .3rem 0 0; }
+  .review-meta {
+    display: flex; flex-wrap: wrap; gap: .2rem 1rem;
+    color: var(--muted); font-size: .9rem; margin: .5rem 0 1.2rem;
   }
+  .review-rating { color: var(--ink); letter-spacing: .05em; }
 
-  .latest-review-details {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .latest-title {
-    font-family: var(--serif);
-    font-weight: 500;
-    font-size: clamp(1.3rem, 3vw, 1.7rem);
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .latest-author {
-    font-family: var(--mono);
-    font-size: .78rem;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--muted);
-    margin: .5rem 0 0;
-  }
-
-  .latest-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: .7rem;
-    flex-wrap: wrap;
-  }
-
-  .latest-rating {
-    color: #fbbf24;
-    letter-spacing: 1px;
-  }
-
-  .latest-date {
-    font-family: var(--mono);
-    font-size: .74rem;
-    color: var(--muted);
-  }
-
-  .latest-divider {
-    height: 1px;
-    background: var(--line);
-    margin: 1rem 0;
-  }
-
-  .latest-review-text {
-    font-size: 0.98rem;
-    line-height: 1.6;
-    margin: 0;
-    color: var(--ink);
-  }
-
-  .latest-review-text.is-empty { color: var(--muted); font-style: italic; }
+  .review-text { font-size: 1.02rem; line-height: 1.6; }
+  .review-text.is-empty { color: var(--muted); font-style: italic; }
 
   /* set:html content carries no scope attribute, so its children need :global. */
-  .latest-review-text :global(p) { margin: 0 0 .9rem; }
-  .latest-review-text :global(p:last-child) { margin-bottom: 0; }
-
-  .latest-review-text :global(a) {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    text-decoration-color: var(--line);
+  .review-text :global(p) { margin: 0 0 .9rem; }
+  .review-text :global(p:last-child) { margin-bottom: 0; }
+  .review-text :global(a) { text-decoration-color: var(--muted); }
+  .review-text :global(a:hover) { text-decoration-color: var(--accent); }
+  .review-text :global(blockquote) {
+    margin: 1rem 0; padding-left: 1rem;
+    border-left: 2px solid var(--line); color: var(--muted);
   }
-  .latest-review-text :global(a:hover) { text-decoration-color: currentColor; }
+  .review-text :global(ul),
+  .review-text :global(ol) { margin: .9rem 0; padding-left: 1.2rem; }
 
-  .latest-review-text :global(blockquote) {
-    margin: 1rem 0;
-    padding-left: 1rem;
-    border-left: 2px solid var(--line);
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  .latest-review-text :global(ul),
-  .latest-review-text :global(ol) { margin: .9rem 0; padding-left: 1.2rem; }
-
-  /* ---- tooltip ---- */
-  .book-tip {
+  /* ---- tooltip: flat paper slip with a hairline ---- */
+  .tip {
     position: absolute; z-index: 60; pointer-events: none;
-    background: var(--surface); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 25%, transparent);
-    padding: 1.2rem; 
-    width: max-content;
-    max-width: 340px;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line);
+    padding: .8rem 1rem; width: max-content; max-width: 18rem;
     opacity: 0; transition: opacity .15s ease;
   }
-
-  .tip-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 4px;
-  }
-
-  .tip-head h3 {
-    font-family: var(--serif);
-    font-size: 1.2rem;
-    margin: 0;
-    line-height: 1.2;
-  }
-
-  .tip-rating {
-    color: #fbbf24; /* yellow star color */
-    font-size: 0.9rem;
-    white-space: nowrap;
-    letter-spacing: 1px;
-  }
-
-  .tip-author {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin: 0 0 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .tip-date {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin: 0;
-  }
-
-  .tip-divider {
-    height: 1px;
-    background: var(--line);
-    margin: 12px 0;
-  }
-
+  .tip p { margin: 0; }
+  .tip-title { font-size: 1rem; line-height: 1.25; }
+  .tip-sub { color: var(--muted); font-size: .85rem; margin-top: .2rem !important; }
+  .tip-rating { color: var(--ink); }
   .tip-hint {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--muted);
-    margin: 0;
+    color: var(--muted); font-size: .8rem;
+    border-top: 1px solid var(--line); margin-top: .6rem !important; padding-top: .5rem;
   }
 
-  @media (max-width: 680px) {
-    .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .stat { padding: 1rem; }
-    .stat-num { font-size: 1.5rem; }
-    .stat-label { font-size: 0.6rem; }
-    .book-card { width: 120px; }
-    .book-tip { max-width: 280px; padding: 1rem; }
-
-    .latest-review-content { flex-direction: column; align-items: center; text-align: center; }
-    .latest-cover-wrapper { width: 140px; }
-    .latest-meta { justify-content: center; }
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .label .count { display: inline; margin-left: .6rem; }
+    .book-grid { grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: .9rem .7rem; }
+  }
+  @media (max-width: 480px) {
+    .review-content { flex-direction: column; }
+    .review-cover { width: 6.5rem; }
   }
 </style>

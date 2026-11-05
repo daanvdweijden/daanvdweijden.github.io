@@ -8,7 +8,6 @@ date: 2026-10-29
 venue: "The Ninth Workshop on Analyzing and Interpreting Neural Networks for NLP (BlackboxNLP 2026), co-located with EMNLP 2026, Budapest, Hungary"
 venueShort: "BlackboxNLP '26"
 type: Workshop paper
-note: "Special Track on Reproducibility and Reliability in Interpretability Analyses"
 summary: "When one AI model is trained on data made by another, it can pick up the teacher's hidden preferences, like a favourite animal or politician, even from plain number lists or chess moves. Repeating this on open models confirms the effect is real, but its strength depends on the preference, the task and the model."
 keyFindings:
   - "Subliminal preference transmission can be dramatic: a Qwen2.5-7B student trained only on number sequences from a teacher primed to favour Trump named Trump in about 78% of answers, against about 0.06% for a student trained on data from an unprimed teacher."
