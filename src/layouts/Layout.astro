@@ -68,6 +68,9 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     {noindex && <meta name="robots" content="noindex,nofollow" />}
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" href={`${base}sitemap-index.xml`} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="icon" href={`${base}favicon-32.png`} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
     <!-- Link previews (Open Graph + Twitter/X, Bluesky, LinkedIn, Slack …). -->
     <meta property="og:site_name" content={site.name} />
     <meta property="og:type" content={ogType} />
