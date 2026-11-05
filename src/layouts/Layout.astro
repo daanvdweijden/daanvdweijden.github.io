@@ -249,11 +249,14 @@ const section = Astro.url.pathname.slice(base.length).split('/')[0] || 'home';
          of the title, so the pages feel set by hand rather than stamped from
          one template. Text never moves: only the blocks are off the grid.
            --bw/--bh  size        --bt/--bb  offset from top / bottom
-           --bo       how far past the gutter it reaches under the title */
-      .row.page-head { isolation: isolate; position: relative; z-index: 1; }
-      /* Only the block itself reacts to the pointer, not the whole empty
-         column: the column ignores it and the block (its ::before) takes it,
-         which still counts as hovering the column. */
+           --bo       how far past the gutter it reaches under the title
+           --hit      invisible margin around the block that still counts
+                      as hovering it (a transparent border; shadow copies
+                      subtract it again via a negative spread) */
+      .row.page-head { isolation: isolate; position: relative; z-index: 1; --hit: 1.5rem; }
+      /* Only the block (plus its --hit margin) reacts to the pointer, not the
+         whole empty column: the column ignores it and the block (its
+         ::before) takes it, which still counts as hovering the column. */
       .row.page-head > div:first-child:empty { position: relative; pointer-events: none; }
       .row.page-head > div:first-child:empty::before {
         content: ""; position: absolute; z-index: -1; background: var(--accent);
@@ -261,27 +264,60 @@ const section = Astro.url.pathname.slice(base.length).split('/')[0] || 'home';
         top: var(--bt, auto); bottom: var(--bb, auto);
         right: calc(-1 * var(--col-gap) - var(--bo, 0rem));
         box-shadow: var(--bs, none);
+        border: var(--hit) solid transparent; background-clip: padding-box;
+        margin: calc(-1 * var(--hit));
         pointer-events: auto;
+        transform-origin: var(--borigin, 50% 50%);
         transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
-                    transform .7s cubic-bezier(.22, .61, .36, 1);
+                    transform .7s cubic-bezier(.22, .61, .36, 1),
+                    box-shadow .7s cubic-bezier(.22, .61, .36, 1);
       }
-      /* Hover: like the homepage portrait, the layers pull apart; here the
-         block slides away from the title (down-left). Uses `transform` so it
-         never fights the landing `translate`. Real-hover devices only. */
+      /* Hover: like the homepage portrait, the layers pull apart. The block
+         slides down-left, away from the title, and the small ones also shift
+         shape a little (--bhover, --bs-hover per section below). Uses
+         `transform` so it never fights the landing `translate`. Real-hover
+         devices only. */
       @media (hover: hover) {
-        .row.page-head > div:first-child:empty:hover::before { transform: translate(-.6rem, .45rem); }
+        .row.page-head > div:first-child:empty:hover::before {
+          transform: var(--bhover, translate(-.6rem, .45rem));
+          box-shadow: var(--bs-hover, var(--bs, none));
+        }
       }
-      [data-section='news']    .page-head { --bw: 4.5rem; --bh: 4.5rem; --bt: -1.4rem; --bo: .3rem; }
-      [data-section='pubs']    .page-head { --bw: 1.5rem; --bh: 11rem; --bt: -2.5rem; --bo: -.4rem; }
-      [data-section='cv']      .page-head { --bw: 15rem; --bh: .6rem; --bt: 3.1rem; --bo: 1.6rem; }
-      /* Books: two spines on a shelf. */
-      [data-section='books']   .page-head { --bw: 1.15rem; --bh: 4.4rem; --bt: -1.2rem; --bo: -.7rem; --bs: -1.55rem .7rem 0 var(--accent); }
+      /* News: a square that stretches wider and flatter on hover. */
+      [data-section='news']    .page-head {
+        --bw: 4.5rem; --bh: 4.5rem; --bt: -1.4rem; --bo: .3rem;
+        --bhover: translate(-.6rem, .45rem) scale(1.14, .86);
+      }
+      /* Publications: a thin bar that thickens. */
+      [data-section='pubs']    .page-head {
+        --bw: 1.5rem; --bh: 11rem; --bt: -2.5rem; --bo: -.4rem;
+        --bhover: translate(-.5rem, .3rem) scaleX(1.6);
+      }
+      /* CV: a rule that gets heavier. */
+      [data-section='cv']      .page-head {
+        --bw: 15rem; --bh: .6rem; --bt: 3.1rem; --bo: 1.6rem;
+        --bhover: translate(-.6rem, -.2rem) scaleY(1.8);
+      }
+      /* Books: two spines on a shelf, which lean over together on hover
+         (pivoting on the taller spine's bottom-left corner). */
+      [data-section='books']   .page-head {
+        --bw: 1.15rem; --bh: 4.4rem; --bt: -1.2rem; --bo: -.7rem;
+        --bs: -1.55rem .7rem 0 calc(-1 * var(--hit)) var(--accent);
+        --borigin: var(--hit) calc(100% - var(--hit));
+        --bhover: translate(-.3rem, .2rem) rotate(-8deg);
+      }
       /* Music: hangs down across the hairline below the header. */
       [data-section='music']   .page-head { --bw: 7rem; --bh: 2.8rem; --bb: calc(-1 * clamp(2rem, 5vw, 3.5rem) - 1.4rem); --bo: -1rem; }
-      /* Puzzles: three cells of a 2×2 grid, one left open. */
+      /* Puzzles: three cells of a 2×2 grid, one left open; on hover the
+         last cell fills in. */
       [data-section='puzzles'] .page-head {
         --bw: 2.1rem; --bh: 2.1rem; --bt: -.3rem; --bo: -1.75rem;
-        --bs: 2.45rem 0 var(--accent), 0 2.45rem var(--accent);
+        --bs: 2.45rem 0 0 calc(-1 * var(--hit)) var(--accent), 0 2.45rem 0 calc(-1 * var(--hit)) var(--accent),
+              2.45rem 2.45rem 0 calc(-1 * var(--hit)) transparent;
+        --bs-hover: 2.45rem 0 0 calc(-1 * var(--hit)) var(--accent), 0 2.45rem 0 calc(-1 * var(--hit)) var(--accent),
+                    2.45rem 2.45rem 0 calc(-1 * var(--hit)) var(--accent);
+        /* Up-left, so the filled-in cell clears the intro text. */
+        --bhover: translate(-.75rem, -.4rem);
       }
       /* Same print-layer landing as the homepage block. */
       html.motion .row.page-head:not(.is-in) > div:first-child:empty::before { translate: 10px 10px; }
@@ -324,6 +360,7 @@ const section = Astro.url.pathname.slice(base.length).split('/')[0] || 'home';
            (--bm), clear of the text. --bvh is a block's visible height when
            a shadow copy extends it; --bl-m shifts it right when a copy sits
            to its left. */
+        .row.page-head { --hit: 0rem; }
         .row.page-head > div:first-child:empty {
           height: calc(var(--bvh, var(--bh, 3rem)) * var(--bm, .55)); margin-bottom: .6rem;
         }
