@@ -86,10 +86,15 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
 </Layout>
 
 <script>
-  // Tap to colour the portrait on touch screens (the hover state elsewhere).
+  // Tap to colour the portrait on touch screens (the hover state elsewhere);
+  // it springs back on its own after a second. Another tap restarts the timer.
   const portrait = document.querySelector('.portrait');
+  let colorTimer: ReturnType<typeof setTimeout> | undefined;
   portrait?.addEventListener('click', () => {
-    if (matchMedia('(hover: none)').matches) portrait.classList.toggle('is-color');
+    if (!matchMedia('(hover: none)').matches) return;
+    portrait.classList.add('is-color');
+    clearTimeout(colorTimer);
+    colorTimer = setTimeout(() => portrait.classList.remove('is-color'), 1000);
   });
   // Once the opening slide has finished, switch back to the normal (snappier)
   // hover transitions. The timer is a fallback for when the events don't fire
@@ -101,7 +106,7 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   }
   const hero = document.querySelector('.hero');
   if (hero) new MutationObserver((_, mo) => {
-    if (hero.classList.contains('is-in')) { mo.disconnect(); setTimeout(settle, 2000); }
+    if (hero.classList.contains('is-in')) { mo.disconnect(); setTimeout(settle, 2500); }
   }).observe(hero, { attributes: true, attributeFilter: ['class'] });
 </script>
 
@@ -137,13 +142,13 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   :global(html.motion) .hero:not(.is-in) .portrait img { translate: -3% -3%; scale: 1.05; filter: none; }
   :global(html.motion) .hero:not(.is-in) .portrait .block { translate: 8% 20%; }
   :global(html.motion) .portrait:not(.settled) img {
-    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
-                scale 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
-                filter 1.4s ease .3s,
+    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
+                scale 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
+                filter 1.4s ease .8s,
                 transform .7s cubic-bezier(.22, .61, .36, 1);
   }
   :global(html.motion) .portrait:not(.settled) .block {
-    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s,
+    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
                 transform .7s cubic-bezier(.22, .61, .36, 1);
   }
 
