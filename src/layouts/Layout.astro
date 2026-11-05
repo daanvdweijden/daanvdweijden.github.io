@@ -65,7 +65,8 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     </script>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    {/* The /rework/ preview build must never compete with the live site in search. */}
+    {(noindex || base !== '/') && <meta name="robots" content="noindex,nofollow" />}
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" href={`${base}sitemap-index.xml`} />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
