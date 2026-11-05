@@ -188,7 +188,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         .menu[open] .i-close { display: block; }
         .menu nav.links { display: none; }
         .menu[open] nav.links {
-          display: flex; flex-direction: column; align-items: flex-start; gap: .1rem;
+          display: flex; flex-direction: column; align-items: flex-end; gap: .1rem;
           position: absolute; left: 0; right: 0; top: 100%; z-index: 20;
           padding: .4rem clamp(1.25rem, 3vw, 2.25rem) 1.4rem;
           background: var(--bg); border-bottom: 1px solid var(--line);
