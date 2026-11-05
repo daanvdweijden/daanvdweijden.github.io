@@ -43,6 +43,9 @@ const nav = [
   { name: 'CV', href: `${base}cv/`, key: 'cv' },
 ];
 const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
+// Top-level section of the site ('news', 'pubs', 'cv', …), used to give each
+// section's page header its own colour block.
+const section = Astro.url.pathname.slice(base.length).split('/')[0] || 'home';
 ---
 
 <!doctype html>
@@ -222,7 +225,8 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
          all text starts on one vertical line. */
       .row {
         display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-        column-gap: clamp(2rem, 6vw, 6rem);
+        --col-gap: clamp(2rem, 6vw, 6rem);
+        column-gap: var(--col-gap);
         padding: 1.6rem 0; border-top: 1px solid var(--line);
       }
       .row > * { min-width: 0; }
@@ -237,6 +241,42 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         letter-spacing: -.02em; margin: 0; max-width: 17em;
       }
       .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
+
+      /* Header blocks: on section pages the empty left column of the page
+         header holds one flat accent block, echoing the one behind the
+         homepage portrait. Each section gets its own size and position, and
+         each reaches across the gutter to just touch or tuck under the start
+         of the title, so the pages feel set by hand rather than stamped from
+         one template. Text never moves: only the blocks are off the grid.
+           --bw/--bh  size        --bt/--bb  offset from top / bottom
+           --bo       how far past the gutter it reaches under the title */
+      .row.page-head { isolation: isolate; position: relative; z-index: 1; }
+      .row.page-head > div:first-child:empty { position: relative; }
+      .row.page-head > div:first-child:empty::before {
+        content: ""; position: absolute; z-index: -1; background: var(--accent);
+        width: var(--bw, 3rem); height: var(--bh, 3rem);
+        top: var(--bt, auto); bottom: var(--bb, auto);
+        right: calc(-1 * var(--col-gap) - var(--bo, 0rem));
+        box-shadow: var(--bs, none);
+        transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .3s;
+      }
+      [data-section='news']    .page-head { --bw: 4.5rem; --bh: 4.5rem; --bt: -1.4rem; --bo: .3rem; }
+      [data-section='pubs']    .page-head { --bw: 1.5rem; --bh: 11rem; --bt: -2.5rem; --bo: -.4rem; }
+      [data-section='cv']      .page-head { --bw: 15rem; --bh: .6rem; --bt: 3.1rem; --bo: 1.6rem; }
+      /* Books: two spines on a shelf. */
+      [data-section='books']   .page-head { --bw: 1.15rem; --bh: 4.4rem; --bt: -1.2rem; --bo: -.7rem; --bs: -1.55rem .7rem 0 var(--accent); }
+      /* Music: hangs down across the hairline below the header. */
+      [data-section='music']   .page-head { --bw: 7rem; --bh: 2.8rem; --bb: calc(-1 * clamp(2rem, 5vw, 3.5rem) - 1.4rem); --bo: -1rem; }
+      /* Puzzles: three cells of a 2×2 grid, one left open. */
+      [data-section='puzzles'] .page-head {
+        --bw: 2.1rem; --bh: 2.1rem; --bt: -.3rem; --bo: -1.75rem;
+        --bs: 2.45rem 0 var(--accent), 0 2.45rem var(--accent);
+      }
+      /* Same print-layer landing as the homepage block. */
+      html.motion .row.page-head:not(.is-in) > div:first-child:empty::before { translate: 10px 10px; }
+      @media (prefers-reduced-motion: reduce) {
+        .row.page-head > div:first-child:empty::before { transition: none; }
+      }
 
       .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
       .body a, .prose a { text-decoration-color: var(--muted); }
@@ -269,6 +309,20 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
 
       @media (max-width: 760px) {
         .row { grid-template-columns: 1fr; row-gap: .5rem; }
+        /* One column: the block sits above the title at a smaller scale
+           (--bm), clear of the text. --bvh is a block's visible height when
+           a shadow copy extends it; --bl-m shifts it right when a copy sits
+           to its left. */
+        .row.page-head > div:first-child:empty {
+          height: calc(var(--bvh, var(--bh, 3rem)) * var(--bm, .55)); margin-bottom: .6rem;
+        }
+        .row.page-head > div:first-child:empty::before {
+          top: 0; bottom: auto; right: auto; left: var(--bl-m, 0rem);
+          scale: var(--bm, .55); transform-origin: 0 0;
+        }
+        [data-section='pubs']    .page-head { --bm: .3; }
+        [data-section='books']   .page-head { --bvh: 5.1rem; --bl-m: .9rem; }
+        [data-section='puzzles'] .page-head { --bvh: 4.55rem; }
       }
 
       /* ---- soft landing ----
@@ -305,7 +359,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       .theme-switch button[aria-pressed='true'] { color: var(--ink); }
     </style>
   </head>
-  <body>
+  <body data-section={section}>
     <header class="top">
       <div class="wrap">
         <div class="inner">
