@@ -4,6 +4,7 @@
 // header. The one loud element lives on
 // the homepage (the colour block behind the portrait).
 import { site } from '../site.config';
+import { hasPublishedNotes } from '../lib/notes';
 import '@fontsource-variable/archivo/wght.css';
 import '@fontsource-variable/archivo/wght-italic.css';
 
@@ -36,9 +37,12 @@ const imageUrl = new URL(image.replace(/^\/+/, ''), new URL(import.meta.env.BASE
 const year = new Date().getFullYear();
 const base = import.meta.env.BASE_URL;
 
+// "Notes" joins the nav by itself once the first note is published.
+const showNotes = await hasPublishedNotes();
 const nav = [
   { name: 'Home', href: base, key: 'home' },
   { name: 'News', href: `${base}news/`, key: 'news' },
+  ...(showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : []),
   { name: 'Publications', href: `${base}pubs/`, key: 'publications' },
   { name: 'CV', href: `${base}cv/`, key: 'cv' },
 ];

@@ -91,4 +91,27 @@ const publications = defineCollection({
   }),
 });
 
-export const collections = { news, publications };
+// Notes: longer, data-driven pieces about whatever I got hooked on. One folder
+// per note in src/content/notes/<slug>/ holding index.mdx, plus its data/,
+// img/ and charts.ts. The folder name is the URL slug. See
+// src/content/notes/README.md for the workflow and the components.
+const notes = defineCollection({
+  loader: glob({
+    pattern: ['*/index.mdx', '!_*/**'],
+    base: './src/content/notes',
+    // "music-diversity/index.mdx" → "music-diversity"
+    generateId: ({ entry }) => entry.split('/')[0],
+  }),
+  schema: z.object({
+    title: z.string(),
+    // One-sentence subtitle under the title: the hook, or the question.
+    dek: z.string().optional(),
+    date: z.coerce.date(), // publication date (or start date while drafting)
+    updated: z.coerce.date().optional(),
+    tags: z.array(z.string()).default([]),
+    // Drafts are visible in `npm run dev` (marked as drafts) but never built.
+    draft: z.boolean().default(true),
+  }),
+});
+
+export const collections = { news, publications, notes };

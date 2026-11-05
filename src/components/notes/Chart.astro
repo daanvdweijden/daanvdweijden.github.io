@@ -1,0 +1,93 @@
+---
+// <Chart name="fnName" data={rows} />: renders the function `fnName` exported
+// from the current note's charts.ts (src/content/notes/<slug>/charts.ts).
+// Data is inlined as JSON, so keep it small (pre-aggregate in the workshop).
+interface Props {
+  /** Name of the exported function in the note's charts.ts. */
+  name: string;
+  data?: unknown;
+  /** Reserved height in px while the chart loads (avoids layout jumps). */
+  height?: number;
+  /** Text alternative: what the chart shows, in one sentence. */
+  alt?: string;
+  /** Another note's folder to take the chart from. Defaults to this note. */
+  from?: string;
+}
+const { name, data, height = 320, alt, from = Astro.params.id } = Astro.props;
+const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<div class="chart" data-chart={name} data-from={from} style={`min-height:${height}px`}>
+  {json && <script type="application/json" set:html={json} />}
+  <div class="chart-canvas" aria-label={alt} role={alt ? 'img' : undefined}></div>
+  <noscript><p class="chart-fallback">This chart needs JavaScript.</p></noscript>
+</div>
+
+<script>
+  import { readTheme, type ChartFn } from '../../lib/chart';
+
+  // Every note's charts.ts, loaded only when a chart on the page needs it.
+  const modules = import.meta.glob<Record<string, ChartFn>>('../../content/notes/*/charts.ts');
+
+  const charts = [...document.querySelectorAll<HTMLElement>('.chart[data-chart]')];
+
+  for (const el of charts) {
+    const canvas = el.querySelector<HTMLElement>('.chart-canvas')!;
+    const dataEl = el.querySelector('script[type="application/json"]');
+    const data = dataEl ? JSON.parse(dataEl.textContent || 'null') : undefined;
+    const scrolly = el.closest<HTMLElement>('.scrolly');
+    const key = `../../content/notes/${el.dataset.from}/charts.ts`;
+    let fn: ChartFn | undefined;
+    let lastWidth = 0;
+    let pending = 0;
+
+    const fail = (msg: string) => {
+      canvas.innerHTML = `<p class="chart-fallback">${msg}</p>`;
+      console.error(`[chart] ${msg}`);
+    };
+
+    const draw = async () => {
+      lastWidth = canvas.clientWidth;
+      if (!fn) {
+        const load = modules[key];
+        if (!load) return fail(`No charts.ts found for "${el.dataset.from}".`);
+        const mod = await load();
+        fn = mod[el.dataset.chart!];
+        if (typeof fn !== 'function') return fail(`charts.ts has no export "${el.dataset.chart}".`);
+      }
+      const ctx = {
+        ...readTheme(el),
+        width: lastWidth,
+        step: Number(scrolly?.dataset.step ?? 0),
+        el,
+      };
+      try {
+        canvas.replaceChildren(await fn(data, ctx));
+        el.style.minHeight = '';
+      } catch (err) {
+        fail(`"${el.dataset.chart}" threw: ${(err as Error).message}`);
+      }
+    };
+    // Coalesce bursts (resize drags, several events at once) into one draw.
+    const redraw = () => {
+      clearTimeout(pending);
+      pending = window.setTimeout(draw, 30);
+    };
+
+    draw();
+    // Redraw when the width changes (not on every height change we cause).
+    new ResizeObserver(() => { if (canvas.clientWidth !== lastWidth) redraw(); }).observe(canvas);
+    // Redraw when the colour scheme changes (footer switch or system).
+    new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+    // Redraw when a surrounding <Scrolly> moves to another step.
+    scrolly?.addEventListener('stepchange', redraw);
+  }
+</script>
+
+<style>
+  .chart { position: relative; width: 100%; --plot-background: var(--bg); }
+  .chart-canvas { width: 100%; }
+  .chart :global(svg) { display: block; max-width: 100%; height: auto; }
+  .chart :global(.chart-fallback) { color: var(--muted); font-size: .9rem; margin: 0; }
+</style>

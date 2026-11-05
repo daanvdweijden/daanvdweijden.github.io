@@ -1,0 +1,50 @@
+---
+// <Figure title="The finding, as a sentence" source="Where the data is from">
+//   <Chart … /> or an image
+// </Figure>
+// Write the title as the claim the chart proves, not as a label
+// ("Ten artists make up 40% of my plays", not "Plays per artist").
+interface Props {
+  title?: string;
+  /** Smaller line under the title: units, what one mark is, how to read it. */
+  subtitle?: string;
+  /** Caption under the chart; for longer text use <Fragment slot="caption">. */
+  caption?: string;
+  source?: string;
+  sourceUrl?: string;
+  /** 'wide' spans both columns (default); 'text' stays in the text column. */
+  width?: 'wide' | 'text';
+}
+const { title, subtitle, caption, source, sourceUrl, width = 'wide' } = Astro.props;
+const hasCaption = caption || source || Astro.slots.has('caption');
+---
+
+<figure class:list={['note-figure', { wide: width === 'wide' }]} data-reveal>
+  {(title || subtitle) && (
+    <div class="fig-head">
+      {title && <p class="fig-title">{title}</p>}
+      {subtitle && <p class="fig-sub">{subtitle}</p>}
+    </div>
+  )}
+  <slot />
+  {hasCaption && (
+    <figcaption>
+      {caption}<slot name="caption" />
+      {source && (
+        <span class="fig-source">
+          Source: {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
+        </span>
+      )}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .note-figure { margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(2rem, 5vw, 3.25rem); }
+  .fig-head { margin-bottom: 1rem; max-width: 38em; }
+  .fig-title { font-size: 1.12rem; font-weight: 500; line-height: 1.3; margin: 0; }
+  .fig-sub { color: var(--muted); font-size: .92rem; margin: .25rem 0 0; }
+  figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.5; color: var(--muted); max-width: 42em; }
+  .fig-source { display: block; margin-top: .2rem; }
+  .fig-source a { color: inherit; }
+</style>

@@ -1,0 +1,55 @@
+---
+// Notes: one row per year, each note with its date and dek. In `npm run dev`
+// drafts are listed too, marked as such.
+import Layout from '../../layouts/Layout.astro';
+import { getNotes, noteHref, type Note } from '../../lib/notes';
+
+const notes = await getNotes();
+const groups = new Map<number, Note[]>();
+for (const n of notes) {
+  const y = n.data.date.getFullYear();
+  if (!groups.has(y)) groups.set(y, []);
+  groups.get(y)!.push(n);
+}
+const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<Layout title="Notes" description="Small hyperfixations, written up with data and charts." active="notes" noindex={notes.length === 0}>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <div></div>
+      <div>
+        <h1 class="page-title">Notes</h1>
+        <p class="page-intro">Small hyperfixations: a question I couldn't let go of for a few nights, some data, and the story it told.</p>
+      </div>
+    </section>
+
+    {[...groups].map(([year, items]) => (
+      <section class="row" data-reveal>
+        <h2 class="label">{year}</h2>
+        <ol class="list notes">
+          {items.map((n) => (
+            <li>
+              <span class="meta">
+                <time datetime={iso(n.data.date)}>{fmtDate(n.data.date)}</time>
+                {n.data.draft && <span class="draft">Draft</span>}
+              </span>
+              <div>
+                <a class="title" href={noteHref(n)}>{n.data.title}</a>
+                {n.data.dek && <span class="sub">{n.data.dek}</span>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </main>
+</Layout>
+
+<style>
+  .notes > li { padding-bottom: 1.4rem; }
+  .title { font-size: 1.08rem; }
+  .sub { line-height: 1.5; margin-top: .3rem; max-width: 36em; }
+  .draft { display: block; color: var(--accent); }
+</style>

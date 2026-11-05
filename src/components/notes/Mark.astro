@@ -1,0 +1,52 @@
+---
+// <Mark>key phrase</Mark>: a hand-drawn highlight (rough-notation) that draws
+// itself when scrolled into view. Use it sparingly: once or twice per note,
+// for the sentence a reader should remember. Pair the phrase with the accent
+// colour in a chart and the text and chart point at the same thing.
+interface Props {
+  type?: 'highlight' | 'underline' | 'circle' | 'box';
+}
+const { type = 'highlight' } = Astro.props;
+---
+
+<span class="mark" data-mark={type}><slot /></span>
+
+<script>
+  import { annotate } from 'rough-notation';
+
+  const marks = [...document.querySelectorAll<HTMLElement>('.mark[data-mark]')];
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const colorFor = (el: HTMLElement, type: string) => {
+    const probe = document.createElement('span');
+    probe.style.color = type === 'highlight'
+      ? 'color-mix(in srgb, var(--accent) 28%, transparent)'
+      : 'var(--accent)';
+    el.append(probe);
+    const c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  };
+  const shown = new Map<HTMLElement, ReturnType<typeof annotate>>();
+  const show = (el: HTMLElement, animate: boolean) => {
+    shown.get(el)?.remove();
+    const type = el.dataset.mark as any;
+    const a = annotate(el, { type, color: colorFor(el, type), multiline: true, animate, animationDuration: 900, padding: type === 'highlight' ? 1 : 4 });
+    a.show();
+    shown.set(el, a);
+  };
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      io.unobserve(e.target);
+      // A short pause so the reader's eye arrives first.
+      setTimeout(() => show(e.target as HTMLElement, !still), still ? 0 : 350);
+    }
+  }, { rootMargin: '0px 0px -20% 0px' });
+  marks.forEach((m) => io.observe(m));
+
+  // Colours are baked into the drawing; redraw (without animation) on a theme switch.
+  const recolor = () => shown.forEach((_, el) => show(el, false));
+  new MutationObserver(recolor).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor);
+</script>

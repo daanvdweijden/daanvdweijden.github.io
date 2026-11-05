@@ -1,0 +1,81 @@
+---
+// A single note. Same two-column grid as the rest of the site: meta and
+// margin notes (<Aside>) in the narrow left column, text in the right one,
+// and <Figure>s free to span both.
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { getNotes, type Note } from '../../lib/notes';
+import { plainText, clip } from '../../lib/text';
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+  return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
+}
+
+interface Props {
+  note: Note;
+}
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+// Search snippet: the dek, else the opening prose (skipping MDX imports/tags).
+const opening = plainText((note.body ?? '').replace(/^import .*$/gm, '').replace(/<[^>]+>/g, ' '));
+const description = note.data.dek ?? clip(opening || note.data.title);
+---
+
+<Layout title={note.data.title} description={description} active="notes" ogType="article">
+  <main class="wrap">
+    <article class="note">
+      <aside class="note-meta" data-reveal>
+        {note.data.draft && <p class="draft">Draft, only visible in dev</p>}
+        <p><time datetime={iso(note.data.date)}>{fmtDate(note.data.date)}</time></p>
+        {note.data.updated && <p>Updated <time datetime={iso(note.data.updated)}>{fmtDate(note.data.updated)}</time></p>}
+        {note.data.tags.length > 0 && <p class="tags">{note.data.tags.join(' · ')}</p>}
+        <p><a class="back" href={`${import.meta.env.BASE_URL}notes/`}>← All notes</a></p>
+      </aside>
+      <header class="note-head" data-reveal>
+        <h1 class="page-title">{note.data.title}</h1>
+        {note.data.dek && <p class="dek">{note.data.dek}</p>}
+      </header>
+      <div class="prose"><Content /></div>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  /* Plain (sparse) auto-placement does the margin notes for free: an
+     <Aside> pinned to column 1 starts a new row, and the paragraph after it
+     (column 2) lands in that same row, right beside it. */
+  .note {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    padding-top: clamp(2.5rem, 7vw, 5rem);
+  }
+  .note-meta { grid-column: 1; grid-row: 1; font-size: .9rem; color: var(--muted); padding-top: .35rem; }
+  .note-meta p { margin: 0 0 .15rem; }
+  .note-meta .draft { color: var(--accent); margin-bottom: .6rem; }
+  .note-meta .tags::first-letter { text-transform: uppercase; }
+  .note-meta .back { display: inline-block; margin-top: .9rem; }
+  .note-head { grid-column: 2; grid-row: 1; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .dek { font-size: clamp(1.1rem, 1.6vw, 1.3rem); line-height: 1.4; color: var(--muted); margin: 1rem 0 0; max-width: 30em; }
+
+  .prose { display: contents; }
+  .prose > :global(*) { grid-column: 2; max-width: 38em; }
+  .prose :global(p) { margin: 0 0 1.1rem; }
+  .prose :global(h2) { font-size: 1.35rem; font-weight: 500; letter-spacing: -.01em; margin: 2.5rem 0 .8rem; }
+  .prose :global(ul), .prose :global(ol) { margin: 0 0 1.1rem; padding-left: 1.2rem; }
+  .prose > :global(img) { margin: 1.5rem 0; }
+  /* Placement of the note components (src/components/notes/). */
+  .prose > :global(.wide) { grid-column: 1 / -1; max-width: none; }
+  .prose > :global(.margin-note) { grid-column: 1; }
+
+  @media (max-width: 760px) {
+    .note { grid-template-columns: 1fr; }
+    .note-meta, .note-head, .prose > :global(*), .prose > :global(.wide), .prose > :global(.margin-note) { grid-column: 1; grid-row: auto; }
+    .note-meta { display: flex; flex-wrap: wrap; gap: 0 .8rem; margin-bottom: .8rem; padding: 0; }
+    .note-meta .back { margin-top: 0; }
+  }
+</style>

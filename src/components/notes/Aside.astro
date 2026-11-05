@@ -1,0 +1,20 @@
+---
+// <Aside>A tangent.</Aside>: a margin note. Put it right BEFORE the paragraph
+// it belongs to; on wide screens it sits in the left column beside that
+// paragraph, on phones it falls inline as a small boxed note.
+---
+
+<aside class="margin-note"><slot /></aside>
+
+<style>
+  .margin-note {
+    font-size: .88rem; line-height: 1.5; color: var(--muted);
+    padding-top: .55rem; margin: .2rem 0 1rem; max-width: 22em; justify-self: end;
+    border-top: 2px solid var(--accent);
+  }
+  .margin-note :global(p) { margin: 0 0 .5rem; }
+  .margin-note :global(p:last-child) { margin-bottom: 0; }
+  @media (max-width: 760px) {
+    .margin-note { justify-self: stretch; max-width: none; padding: .6rem 0 0; margin: .4rem 0 1.4rem; }
+  }
+</style>

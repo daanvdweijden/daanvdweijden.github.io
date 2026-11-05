@@ -1,0 +1,22 @@
+---
+// One text step inside a <Scrolly>. See Scrolly.astro.
+---
+
+<div class="scrolly-step"><slot /></div>
+
+<style>
+  .scrolly-step {
+    margin: 0 0 65vh; max-width: 24em;
+    font-size: 1.05rem; line-height: 1.55;
+    color: var(--muted); transition: color .4s ease-out;
+  }
+  .scrolly-step.is-active { color: var(--ink); }
+  .scrolly-step :global(p) { margin: 0 0 .6rem; }
+  .scrolly-step :global(p:last-child) { margin: 0; }
+  @media (max-width: 760px) {
+    .scrolly-step {
+      max-width: none; padding: 1rem 1.1rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--line);
+    }
+  }
+</style>

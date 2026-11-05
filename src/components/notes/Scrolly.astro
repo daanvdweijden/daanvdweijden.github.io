@@ -1,0 +1,61 @@
+---
+// Scrollytelling: a sticky graphic with text steps scrolling past it.
+//
+// <Scrolly>
+//   <Chart slot="graphic" name="myChart" data={rows} />
+//   <Step>First, look at…</Step>
+//   <Step>Now the teal line…</Step>
+// </Scrolly>
+//
+// The active step (0, 1, 2…) is passed to every chart inside as `ctx.step`, so
+// one chart function can show a different state per step. Use this for the one
+// showpiece of a note, not for every chart.
+---
+
+<div class="scrolly wide" data-step="0">
+  <div class="scrolly-graphic"><slot name="graphic" /></div>
+  <div class="scrolly-steps"><slot /></div>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.scrolly')) {
+    const steps = [...root.querySelectorAll<HTMLElement>('.scrolly-step')];
+    const activate = (i: number) => {
+      steps.forEach((s, j) => s.classList.toggle('is-active', j === i));
+      if (root.dataset.step === String(i)) return;
+      root.dataset.step = String(i);
+      root.dispatchEvent(new CustomEvent('stepchange', { detail: i }));
+    };
+    // A step becomes active when it crosses the middle of the screen.
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) activate(steps.indexOf(e.target as HTMLElement));
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    steps.forEach((s) => io.observe(s));
+    activate(0);
+  }
+</script>
+
+<style>
+  /* Wide screens: steps in the narrow left column, graphic sticky on the
+     right — the same 5/7 split as the page. */
+  .scrolly {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+  }
+  .scrolly-graphic {
+    grid-column: 2; grid-row: 1;
+    position: sticky; top: 12vh; align-self: start;
+    min-height: 60vh; display: flex; align-items: center;
+  }
+  .scrolly-graphic > :global(*) { width: 100%; }
+  .scrolly-steps { grid-column: 1; grid-row: 1; padding: 30vh 0 40vh; }
+  .scrolly-steps :global(.scrolly-step:last-child) { margin-bottom: 0; }
+
+  /* Phones: graphic sticks to the top, steps scroll over it as cards. */
+  @media (max-width: 760px) {
+    .scrolly { display: block; }
+    .scrolly-graphic { top: 0; min-height: 0; padding: 1rem 0; background: var(--bg); z-index: 1; }
+    .scrolly-steps { position: relative; z-index: 2; padding: 50vh 0 30vh; }
+  }
+</style>

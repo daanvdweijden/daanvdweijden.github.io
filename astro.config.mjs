@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import mdx from '@astrojs/mdx';
 
 // Pages marked `noindex` in their <Layout> (the footer easter eggs) are kept
 // out of the sitemap too, so crawlers get one consistent signal.
@@ -45,6 +46,7 @@ export default defineConfig({
   base: BASE,
   integrations: [
     prefixRootLinks,
+    mdx(),
     sitemap({
       filter: (page) => !NOINDEX.some((p) => new URL(page).pathname.startsWith(p)),
     }),
