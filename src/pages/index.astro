@@ -60,7 +60,7 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
           const { before, emphasis, after } = titleParts(n);
           return (
             <li>
-              <time datetime={iso(n.data.date)}>{fmtDate(n.data.date)}</time>
+              <time class="meta" datetime={iso(n.data.date)}>{fmtDate(n.data.date)}</time>
               <a href={newsHref(n)}>{before}{emphasis}{after}</a>
             </li>
           );
@@ -76,7 +76,7 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
             <span class="meta">{yearOf(p)}</span>
             <span>
               <a href={pubHref(p)}>{p.data.title}</a>
-              {p.data.venue && <span class="venue">{p.data.venue}</span>}
+              {p.data.venue && <span class="sub">{p.data.venue}</span>}
             </span>
           </li>
         ))}
@@ -86,39 +86,8 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
 </Layout>
 
 <style>
-  /* Every section is the same two-column row, so all text in the right
-     column shares one left edge. */
-  .row {
-    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    column-gap: clamp(2rem, 6vw, 6rem);
-    padding: 1.6rem 0; border-top: 1px solid var(--line);
-  }
+  /* Rows, labels, lists and the lede are shared styles in Layout.astro. */
   .row.hero { border-top: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem); align-items: end; }
-
-  .lede {
-    font-size: clamp(1.75rem, 3.4vw, 2.85rem); font-weight: 400; line-height: 1.15;
-    letter-spacing: -.02em; margin: 0; max-width: 17em;
-  }
-
-  .label {
-    font-size: .9rem; font-weight: 400; color: var(--muted); margin: .2rem 0 0;
-  }
-  .label a { margin-left: .6rem; color: var(--muted); }
-  .label a:hover { color: var(--ink); }
-
-  .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
-  .body a { text-decoration-color: var(--muted); }
-  .body a:hover { text-decoration-color: var(--accent); }
-
-  .list { list-style: none; margin: 0; padding: 0; max-width: 42em; }
-  .list li {
-    display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem;
-    padding: .2rem 0 .7rem;
-  }
-  .list time, .list .meta { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
-  .list a { text-decoration: none; }
-  .list a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
-  .list .venue { display: block; color: var(--muted); font-size: .9rem; margin-top: .1rem; }
 
   /* The portrait: a grayscale photo overlapping a flat colour block. The
      figure is its own isolated group and the photo multiplies onto it, so the
@@ -163,7 +132,6 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   }
 
   @media (max-width: 760px) {
-    .row { grid-template-columns: 1fr; row-gap: .5rem; }
     .row.hero { row-gap: 2rem; }
     .portrait { width: min(100%, 20rem); }
   }

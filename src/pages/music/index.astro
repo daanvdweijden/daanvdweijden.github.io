@@ -1,4 +1,7 @@
 ---
+// Listening log. Same row grid as the rest of the site: two stat rows, three
+// ranked lists for the last 30 days, then the cover grids. Covers sit in
+// grayscale and take on their colour on hover, an echo of the homepage portrait.
 import Layout from '../../layouts/Layout.astro';
 import { getMusicData } from '../../lib/music';
 
@@ -13,301 +16,148 @@ const albumHours = (ms: number) => {
   const h = ms / 3_600_000;
   return h >= 10 ? `${Math.round(h)} hrs` : `${h.toFixed(1)} hrs`;
 };
+
+const link = (kind: 'album' | 'artist' | 'track', item: { id: string | number; spotifyId?: string | null }) =>
+  item.spotifyId ? `https://open.spotify.com/${kind}/${item.spotifyId}` : `https://stats.fm/${kind}/${item.id}`;
+
+// The three 30-day lists share one layout: the #1 with its cover, the rest as a ranked list.
+const top30 = [
+  {
+    label: 'Top albums',
+    alt: 'Cover of',
+    items: topAlbums30d.map((a) => ({ ...a, sub: a.artist, href: link('album', a) })),
+  },
+  {
+    label: 'Top artists',
+    alt: 'Photo of',
+    items: topArtists30d.map((a) => ({ ...a, sub: '', href: link('artist', a) })),
+  },
+  {
+    label: 'Top songs',
+    alt: 'Cover of',
+    items: topTracks30d.map((t) => ({ ...t, sub: t.artist, href: link('track', t) })),
+  },
+];
+
+const grids = [
+  { label: 'Most played, past year', items: recentAlbums, eager: 8, empty: 'Not enough recent listening data yet.' },
+  { label: 'Top albums, all time', items: albums, eager: 0, empty: "Couldn't reach stats.fm right now — check back later." },
+];
 ---
 
-<Layout title="Listening Log" description="The music I've spent my life listening to, from stats.fm." noindex>
-  <main class="wrap page">
-    <header class="page-head">
-      <p class="eyebrow">PERSONAL</p>
-      <h1>Listening Log</h1>
-      <p class="lede">
-        What I've had on repeat lately, and the records I've played most over a lifetime.
-      </p>
-    </header>
+<Layout title="Listening log" description="The music I've spent my life listening to, from stats.fm." noindex>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <p class="label">Off the clock</p>
+      <div>
+        <h1 class="page-title">Listening log</h1>
+        <p class="page-intro">
+          What I've had on repeat lately, and the records I've played most over a lifetime.
+        </p>
+      </div>
+    </section>
 
     {stats && (
-      <section class="stats-block">
-        <p class="kicker stats-kicker">All time</p>
-        <div class="stats">
-          <div class="stat">
-            <p class="stat-num">{statHours(stats.durationMs)}</p>
-            <p class="stat-label">Hours Listened</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats.streams)}</p>
-            <p class="stat-label">Total Streams</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats.uniqueArtists)}</p>
-            <p class="stat-label">Artists</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats.uniqueAlbums)}</p>
-            <p class="stat-label">Albums</p>
-          </div>
-        </div>
+      <section class="row" data-reveal>
+        <h2 class="label">All time</h2>
+        <dl class="stats">
+          <div><dt>Hours listened</dt><dd>{statHours(stats.durationMs)}</dd></div>
+          <div><dt>Streams</dt><dd>{fmt(stats.streams)}</dd></div>
+          <div><dt>Artists</dt><dd>{fmt(stats.uniqueArtists)}</dd></div>
+          <div><dt>Albums</dt><dd>{fmt(stats.uniqueAlbums)}</dd></div>
+        </dl>
       </section>
     )}
 
     {stats30d && (
-      <section class="stats-block">
-        <p class="kicker stats-kicker">Last 30 days</p>
-        <div class="stats">
-          <div class="stat">
-            <p class="stat-num">{statHours(stats30d.durationMs)}</p>
-            <p class="stat-label">Hours Listened</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats30d.streams)}</p>
-            <p class="stat-label">Streams</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats30d.uniqueArtists)}</p>
-            <p class="stat-label">Artists</p>
-          </div>
-          <div class="stat">
-            <p class="stat-num">{fmt(stats30d.uniqueAlbums)}</p>
-            <p class="stat-label">Albums</p>
-          </div>
-        </div>
+      <section class="row" data-reveal>
+        <h2 class="label">Last 30 days</h2>
+        <dl class="stats">
+          <div><dt>Hours listened</dt><dd>{statHours(stats30d.durationMs)}</dd></div>
+          <div><dt>Streams</dt><dd>{fmt(stats30d.streams)}</dd></div>
+          <div><dt>Artists</dt><dd>{fmt(stats30d.uniqueArtists)}</dd></div>
+          <div><dt>Albums</dt><dd>{fmt(stats30d.uniqueAlbums)}</dd></div>
+        </dl>
       </section>
     )}
 
-    <section class="top30-section">
-      <div class="bento-card">
-        <p class="kicker">Top Albums · Last 30 Days</p>
-        {topAlbums30d.length ? (
-          <>
-            {topAlbums30d.slice(0, 1).map((album) => {
-              const href = album.spotifyId
-                ? `https://open.spotify.com/album/${album.spotifyId}`
-                : `https://stats.fm/album/${album.id}`;
-              return (
-                <a class="feature" href={href} target="_blank" rel="noopener noreferrer">
-                  <div class="feature-cover">
-                    {album.imageUrl ? (
-                      <img src={album.imageUrl} alt={`Cover of ${album.name}`} loading="eager" />
-                    ) : (
-                      <div class="no-cover"><span>{album.name}</span></div>
-                    )}
-                    <span class="rank">1</span>
-                  </div>
-                  <div class="feature-meta">
-                    <span class="feature-title">{album.name}</span>
-                    <span class="feature-sub">{album.artist}</span>
-                    <span class="feature-stat">{fmt(album.streams)} plays · {albumHours(album.playedMs)}</span>
-                  </div>
-                </a>
-              );
-            })}
+    {top30.map(({ label, alt, items }) => (
+      <section class="row" data-reveal>
+        <h2 class="label">{label}<span class="when">Last 30 days</span></h2>
+        {items.length ? (
+          <div class="ranked">
+            {items.slice(0, 1).map((item) => (
+              <a class="feature" href={item.href} target="_blank" rel="noopener noreferrer">
+                <span class="feature-cover">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={`${alt} ${item.name}`} loading="eager" />
+                  ) : (
+                    <span class="no-cover"><span>{item.name}</span></span>
+                  )}
+                </span>
+                <span class="feature-meta">
+                  <span class="feature-rank">1</span>
+                  <span class="feature-title">{item.name}</span>
+                  {item.sub && <span class="feature-sub">{item.sub}</span>}
+                  <span class="feature-sub">{fmt(item.streams)} plays · {albumHours(item.playedMs)}</span>
+                </span>
+              </a>
+            ))}
             <ol class="rank-list" role="list">
-              {topAlbums30d.slice(1).map((album) => {
-                const href = album.spotifyId
-                  ? `https://open.spotify.com/album/${album.spotifyId}`
-                  : `https://stats.fm/album/${album.id}`;
-                return (
-                  <li class="rank-item">
-                    <span class="rank-num">{album.position}</span>
-                    <a class="rank-link" href={href} target="_blank" rel="noopener noreferrer">
-                      <span class="rank-title">{album.name}</span>
-                      <span class="rank-sub">{album.artist}</span>
-                    </a>
-                  </li>
-                );
-              })}
+              {items.slice(1).map((item) => (
+                <li>
+                  <span class="rank-num">{item.position}</span>
+                  <a href={item.href} target="_blank" rel="noopener noreferrer">
+                    <span class="rank-title">{item.name}</span>
+                    {item.sub && <span class="rank-sub">{item.sub}</span>}
+                  </a>
+                </li>
+              ))}
             </ol>
-          </>
-        ) : (
-          <p class="empty">Not enough recent listening data yet.</p>
-        )}
-      </div>
-
-      <div class="bento-card">
-        <p class="kicker">Top Artists · Last 30 Days</p>
-        {topArtists30d.length ? (
-          <>
-            {topArtists30d.slice(0, 1).map((artist) => {
-              const href = artist.spotifyId
-                ? `https://open.spotify.com/artist/${artist.spotifyId}`
-                : `https://stats.fm/artist/${artist.id}`;
-              return (
-                <a class="feature" href={href} target="_blank" rel="noopener noreferrer">
-                  <div class="feature-cover">
-                    {artist.imageUrl ? (
-                      <img src={artist.imageUrl} alt={`Photo of ${artist.name}`} loading="eager" />
-                    ) : (
-                      <div class="no-cover"><span>{artist.name}</span></div>
-                    )}
-                    <span class="rank">1</span>
-                  </div>
-                  <div class="feature-meta">
-                    <span class="feature-title">{artist.name}</span>
-                    <span class="feature-sub"></span>
-                    <span class="feature-stat">{fmt(artist.streams)} plays · {albumHours(artist.playedMs)}</span>
-                  </div>
-                </a>
-              );
-            })}
-            <ol class="rank-list" role="list">
-              {topArtists30d.slice(1).map((artist) => {
-                const href = artist.spotifyId
-                  ? `https://open.spotify.com/artist/${artist.spotifyId}`
-                  : `https://stats.fm/artist/${artist.id}`;
-                return (
-                  <li class="rank-item">
-                    <span class="rank-num">{artist.position}</span>
-                    <a class="rank-link" href={href} target="_blank" rel="noopener noreferrer">
-                      <span class="rank-title">{artist.name}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
-          </>
-        ) : (
-          <p class="empty">Not enough recent listening data yet.</p>
-        )}
-      </div>
-
-      <div class="bento-card">
-        <p class="kicker">Top Songs · Last 30 Days</p>
-        {topTracks30d.length ? (
-          <>
-            {topTracks30d.slice(0, 1).map((track) => {
-              const href = track.spotifyId
-                ? `https://open.spotify.com/track/${track.spotifyId}`
-                : `https://stats.fm/track/${track.id}`;
-              return (
-                <a class="feature" href={href} target="_blank" rel="noopener noreferrer">
-                  <div class="feature-cover">
-                    {track.imageUrl ? (
-                      <img src={track.imageUrl} alt={`Cover of ${track.name}`} loading="eager" />
-                    ) : (
-                      <div class="no-cover"><span>{track.name}</span></div>
-                    )}
-                    <span class="rank">1</span>
-                  </div>
-                  <div class="feature-meta">
-                    <span class="feature-title">{track.name}</span>
-                    <span class="feature-sub">{track.artist}</span>
-                    <span class="feature-stat">{fmt(track.streams)} plays · {albumHours(track.playedMs)}</span>
-                  </div>
-                </a>
-              );
-            })}
-            <ol class="rank-list" role="list">
-              {topTracks30d.slice(1).map((track) => {
-                const href = track.spotifyId
-                  ? `https://open.spotify.com/track/${track.spotifyId}`
-                  : `https://stats.fm/track/${track.id}`;
-                return (
-                  <li class="rank-item">
-                    <span class="rank-num">{track.position}</span>
-                    <a class="rank-link" href={href} target="_blank" rel="noopener noreferrer">
-                      <span class="rank-title">{track.name}</span>
-                      <span class="rank-sub">{track.artist}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
-          </>
-        ) : (
-          <p class="empty">Not enough recent listening data yet.</p>
-        )}
-      </div>
-    </section>
-
-    <section class="albums-section">
-      <div class="bento-card">
-        <p class="kicker">Most Played · Last Year · Hover for details</p>
-        {recentAlbums.length ? (
-          <div class="album-grid recent-grid">
-            {recentAlbums.map((album, index) => {
-              const href = album.spotifyId
-                ? `https://open.spotify.com/album/${album.spotifyId}`
-                : `https://stats.fm/album/${album.id}`;
-              return (
-                <a
-                  class="album-card"
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-title={album.name}
-                  data-artist={album.artist}
-                  data-streams={fmt(album.streams)}
-                  data-hours={albumHours(album.playedMs)}
-                  data-year={album.releaseYear ?? ''}
-                >
-                  <div class="cover-wrapper">
-                    {album.imageUrl ? (
-                      <img
-                        src={album.imageUrl}
-                        alt={`Cover of ${album.name}`}
-                        loading={index < 8 ? 'eager' : 'lazy'}
-                      />
-                    ) : (
-                      <div class="no-cover"><span>{album.name}</span></div>
-                    )}
-                    <span class="rank">{album.position}</span>
-                  </div>
-                </a>
-              );
-            })}
           </div>
         ) : (
           <p class="empty">Not enough recent listening data yet.</p>
         )}
-      </div>
-    </section>
+      </section>
+    ))}
 
-    <section class="albums-section">
-      <div class="bento-card">
-        <p class="kicker">Top Albums · All time · Hover for details</p>
-        {albums.length ? (
+    {grids.map(({ label, items, eager, empty }) => (
+      <section class="row" data-reveal>
+        <h2 class="label">{label}</h2>
+        {items.length ? (
           <div class="album-grid">
-            {albums.map((album) => {
-              const href = album.spotifyId
-                ? `https://open.spotify.com/album/${album.spotifyId}`
-                : `https://stats.fm/album/${album.id}`;
-              return (
-                <a
-                  class="album-card"
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-title={album.name}
-                  data-artist={album.artist}
-                  data-streams={fmt(album.streams)}
-                  data-hours={albumHours(album.playedMs)}
-                  data-year={album.releaseYear ?? ''}
-                >
-                  <div class="cover-wrapper">
-                    {album.imageUrl ? (
-                      <img
-                        src={album.imageUrl}
-                        alt={`Cover of ${album.name}`}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div class="no-cover"><span>{album.name}</span></div>
-                    )}
-                    <span class="rank">{album.position}</span>
-                  </div>
-                </a>
-              );
-            })}
+            {items.map((album, index) => (
+              <a
+                class="album-card"
+                href={link('album', album)}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-title={album.name}
+                data-artist={album.artist}
+                data-streams={fmt(album.streams)}
+                data-hours={albumHours(album.playedMs)}
+                data-year={album.releaseYear ?? ''}
+              >
+                <span class="cover">
+                  {album.imageUrl ? (
+                    <img src={album.imageUrl} alt={`Cover of ${album.name}`} loading={index < eager ? 'eager' : 'lazy'} />
+                  ) : (
+                    <span class="no-cover"><span>{album.name}</span></span>
+                  )}
+                </span>
+                <span class="album-rank">{album.position}</span>
+              </a>
+            ))}
           </div>
         ) : (
-          <p class="empty">Couldn't reach stats.fm right now — check back later.</p>
+          <p class="empty">{empty}</p>
         )}
-      </div>
-    </section>
+      </section>
+    ))}
 
-    <div id="album-tip" class="album-tip" role="tooltip">
-      <h3 id="tip-title">Title</h3>
-      <p id="tip-artist" class="tip-artist">Artist</p>
-      <div class="tip-divider"></div>
+    <div id="album-tip" class="tip" role="tooltip">
+      <p id="tip-title" class="tip-title">Title</p>
+      <p id="tip-artist" class="tip-sub">Artist</p>
       <p id="tip-meta" class="tip-meta"></p>
     </div>
   </main>
@@ -366,208 +216,100 @@ const albumHours = (ms: number) => {
 </script>
 
 <style>
-  .page { padding-top: clamp(2.5rem, 7vw, 5rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+  /* Rows, labels and the page head are shared styles in Layout.astro. */
 
-  .page-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
-  .eyebrow {
-    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
-    letter-spacing: .14em; color: var(--muted); margin: 0 0 1rem;
-  }
-  .page-head h1 {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.025em; line-height: 1.05; margin: 0;
-  }
-  .lede { margin: 1rem 0 0; max-width: 56ch; color: var(--muted); }
-
-  .kicker {
-    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
-    letter-spacing: .12em; color: var(--muted); margin: 0 0 1.5rem;
-  }
-
-  /* ---- stats ---- */
-  .stats-block { margin-bottom: 1.5rem; }
-  .stats-block:first-of-type { margin-top: clamp(2rem, 5vw, 3rem); }
-  .stats-kicker { margin-bottom: .75rem; }
+  /* ---- stats: big numbers, small captions, no boxes ---- */
   .stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem 2rem;
+    margin: 0; max-width: 42em;
   }
-  .stat {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: 1.2rem 1.4rem;
+  .stats div { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+  .stats dd {
+    margin: 0; font-size: 2.2rem; font-weight: 400; line-height: 1.1;
+    letter-spacing: -.02em; font-variant-numeric: tabular-nums;
   }
-  .stat-num { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; letter-spacing: -0.02em; }
-  .stat-label { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .4rem 0 0; }
+  .stats dt { color: var(--muted); font-size: .9rem; margin-top: .3rem; }
 
-  /* ---- shared card ---- */
-  .bento-card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    padding: clamp(1.4rem, 3vw, 1.9rem);
-    display: flex; flex-direction: column;
-  }
+  .when { display: block; }
+  .empty { color: var(--muted); margin: 0; }
 
-  /* ---- albums grid ---- */
-  .albums-section { margin-bottom: 1.5rem; }
-
-  .album-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
+  /* ---- covers: grayscale until hovered ---- */
+  .feature-cover, .cover {
+    display: block; position: relative; aspect-ratio: 1 / 1;
+    overflow: hidden; background: var(--line);
   }
-
-  .album-card {
-    display: block;
-    text-decoration: none;
-    outline: none;
-    position: relative;
+  .feature-cover img, .cover img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.05); transition: filter .4s ease;
   }
-  .album-card:hover, .album-card:focus-visible { z-index: 10; }
-
-  .cover-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    overflow: hidden;
-    background: var(--line);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-  }
-  .album-card:hover .cover-wrapper, .album-card:focus-visible .cover-wrapper {
-    transform: translateY(-6px) scale(1.04);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.22);
-  }
-
-  .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  .rank {
-    position: absolute; top: 8px; left: 8px;
-    min-width: 22px; height: 22px; padding: 0 6px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: var(--mono); font-size: .68rem; font-weight: 500;
-    color: #fff; background: rgba(0,0,0,0.62); border-radius: 6px;
-    backdrop-filter: blur(2px);
-  }
+  .feature:hover img, .feature:focus-visible img,
+  .album-card:hover img, .album-card:focus-visible img { filter: none; }
 
   .no-cover {
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
-    padding: 10px; text-align: center;
-    background: linear-gradient(135deg, var(--p-green-bg), var(--p-blue-bg));
+    padding: .5rem; text-align: center;
   }
   .no-cover span {
-    font-family: var(--serif); font-size: 0.72rem; font-weight: 600; color: var(--ink);
-    line-height: 1.2;
+    font-size: .72rem; line-height: 1.2; color: var(--ink);
     display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
 
-  .empty { color: var(--muted); margin: 0; }
-
-  /* ---- top 30 days bentos ---- */
-  .top30-section {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 1.5rem;
-  }
-  .top30-section > .bento-card { min-width: 0; }
-
-  /* highlighted #1 inside each 30-day bento */
+  /* ---- 30-day lists: the #1 with its cover, then a plain ranked list ---- */
+  .ranked { max-width: 42em; }
   .feature {
-    display: block;
-    text-decoration: none; color: inherit;
-    padding: 14px; margin-bottom: 14px;
-    border: 1px solid var(--line); border-radius: 10px;
-    background: color-mix(in srgb, var(--ink) 4%, transparent);
-    transition: transform .2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow .2s ease;
+    display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1.2rem;
+    align-items: end; text-decoration: none; margin-bottom: 1.2rem;
   }
-  .feature:hover, .feature:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.14);
-  }
-
-  .feature-cover {
-    position: relative;
-    width: min(140px, 48%); aspect-ratio: 1 / 1;
-    border-radius: 6px; overflow: hidden;
-    background: var(--line);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin-bottom: 12px;
-  }
-  .feature-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
   .feature-meta { display: flex; flex-direction: column; min-width: 0; }
-  /* the title/sub slots keep a fixed height so the three bentos stay row-aligned */
-  .feature-title {
-    font-family: var(--serif); font-size: 1.2rem; line-height: 1.3; height: 1.3em;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  .feature-rank { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .feature-title { font-size: clamp(1.2rem, 2.2vw, 1.5rem); line-height: 1.2; letter-spacing: -.01em; margin-top: .2rem; }
+  .feature:hover .feature-title { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1px; }
+  .feature-sub { color: var(--muted); font-size: .9rem; margin-top: .15rem; }
+
+  .rank-list { list-style: none; margin: 0; padding: 0; }
+  .rank-list li {
+    display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: .5rem;
+    padding: .25rem 0 .45rem;
   }
-  .feature:hover .feature-title, .feature:focus-visible .feature-title { text-decoration: underline; }
-  .feature-sub {
-    font-size: .85rem; line-height: 1.3; height: 1.3em; color: var(--muted); margin-top: 4px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  .rank-num { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
+  .rank-list a { text-decoration: none; min-width: 0; }
+  .rank-list a:hover .rank-title { text-decoration: underline; text-decoration-color: var(--accent); }
+  .rank-sub { color: var(--muted); font-size: .9rem; margin-left: .5rem; }
+
+  /* ---- cover grids ---- */
+  .album-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+    gap: 1rem .9rem;
   }
-  .feature-stat {
-    font-family: var(--mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .06em;
-    color: var(--muted); margin-top: 10px;
+  .album-card { display: block; text-decoration: none; }
+  .album-card:focus-visible { outline: none; }
+  .album-card:focus-visible .cover { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .album-rank {
+    display: block; margin-top: .3rem;
+    color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums;
   }
 
-  /* fills the card and spreads its rows, so all three lists end flush at the bottom */
-  .rank-list {
-    list-style: none; margin: 0; padding: 0;
-    display: flex; flex-direction: column; justify-content: space-between; flex: 1;
-  }
-
-  .rank-item {
-    display: flex; align-items: baseline; gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .rank-item:last-child { border-bottom: none; }
-
-  .rank-num {
-    font-family: var(--mono); font-size: .72rem; color: var(--muted);
-    min-width: 1.4em; flex-shrink: 0;
-  }
-
-  .rank-link {
-    display: flex; flex-direction: column; text-decoration: none; color: inherit;
-    min-width: 0;
-  }
-  .rank-link:hover .rank-title, .rank-link:focus-visible .rank-title { text-decoration: underline; }
-
-  .rank-title {
-    font-size: .9rem; font-weight: 500; line-height: 1.3;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .rank-sub {
-    font-family: var(--mono); font-size: .68rem; color: var(--muted); margin-top: 2px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
-  /* ---- tooltip ---- */
-  .album-tip {
+  /* ---- tooltip: flat paper slip with a hairline ---- */
+  .tip {
     position: absolute; z-index: 60; pointer-events: none;
-    background: var(--surface); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 25%, transparent);
-    padding: 1rem 1.2rem;
-    width: max-content; max-width: 300px;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line);
+    padding: .8rem 1rem; width: max-content; max-width: 18rem;
     opacity: 0; transition: opacity .15s ease;
   }
-  .album-tip h3 { font-family: var(--serif); font-size: 1.15rem; margin: 0; line-height: 1.2; }
-  .tip-artist { font-size: 0.85rem; color: var(--muted); margin: 4px 0 0; }
-  .tip-divider { height: 1px; background: var(--line); margin: 10px 0; }
-  .tip-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin: 0; line-height: 1.5; }
-
-  @media (max-width: 900px) {
-    .top30-section { grid-template-columns: 1fr; }
+  .tip p { margin: 0; }
+  .tip-title { font-size: 1rem; line-height: 1.25; }
+  .tip-sub { color: var(--muted); font-size: .85rem; margin-top: .2rem !important; }
+  .tip-meta {
+    color: var(--muted); font-size: .8rem;
+    border-top: 1px solid var(--line); margin-top: .6rem !important; padding-top: .5rem;
   }
 
-  @media (max-width: 680px) {
-    .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .stat { padding: 1rem; }
-    .stat-num { font-size: 1.5rem; }
-    .stat-label { font-size: 0.6rem; }
-    .album-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .when { display: inline; margin-left: .6rem; }
+    .feature { grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; }
+    .album-grid { grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr)); gap: .9rem .7rem; }
   }
 </style>

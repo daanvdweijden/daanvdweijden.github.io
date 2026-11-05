@@ -1,6 +1,6 @@
 ---
 // Average Mini solve time by weekday, Mon..Sun. Saturday (the notoriously hard
-// NYT Mini) is tinted so the spike stands out. Inline SVG, scales to container.
+// NYT Mini) gets the accent so the spike stands out. Inline SVG, scales to container.
 import { formatSeconds } from '../lib/puzzles';
 
 interface Props {
@@ -22,7 +22,7 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
     const isSat = d.day === 'Sat';
     return (
       <g>
-        <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h} rx="2"
+        <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h}
               class:list={['bar', { sat: isSat }]}
               data-tip={`${formatSeconds(d.avg)} avg on ${d.day}`}
               tabindex="0" />
@@ -36,9 +36,8 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
 <style>
   .wd { display: block; width: 100%; height: auto; }
   .bar { transition: fill .12s ease; cursor: default; outline: none; }
-  rect.bar { fill: var(--p-blue-fg); }
-  rect.bar.sat { fill: var(--p-red-fg); }
+  rect.bar { fill: color-mix(in srgb, var(--ink) 25%, var(--bg)); }
+  rect.bar.sat { fill: var(--accent); }
   rect.bar:hover, rect.bar:focus-visible { fill: var(--ink); }
-  .val { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
-  .axis { font-family: var(--mono); font-size: 8.5px; fill: var(--muted); }
+  .val, .axis { font-family: var(--font); font-size: 7.5px; fill: var(--muted); }
 </style>

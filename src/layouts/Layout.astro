@@ -106,7 +106,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-blue-bg: #dce6ee; --p-blue-fg: #2d5a7b;
         --p-green-bg: #e1e8dc;--p-green-fg: #3f6436;
         --p-yellow-bg:#f6ecc0;--p-yellow-fg:#7d6200;
-        --heat-1: #f8e9a6; --heat-2: #f3d968; --heat-3: #e6bd1d;
+        --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
       html[data-theme='dark'] {
         color-scheme: dark;
@@ -119,7 +119,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
         --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
         --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
-        --heat-1: #4a3f12; --heat-2: #8a7316; --heat-3: #c9a718;
       }
 
       * { box-sizing: border-box; }
@@ -162,6 +161,66 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
       }
       .theme-toggle:hover { color: var(--ink); }
+      /* Phones: name block on top, nav on one line under it. */
+      @media (max-width: 600px) {
+        header.top .inner { flex-direction: column; gap: .9rem; }
+        nav.links { justify-content: flex-start; gap: .2rem 1.1rem; }
+      }
+
+      /* ---- shared page grid ----
+         Every page is a stack of the same two-column rows: a narrow left
+         column for small labels (or the portrait), a wide right column where
+         all text starts on one vertical line. */
+      .row {
+        display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        column-gap: clamp(2rem, 6vw, 6rem);
+        padding: 1.6rem 0; border-top: 1px solid var(--line);
+      }
+      .row > * { min-width: 0; }
+      .label { font-size: .9rem; font-weight: 400; color: var(--muted); margin: .2rem 0 0; }
+      .label a { margin-left: .6rem; color: var(--muted); }
+      .label a:hover { color: var(--ink); }
+
+      /* Page header on inner pages: big title in the right column. */
+      .row.page-head { border-top: 0; padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3.5rem); }
+      .page-title, .lede {
+        font-size: clamp(1.75rem, 3.4vw, 2.85rem); font-weight: 400; line-height: 1.15;
+        letter-spacing: -.02em; margin: 0; max-width: 17em;
+      }
+      .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
+
+      .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
+      .body a, .prose a { text-decoration-color: var(--muted); }
+      .body a:hover, .prose a:hover { text-decoration-color: var(--accent); }
+
+      /* Dated list: a narrow meta column (date / year) and the item. */
+      .list { list-style: none; margin: 0; padding: 0; max-width: 42em; }
+      .list > li {
+        display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem;
+        padding: .2rem 0 .7rem;
+      }
+      .list .meta { color: var(--muted); font-size: .9rem; padding-top: .1rem; font-variant-numeric: tabular-nums; }
+      .list a { text-decoration: none; }
+      .list a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+      .list .sub { display: block; color: var(--muted); font-size: .9rem; margin-top: .1rem; }
+
+      /* Long-form text (news posts, abstracts). */
+      .prose { font-size: 1.08rem; line-height: 1.65; max-width: 38em; }
+      .prose > :first-child { margin-top: 0; }
+      .prose h2, .prose h3 { font-size: 1.15rem; font-weight: 500; margin: 2rem 0 .5rem; }
+      .prose img { margin: 1.5rem 0; }
+      .prose blockquote { margin: 1.2rem 0; padding-left: 1rem; border-left: 2px solid var(--accent); color: var(--muted); }
+      .prose code { font-size: .9em; }
+
+      /* Emphasised part of a news title (set per item in front matter). */
+      .hl { font-style: normal; }
+
+      .back { font-size: .9rem; color: var(--muted); text-decoration: none; }
+      .back:hover { color: var(--ink); }
+
+      @media (max-width: 760px) {
+        .row { grid-template-columns: 1fr; row-gap: .5rem; }
+      }
 
       /* ---- soft landing ----
          Anything marked [data-reveal] starts slightly transparent and a few
@@ -209,7 +268,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       <div class="wrap">
         <div class="row">
           <span>
-            © {year} {site.name} · <a href={`${base}puzzles/`}>puzzles</a>, <a href={`${base}books/`}>books</a>, <a href={`${base}music/`}>music</a>
+            © {year} {site.name}
           </span>
           <span class="flinks">
             {site.socials.map((s) => <a href={s.url}>{s.name}</a>)}

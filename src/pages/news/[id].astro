@@ -25,86 +25,35 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
 <Layout title={item.data.title} description={description} active="news">
-  <main class="wrap post">
-    <a class="back" href={`${import.meta.env.BASE_URL}news/`}>← News</a>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <p class="label"><a class="back" href={`${import.meta.env.BASE_URL}news/`}>← All news</a></p>
+      <div>
+        <p class="meta">
+          <time datetime={iso(item.data.date)}>{fmtDate(item.data.date)}</time>
+          {item.data.tag && <span class="tag"> · {item.data.tag}</span>}
+        </p>
+        <h1 class="page-title">{item.data.title}</h1>
+      </div>
+    </section>
 
-    <header class="head">
-      <p class="meta">
-        <time datetime={iso(item.data.date)}>{fmtDate(item.data.date)}</time>
-        {item.data.tag && <span class="badge">{item.data.tag}</span>}
-      </p>
-      <h1>{item.data.title}</h1>
-    </header>
-
-    <div class="prose"><Content /></div>
+    <section class="row" data-reveal>
+      <div></div>
+      <div class="prose"><Content /></div>
+    </section>
   </main>
 </Layout>
 
 <style>
-  /* Same 64rem `.wrap` as every other page, so the left edge lines up with the
-     nav mark. Only set vertical padding -- the `padding` shorthand would zero
-     out the horizontal padding `.wrap` provides. The reading column is capped
-     separately below, the way the index pages cap their lede. */
-  /* News carries the green accent used for the section everywhere else (nav
-     dot, eyebrow on /news/). Set once here; the badge, links and back-arrow
-     below all read from it. */
-  .post {
-    --accent: var(--p-green-fg);
-    --accent-bg: var(--p-green-bg);
-    padding-top: clamp(2rem, 6vw, 4rem); padding-bottom: clamp(3rem, 8vw, 6rem);
-  }
-
-  /* Hairlines run the full width (as the year rules do on /news/); the text
-     itself keeps a readable measure. */
-  .head h1, .prose { max-width: 48rem; }
-
-  .back {
-    display: inline-block; margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em;
-    color: var(--muted); text-decoration: none; transition: color .2s;
-  }
-  .back:hover { color: var(--accent); }
-
-  .head { border-bottom: 1px solid var(--line); padding-bottom: clamp(1.5rem, 4vw, 2.2rem); margin-bottom: clamp(1.8rem, 5vw, 2.6rem); }
-  .meta { display: flex; align-items: center; gap: .6rem; margin: 0 0 .9rem; }
-  .meta time {
-    font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted);
-  }
-  /* The tag is the one piece of colour in the header -- a tinted pill rather
-     than another grey hairline. */
-  .badge {
-    display: inline-block;
-    font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
-    color: var(--accent); background: var(--accent-bg);
-    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-    border-radius: 6px; padding: .2rem .5rem;
-  }
-  .head h1 {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.15; letter-spacing: -0.02em; margin: 0;
-  }
-
-  .prose { font-family: var(--serif); font-size: 1.12rem; line-height: 1.7; }
+  .label .back { margin-left: 0; }
+  .meta { color: var(--muted); font-size: .9rem; margin: 0 0 .8rem; }
+  .tag { text-transform: capitalize; }
   .prose :global(p) { margin: 0 0 1rem; }
   .prose :global(p:last-child) { margin-bottom: 0; }
-  .prose :global(a) {
-    color: var(--accent);
-    border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    text-decoration: none; transition: border-color .2s;
-  }
-  .prose :global(a:hover) { border-bottom-color: var(--accent); }
-
-  /* Images in the body (conference photos etc.). Wrap one in a <figure> with a
-     <figcaption> to get a caption; a bare ![alt](...) works too. */
-  .prose :global(img) {
-    display: block; max-width: 100%; height: auto;
-    border-radius: 8px; margin: 1.6rem 0;
-  }
+  /* Images in the body (conference photos etc.). Wrap one in a <figure> with
+     a <figcaption> to get a caption; a bare ![alt](...) works too. */
+  .prose :global(img) { display: block; max-width: 100%; height: auto; margin: 1.6rem 0; }
   .prose :global(figure) { margin: 1.6rem 0; }
   .prose :global(figure img) { margin: 0; }
-  .prose :global(figcaption) {
-    margin-top: .6rem; border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    padding-left: .6rem; font-family: var(--mono); font-size: .72rem;
-    line-height: 1.5; color: var(--muted);
-  }
+  .prose :global(figcaption) { margin-top: .5rem; font-size: .85rem; line-height: 1.5; color: var(--muted); }
 </style>
