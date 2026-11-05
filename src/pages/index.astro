@@ -87,11 +87,7 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
 
 <style>
   /* Rows, labels, lists and the lede are shared styles in Layout.astro. */
-  .row.hero {
-    border-top: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem); align-items: end;
-    /* Above the next row, so the block can lie over its hairline. */
-    position: relative; z-index: 1;
-  }
+  .row.hero { border-top: 0; padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem); align-items: end; }
 
   /* The portrait: a grayscale photo overlapping a flat colour block. The
      figure is its own isolated group and the photo multiplies onto it, so the
@@ -108,10 +104,6 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     mix-blend-mode: multiply;
     transition: filter .7s ease, transform .7s cubic-bezier(.22, .61, .36, 1);
   }
-  /* On wide screens the block breaks out of the portrait column (see the
-     min-width query below): it drops through the hero's bottom padding and
-     over the hairline into the first row below, the one place on the
-     homepage where something ignores the grid. */
   .portrait .block {
     position: absolute; left: 38%; right: 0; top: 38%; bottom: 0;
     background: var(--accent);
@@ -137,11 +129,6 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   @media (prefers-reduced-motion: reduce) {
     .portrait .block { transition: none; }
     .portrait img { transition: filter .7s ease; }
-  }
-
-  /* Two columns only: on phones the lede sits right below the portrait. */
-  @media (min-width: 761px) {
-    .portrait .block { right: -9%; bottom: calc(-1 * clamp(3rem, 7vw, 5rem) - 2.6rem); }
   }
 
   @media (max-width: 760px) {
