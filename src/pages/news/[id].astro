@@ -48,6 +48,75 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
     const mark = () => img.closest('figure')?.classList.toggle('tall', img.naturalHeight > img.naturalWidth);
     if (img.complete) mark(); else img.addEventListener('load', mark, { once: true });
   }
+
+  // Click a photo to zoom it: a clone of the image flies from its place in
+  // the text to a centred fit-to-screen size (FLIP: it is laid out at the
+  // final size and animated with transform only, so it stays on the GPU),
+  // while the page fades behind it. Click, Esc or scroll flies it back.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EASE = 'cubic-bezier(.22, .61, .36, 1)';
+  const MS = reduce ? 0 : 450;
+  let open = false;
+
+  const zoom = (img: HTMLImageElement) => {
+    if (open || !img.naturalWidth) return;
+    open = true;
+    const from = img.getBoundingClientRect();
+    const pad = Math.min(innerWidth, innerHeight) * 0.04;
+    const fit = Math.min((innerWidth - 2 * pad) / img.naturalWidth, (innerHeight - 2 * pad) / img.naturalHeight);
+    const w = img.naturalWidth * fit, h = img.naturalHeight * fit;
+    const left = (innerWidth - w) / 2, top = (innerHeight - h) / 2;
+    // Transform that makes the full-size clone look like the original.
+    const start = `translate(${from.left - left}px, ${from.top - top}px) scale(${from.width / w}, ${from.height / h})`;
+
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = 'position:fixed;inset:0;z-index:100;cursor:zoom-out;background:color-mix(in srgb, var(--bg) 94%, transparent)';
+    const big = document.createElement('img');
+    big.src = img.currentSrc || img.src;
+    big.alt = img.alt;
+    big.style.cssText = `position:fixed;z-index:101;left:${left}px;top:${top}px;width:${w}px;height:${h}px;` +
+      'transform-origin:0 0;cursor:zoom-out;will-change:transform;pointer-events:none';
+    document.body.append(backdrop, big);
+    img.style.visibility = 'hidden';
+
+    const opts = { duration: MS, easing: EASE, fill: 'both' as const };
+    backdrop.animate({ opacity: [0, 1] }, opts);
+    big.animate({ transform: [start, 'none'] }, opts);
+
+    let closing = false;
+    const close = () => {
+      if (closing) return;
+      closing = true;
+      removeEventListener('keydown', onKey);
+      removeEventListener('scroll', close);
+      removeEventListener('resize', close);
+      // The page may have scrolled; aim at where the photo is now.
+      const to = img.getBoundingClientRect();
+      const end = `translate(${to.left - left}px, ${to.top - top}px) scale(${to.width / w}, ${to.height / h})`;
+      const back = { duration: MS * 0.85, easing: EASE, fill: 'both' as const };
+      backdrop.animate({ opacity: [1, 0] }, back);
+      big.animate({ transform: ['none', end] }, back).finished.then(() => {
+        img.style.visibility = '';
+        backdrop.remove(); big.remove();
+        open = false;
+      });
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    backdrop.addEventListener('click', close);
+    addEventListener('keydown', onKey);
+    addEventListener('resize', close);
+    // Ignore the scroll events the zoom itself might cause for a moment.
+    setTimeout(() => { if (!closing) addEventListener('scroll', close, { passive: true }); }, MS + 50);
+  };
+
+  for (const img of document.querySelectorAll<HTMLImageElement>('.post figure img')) {
+    img.addEventListener('click', () => zoom(img));
+    img.tabIndex = 0;
+    img.setAttribute('role', 'button');
+    img.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoom(img); }
+    });
+  }
 </script>
 
 <style>
@@ -78,7 +147,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
     margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(2rem, 5vw, 3rem);
   }
   .prose :global(figure img) {
-    display: block; width: auto; height: auto; max-width: 100%; max-height: 85vh; margin: 0;
+    display: block; width: auto; height: auto; max-width: 100%; max-height: 85vh; margin: 0; cursor: zoom-in;
   }
   .prose :global(figcaption) {
     contain: inline-size; margin-top: .6rem;
