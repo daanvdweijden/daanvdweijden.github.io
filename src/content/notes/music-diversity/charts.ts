@@ -4,6 +4,7 @@
 // accent2 (rust). All labels lowercase, like the text.
 import * as Plot from '@observablehq/plot';
 import { feature } from 'topojson-client';
+import { geoBounds, geoCentroid, geoContains, geoEqualEarth } from 'd3-geo';
 import world from 'world-atlas/countries-110m.json';
 import { base, type ChartFn, type ChartContext } from '../../../lib/chart';
 
@@ -287,9 +288,39 @@ export const shapes = (feature(world as any, (world as any).objects.countries) a
   .filter((f: any) => f.properties.name !== 'Antarctica');
 export const MAP_STEPS = [2015, 2017, 2020, 2026];
 
-/** Countries heard so far (scrolly). Each step: everything up to that year;
- *  countries new since the previous step in rust. The last step is all teal.
- *  One mark for every country (grey until heard), so steps can morph colours. */
+/** The world as an even grid of dots, each dot belonging to the country it
+ *  falls in. Countries too small to catch a grid point get one dot at their
+ *  centre. Cached per size, since it only depends on the layout. */
+const dotCache = new Map<string, { x: number; y: number; id: string }[]>();
+function dotGrid(width: number, height: number, gap: number) {
+  const key = `${width}x${height}x${gap}`;
+  if (dotCache.has(key)) return dotCache.get(key)!;
+  const proj = geoEqualEarth().fitSize([width, height], { type: 'FeatureCollection', features: shapes } as any);
+  const boxes = shapes.map((f: any) => ({ f, b: geoBounds(f) }));
+  const inBox = (b: number[][], lon: number, lat: number) =>
+    lat >= b[0][1] && lat <= b[1][1] && (b[0][0] <= b[1][0] ? lon >= b[0][0] && lon <= b[1][0] : lon >= b[0][0] || lon <= b[1][0]);
+  const dots: { x: number; y: number; id: string }[] = [];
+  for (let y = gap / 2; y < height; y += gap) {
+    for (let x = gap / 2; x < width; x += gap) {
+      const ll = proj.invert!([x, y]);
+      if (!ll || !isFinite(ll[0])) continue;
+      const hit = boxes.find(({ f, b }: any) => inBox(b, ll[0], ll[1]) && geoContains(f, ll));
+      if (hit) dots.push({ x, y, id: hit.f.id });
+    }
+  }
+  const has = new Set(dots.map((d) => d.id));
+  for (const f of shapes) {
+    if (has.has(f.id)) continue;
+    const [x, y] = proj(geoCentroid(f))!;
+    dots.push({ x, y, id: f.id });
+  }
+  dotCache.set(key, dots);
+  return dots;
+}
+
+/** Countries heard so far (scrolly), as a dot map. Each step: everything up to
+ *  that year; countries new since the previous step in rust. The last step is
+ *  all teal. The dots stay the same between steps, so their colours morph. */
 export const worldMap: ChartFn<MapData> = (data, ctx) => {
   const step = Math.min(ctx.step, MAP_STEPS.length - 1);
   const final = step === MAP_STEPS.length - 1;
@@ -303,26 +334,30 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
     first.set(r.id, Math.min(first.get(r.id) ?? 9999, r.year));
   }
   const top = new Map(data.countries.map((c) => [c.id, c.top]));
+  const names = new Map(shapes.map((f: any) => [f.id, lc(f.properties.name)]));
   const max = Math.max(...cum.values());
   const isNew = (id: string) => step > 0 && !final && (first.get(id) ?? 0) > before;
-  const opacity = (p: number) => 0.25 + 0.75 * (Math.log10(p) / Math.log10(max));
-  const fill = (f: any) => (!cum.has(f.id) ? ctx.colors.line : isNew(f.id) ? ctx.colors.accent2 : ctx.colors.accent);
-  const fillOpacity = (f: any) => (!cum.has(f.id) || isNew(f.id) ? 1 : opacity(cum.get(f.id)!));
+  const mapH = Math.round(ctx.width * 0.48);
+  const gap = Math.max(4, ctx.width / 140);
+  const dots = dotGrid(ctx.width, mapH, gap);
   return Plot.plot({
-    ...base(ctx, Math.round(ctx.width * 0.52)),
-    marginLeft: 0,
-    projection: { type: 'equal-earth', domain: { type: 'FeatureCollection', features: shapes } },
+    ...base(ctx, mapH + 30),
+    marginTop: 0, marginRight: 0, marginLeft: 0, marginBottom: 30,
+    x: { axis: null, domain: [0, ctx.width] },
+    y: { axis: null, domain: [mapH, 0] },
     marks: [
-      Plot.geo(shapes, { fill, fillOpacity, stroke: ctx.colors.bg, strokeWidth: 0.5 }),
-      Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: -4, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
-      Plot.tip(shapes, Plot.pointer(Plot.geoCentroid({
-        title: (f: any) => {
-          const p = cum.get(f.id);
-          const name = lc(f.properties.name);
-          return p ? `${name}: ${p.toLocaleString()} plays by ${upto}, first in ${first.get(f.id)}\n${(top.get(f.id) ?? []).map(lc).join(', ')}` : `${name}: nothing yet`;
+      Plot.dot(dots, {
+        x: 'x', y: 'y', r: gap * 0.36, stroke: null,
+        fill: (d: any) => (!cum.has(d.id) ? ctx.colors.line : isNew(d.id) ? ctx.colors.accent2 : ctx.colors.accent),
+        fillOpacity: (d: any) => (!cum.has(d.id) || isNew(d.id) ? 1 : 0.3 + 0.7 * (Math.log10(cum.get(d.id)!) / Math.log10(max))),
+      }),
+      Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: 22, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
+      Plot.tip(dots, Plot.pointer({ x: 'x', y: 'y', maxRadius: gap * 1.5,
+        title: (d: any) => {
+          const p = cum.get(d.id);
+          return p ? `${names.get(d.id)}: ${p.toLocaleString()} plays by ${upto}, first in ${first.get(d.id)}\n${(top.get(d.id) ?? []).map(lc).join(', ')}` : `${names.get(d.id)}: nothing yet`;
         },
-      }))),
+      })),
     ],
   });
 };
-
