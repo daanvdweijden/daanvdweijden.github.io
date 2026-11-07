@@ -1,7 +1,7 @@
 // Charts for "how diverse is my spotify?". Data comes from the workshop
 // (~/Documents/Personal/blog/music_diversity/build_post_data.py).
-// House style: everything grey, the point in accent (teal), a contrast in
-// accent2 (rust). All labels lowercase, like the text.
+// House style: everything grey, the point in accent (terracotta), a contrast in
+// accent2 (sage). All labels lowercase, like the text.
 import * as Plot from '@observablehq/plot';
 import { feature } from 'topojson-client';
 import { geoBounds, geoCentroid, geoContains, geoEqualEarth } from 'd3-geo';
@@ -30,7 +30,7 @@ function mids<T extends Record<string, any>>(rows: T[], key: string, order: stri
 // ---------------------------------------------------------------------------
 type Source = { quarter: string; total: number; album: number; playlist: number; liked: number; artist: number; unknown: number };
 
-/** Where plays started, per quarter. Albums teal, playlists rust. */
+/** Where plays started, per quarter. Albums terracotta, playlists sage. */
 export const sources: ChartFn<Source[]> = (data, ctx) => {
   const keys = ['album', 'playlist', 'liked songs', 'other'];
   const fill = [ctx.colors.accent, ctx.colors.accent2, ctx.colors.muted, ctx.colors.faint];
@@ -66,7 +66,7 @@ export const sources: ChartFn<Source[]> = (data, ctx) => {
 // ---------------------------------------------------------------------------
 type PlaylistGroup = { group: string; plays: number; n: number; spotify: boolean; top: string[] };
 
-/** Playlist plays since April 2024, by kind of playlist. Made by Spotify in rust. */
+/** Playlist plays since April 2024, by kind of playlist. Made by Spotify in sage. */
 export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
   const n = narrow(ctx);
   const max = Math.max(...data.map((d) => d.plays));
@@ -160,7 +160,7 @@ export const genres: ChartFn<Genre[]> = (data, ctx) => {
 // ---------------------------------------------------------------------------
 type Who = { year: number; who: string; share: number };
 
-/** Who made the music, per year: the full split. Women in teal, mixed groups rust, men grey. */
+/** Who made the music, per year: the full split. Women in terracotta, mixed groups sage, men grey. */
 export const who: ChartFn<Who[]> = (data, ctx) => {
   const order = ['solo woman', 'women-only group', 'solo non-binary', 'mixed group', 'men-only group', 'solo man'];
   const fill: Record<string, string> = {
@@ -192,7 +192,7 @@ type Top = { rank: number; artist: string; plays: number; who: string };
 const CLASSICAL = new Set(['Frédéric Chopin', 'Brigitte Engerer', 'Giuseppe Verdi', 'Plácido Domingo', 'Samuel Ramey',
   'Metropolitan Opera Orchestra', 'James Levine', 'Aprile Millo', 'Dolora Zajick', 'James Morris']);
 
-/** All-time top 50. Women and mixed groups in teal, classical credits faded. */
+/** All-time top 50. Women and mixed groups in terracotta, classical credits faded. */
 export const topArtists: ChartFn<Top[]> = (data, ctx) => {
   const label = (d: Top) => `${d.rank}. ${lc(d.artist)}`;
   const isWoman = (d: Top) => !CLASSICAL.has(d.artist) && /woman|mixed/.test(d.who);
@@ -327,8 +327,8 @@ function dotGrid(width: number, height: number, gap: number) {
 }
 
 /** Countries heard so far (scrolly), as a dot map. Each step: everything up to
- *  that year; countries new since the previous step in rust. The last step is
- *  all teal. The dots stay the same between steps, so their colours morph. */
+ *  that year; countries new since the previous step in sage. The last step is
+ *  all terracotta. The dots stay the same between steps, so their colours morph. */
 export const worldMap: ChartFn<MapData> = (data, ctx) => {
   const step = Math.min(ctx.step, MAP_STEPS.length - 1);
   const final = step === MAP_STEPS.length - 1;

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- The homepage portrait in miniature: a gray square (the photo) offset
-       over a teal block; the overlap is the two multiplied. -->
+       over a terracotta block; the overlap is the two multiplied. -->
   <rect x="2" y="2" width="18" height="18" fill="#8a8984"/>
-  <rect x="12" y="12" width="18" height="18" fill="#1c7466"/>
-  <rect x="12" y="12" width="8" height="8" fill="#0f3e35"/>
+  <rect x="12" y="12" width="18" height="18" fill="#a3472b"/>
+  <rect x="12" y="12" width="8" height="8" fill="#582616"/>
 </svg>

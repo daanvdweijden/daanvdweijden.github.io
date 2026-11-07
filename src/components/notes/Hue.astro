@@ -1,13 +1,17 @@
 ---
-// <Hue>teal</Hue> / <Hue>rust</Hue>: a colour word in the colour it names, so
-// "teal marks…" in the text matches the chart. Figure subtitles and captions
-// do this by themselves. The .hue styles live in Layout.astro, shared by both.
+// <Hue>terracotta</Hue> / <Hue>sage</Hue>: a colour word in the colour it
+// names, so "terracotta marks…" in the text matches the chart. Figure
+// subtitles and captions do this by themselves. The .hue styles live in
+// Layout.astro, shared by both. "teal" and "rust" are the old names for the
+// same two colours and still work.
+import { hueClass } from '../../lib/hue';
+
 interface Props {
   /** Which colour; defaults to the word itself. */
-  c?: 'teal' | 'rust';
+  c?: 'terracotta' | 'sage' | 'teal' | 'rust';
 }
 const text = (await Astro.slots.render('default')).trim();
-const c = Astro.props.c ?? (text.toLowerCase().startsWith('rust') ? 'rust' : 'teal');
+const c = hueClass(Astro.props.c ?? text);
 ---
 
 <span class:list={['hue', c]}><Fragment set:html={text} /></span>
