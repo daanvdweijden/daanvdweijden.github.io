@@ -26,6 +26,7 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
 <script>
   import { readTheme, type ChartFn } from '../../lib/chart';
   import { scrubber, type Scrub } from '../../lib/morph';
+  import { reveal } from '../../lib/reveal';
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -141,7 +142,12 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
       };
       try {
         if (scrolly) await sync();
-        else canvas.replaceChildren(await render(0));
+        else {
+          const node = await render(0);
+          canvas.replaceChildren(node);
+          // Grow in with the scroll position, like the scrollies.
+          if (!reduceMotion.matches) reveal(node);
+        }
         el.style.minHeight = '';
       } catch (err) {
         fail(`"${el.dataset.chart}" threw: ${(err as Error).message}`);

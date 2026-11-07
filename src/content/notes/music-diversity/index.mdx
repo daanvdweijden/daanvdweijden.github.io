@@ -8,7 +8,6 @@ draft: false
 import Figure from '../../../components/notes/Figure.astro';
 import Chart from '../../../components/notes/Chart.astro';
 import Aside from '../../../components/notes/Aside.astro';
-import Mark from '../../../components/notes/Mark.astro';
 import Scrolly from '../../../components/notes/Scrolly.astro';
 import Step from '../../../components/notes/Step.astro';
 import Pic from '../../../components/notes/Pic.astro';
@@ -70,7 +69,7 @@ seeing Tunes still that high up after 2024 made me want to see how my genres hav
 
 <Scrolly>
   <Chart slot="graphic" name="genres" data={genres} height={340} alt="stacked area of genre shares per year: hip-hop shrinks from about 60% in 2015 to about 25% from 2020 on, while indie and the other genres grow." />
-  <Step>this is every year since 2015, split by genre. in the beginning, hip-hop was <Mark>about 60% of everything i played</Mark>.</Step>
+  <Step>this is every year since 2015, split by genre. in the beginning, hip-hop was about 60% of everything i played.</Step>
   <Step>it held at around 45% until 2019. then in 2020 it dropped to about a quarter, and it has stayed there ever since.</Step>
   <Step>a lot of that gap was filled by indie: from barely anything to between 15 and 28% of my plays.</Step>
   <Step>and the rest spread out over everything else: electronic, R&B, rock, jazz, a bit of classical. no single genre runs the show anymore.</Step>
@@ -108,7 +107,7 @@ my all-time favourite artists don't follow the same trend, though. in the overal
   <Chart name="topArtists" data={top} height={880} alt="bar chart of the top 50 artists by plays, led by future with 3,731. the first bars in terracotta are crumb at #38 and khruangbin at #39." />
 </Figure>
 
-what i couldn't see was how long these artists stayed with me through the years. i know <Pic id="future">future</Pic> keeps popping up in wrapped every year, but lots of artists seem to come and go.
+what i couldn't see was how long these artists stayed with me through the years. i know <Pic id="future">future</Pic> keeps popping up in wrapped every year, but lots of artists seem to come and go. how many actually reappear, and who simply fades away, never to be listened to again?
 
 <Scrolly>
   <Chart slot="graphic" name="favourites" data={{ lifelines, favourites }} height={600} alt="first: monthly plays for all 66 artists that were ever in a yearly top 10. then the six that dropped out, then only the 19 that made the top 10 more than once, and finally a simple grid of those 19 by year." />
