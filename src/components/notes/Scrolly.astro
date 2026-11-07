@@ -7,53 +7,103 @@
 //   <Step>Now the terracotta line…</Step>
 // </Scrolly>
 //
-// The active step (0, 1, 2…) is passed to every chart inside as `ctx.step`, so
-// one chart function can show a different state per step. Use this for the one
-// showpiece of a note, not for every chart.
+// Each chart inside gets the step it is drawn for as `ctx.step` (0, 1, 2…), so
+// one chart function can show a different state per step. Between two steps
+// the chart is morphed from one state to the next, following the scroll
+// position pixel by pixel (see lib/morph.ts). Use this for the one showpiece
+// of a note, not for every chart.
 ---
 
-<div class="scrolly wide" data-step="0">
+<div class="scrolly wide" data-step="0" data-pos="0">
   <div class="scrolly-graphic"><slot name="graphic" /></div>
   <div class="scrolly-steps"><slot /></div>
 </div>
 
 <script>
-  // A step is active once its top passes the trigger line. On wide screens
-  // that line is the middle of the screen; on phones the chart sits on top,
-  // so the line is in the free space below it, high enough that the whole
-  // card is readable when its step comes on. Checked on every
-  // scroll, so a fast scroll can never skip a step or leave the wrong one on.
+  // Scroll-linked progress (as in Google's scrollytell / Scrollama's
+  // `progress`): rather than firing once when a step crosses a trigger line,
+  // every scroll frame turns the steps' on-screen coordinates into one
+  // continuous position: 0 = step 0, 1.5 = halfway from step 1 to step 2.
+  //
+  // The move into step j happens while its top travels through a band just
+  // below the trigger line: from `line + band` (t = 0) up to `line` (t = 1).
+  // On wide screens the line is the middle of the screen; on phones the chart
+  // sits on top, so the line is in the free space below it, high enough that
+  // the whole card is readable when its step is reached. Computed from the
+  // coordinates on every frame, so a fast scroll can never skip a step and
+  // scrolling back runs the morph backwards.
   const phone = matchMedia('(max-width: 760px)');
   const roots = [...document.querySelectorAll<HTMLElement>('.scrolly')];
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
   const update = () => {
     for (const root of roots) {
       const steps = [...root.querySelectorAll<HTMLElement>('.scrolly-step')];
       const graphic = root.querySelector<HTMLElement>('.scrolly-graphic')!;
       const top = phone.matches ? Math.max(0, graphic.getBoundingClientRect().bottom) : 0;
-      let i = 0;
+      // How many pixels of scrolling one morph takes.
+      const band = phone.matches ? Math.max(120, (innerHeight - top) * 0.45) : innerHeight * 0.4;
+      let pos = 0;
       steps.forEach((s, j) => {
+        if (j === 0) return;
         const r = s.getBoundingClientRect();
-        // Phones: switch once the whole card is in view (or halfway up the free space).
+        // Phones: done once the whole card is in view (or halfway up the free space).
         const line = phone.matches
           ? Math.max(top + 8, Math.min(top + (innerHeight - top) * 0.6, innerHeight - r.height - 16))
           : innerHeight / 2;
-        if (r.top < line) i = j;
+        pos += clamp((line + band - r.top) / band);
       });
-      steps.forEach((s, j) => s.classList.toggle('is-active', j === i));
-      if (root.dataset.step === String(i)) continue;
-      root.dataset.step = String(i);
-      root.dispatchEvent(new CustomEvent('stepchange', { detail: i }));
+      target.set(root, pos);
+      const step = Math.round(pos);
+      steps.forEach((s, j) => s.classList.toggle('is-active', j === step));
+      root.dataset.steps = String(steps.length);
+      root.dataset.step = String(step);
     }
   };
-  let queued = false;
+
+  // The chart follows the scroll position through a short ease instead of
+  // jumping to it. Scroll events arrive unevenly (wheel notches, trackpad
+  // momentum, Safari's irregular timing), so binding the morph straight to
+  // them makes it move in little steps; easing towards the target on every
+  // frame turns that into one smooth motion. TAU is how far behind the
+  // scroll the chart may trail (ms); the loop stops once it has caught up.
+  const TAU = 90;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const target = new Map<HTMLElement, number>();
+  const shown = new Map<HTMLElement, number>();
+  const emit = (root: HTMLElement, pos: number) => {
+    shown.set(root, pos);
+    root.dataset.pos = pos.toFixed(4);
+    root.dispatchEvent(new CustomEvent('scrollprogress', { detail: pos }));
+  };
+  let looping = false;
+  let last = 0;
+  const frame = (now: number) => {
+    const dt = Math.min(64, now - last);
+    last = now;
+    const k = 1 - Math.exp(-dt / TAU);
+    let moving = false;
+    for (const root of roots) {
+      const to = target.get(root) ?? 0, from = shown.get(root) ?? to;
+      if (from === to) continue;
+      const next = Math.abs(to - from) < 0.002 || reduceMotion.matches ? to : from + (to - from) * k;
+      emit(root, next);
+      if (next !== to) moving = true;
+    }
+    looping = moving;
+    if (moving) requestAnimationFrame(frame);
+  };
   const onScroll = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => { queued = false; update(); });
+    update();
+    if (looping) return;
+    looping = true;
+    last = performance.now();
+    requestAnimationFrame(frame);
   };
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
+  // First paint (also when reloading halfway down the page): no easing.
   update();
+  for (const root of roots) emit(root, target.get(root) ?? 0);
 </script>
 
 <style>

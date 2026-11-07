@@ -25,7 +25,7 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
 
 <script>
   import { readTheme, type ChartFn } from '../../lib/chart';
-  import { morph } from '../../lib/morph';
+  import { scrubber, type Scrub } from '../../lib/morph';
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -59,21 +59,71 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     let fn: ChartFn | undefined;
     let lastWidth = 0;
     let pending = 0;
-    // Set by a scrolly step change: the next draw morphs from the old chart.
-    let animate = false;
     let near = false;
     // Needs a (re)draw: never drawn yet, or something changed while away.
     let stale = true;
+    // Inside a <Scrolly>: the transition between step k and k+1 that is
+    // currently set up, and seeked to the scroll position on every frame.
+    let seg: { k: number; scrub: Scrub } | null = null;
+    let building = false;
+    // Bumped on every redraw, so a transition rendered before it is thrown away.
+    let gen = 0;
+    let render: (step: number) => Promise<Element> = async () => { throw new Error('not loaded'); };
 
     const fail = (msg: string) => {
       canvas.innerHTML = `<p class="chart-fallback">${msg}</p>`;
       console.error(`[chart] ${msg}`);
     };
 
+    /** Scrolly position (0 = step 0, 1.5 = halfway to step 2), clamped to the steps. */
+    const position = () => {
+      const n = Number(scrolly?.dataset.steps ?? 1);
+      let p = Number(scrolly?.dataset.pos ?? 0);
+      // Reduced motion: jump between states instead of morphing.
+      if (reduceMotion.matches) p = Math.round(p);
+      return { n, p: Math.min(Math.max(p, 0), Math.max(0, n - 1)) };
+    };
+
+    /** Show the scrolly chart at the current scroll position. */
+    const sync = async (): Promise<void> => {
+      if (!near || stale || building) return;
+      const { n, p } = position();
+      if (n < 2) {
+        canvas.replaceChildren(await render(0));
+        return;
+      }
+      const k = Math.min(Math.floor(p), n - 2);
+      if (seg?.k !== k) {
+        // Entering another pair of steps. Each step is rendered once and
+        // reused (a transition leaves its renders as it found them).
+        seg?.scrub.reset();
+        seg = null;
+        building = true;
+        const g = gen;
+        try {
+          const a = await render(k);
+          const b = await render(k + 1);
+          if (g === gen) {
+            seg = { k, scrub: scrubber(a, b) };
+            // Render the neighbouring steps while the reader is reading, so
+            // the next transition doesn't have to wait for them.
+            for (const s of [k + 2, k - 1]) if (s >= 0 && s < n) idle(() => { if (g === gen) render(s); });
+          }
+        } finally {
+          building = false;
+        }
+        return sync(); // the position may have moved on while rendering
+      }
+      seg.scrub.show(canvas, p - k);
+    };
+
     const draw = async () => {
-      // Off screen: no morph to show, just redraw in the latest state on return.
-      if (!near) { stale = true; animate = false; return; }
+      // Off screen: redraw in the latest state on return.
+      if (!near) { stale = true; return; }
       stale = false;
+      seg?.scrub.reset();
+      seg = null;
+      gen++;
       lastWidth = canvas.clientWidth;
       if (!fn) {
         const load = modules[key];
@@ -82,19 +132,16 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
         fn = mod[el.dataset.chart!];
         if (typeof fn !== 'function') return fail(`charts.ts has no export "${el.dataset.chart}".`);
       }
-      const ctx = {
-        ...readTheme(el),
-        width: lastWidth,
-        step: Number(scrolly?.dataset.step ?? 0),
-        el,
+      const chart = fn;
+      const ctx = { ...readTheme(el), width: lastWidth, el };
+      const cache = new Map<number, Promise<Element>>();
+      render = (step) => {
+        if (!cache.has(step)) cache.set(step, Promise.resolve().then(() => chart(data, { ...ctx, step })));
+        return cache.get(step)!;
       };
-      const smooth = animate && !reduceMotion.matches;
-      animate = false;
       try {
-        const node = await fn(data, ctx);
-        const prev = canvas.firstElementChild;
-        canvas.replaceChildren(node);
-        if (smooth && prev) morph(prev, node, canvas);
+        if (scrolly) await sync();
+        else canvas.replaceChildren(await render(0));
         el.style.minHeight = '';
       } catch (err) {
         fail(`"${el.dataset.chart}" threw: ${(err as Error).message}`);
@@ -109,6 +156,7 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     onNear.set(el, (isNear) => {
       near = isNear;
       if (near && stale) draw();
+      else if (near) sync().catch((err) => fail(`"${el.dataset.chart}" threw: ${err.message}`));
     });
     io.observe(el);
     // Redraw when the width changes (not on every height change we cause).
@@ -116,8 +164,10 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     // Redraw when the colour scheme changes (footer switch or system).
     new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
-    // Redraw when a surrounding <Scrolly> moves to another step.
-    scrolly?.addEventListener('stepchange', () => { animate = true; redraw(); });
+    // Follow the scroll position of a surrounding <Scrolly>, every frame.
+    scrolly?.addEventListener('scrollprogress', () => {
+      sync().catch((err) => fail(`"${el.dataset.chart}" threw: ${err.message}`));
+    });
   }
 </script>
 
