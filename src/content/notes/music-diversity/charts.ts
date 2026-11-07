@@ -217,10 +217,13 @@ type FavData = { lifelines: { months: string[]; artists: Life[] }; favourites: F
  *  2: only the ones that came back · 3: the simple grid. */
 export const favourites: ChartFn<FavData> = (data, ctx) => {
   const n = narrow(ctx);
-  // On phones the step cards scroll over the sticky chart, so leave room below it.
-  const height = n
+  // Height follows the page layout, not the chart width: on phones the chart
+  // sits on top with the step cards below it, so it gets about half the
+  // screen; side by side it gets what fits under the sticky offset (12vh).
+  const phone = matchMedia('(max-width: 760px)').matches;
+  const height = phone
     ? Math.max(320, Math.round(window.innerHeight * 0.55))
-    : Math.min(640, Math.max(420, Math.round(window.innerHeight * 0.78)));
+    : Math.min(680, Math.max(420, Math.round(window.innerHeight * 0.84)));
   if (ctx.step >= 3) return favGrid(data.favourites, ctx, height);
 
   const repeat = new Set(data.favourites.map((a) => a.artist));
@@ -237,7 +240,8 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
     });
   });
   const dropped = ctx.step === 1;
-  const thin = (height - 22) / artists.length < 8;
+  const rowH = (height - 22) / artists.length;
+  const thin = rowH < 6.5;
   const grey = (d: any) => (dropped && d.gone ? ctx.colors.accent2 : dropped ? ctx.colors.line : ctx.colors.faint);
   return Plot.plot({
     ...base(ctx, height),
@@ -251,7 +255,7 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
       // Rows thinner than ~8px (66 artists on a phone): only name the dropouts.
       Plot.text(thin ? artists.filter((a) => dropped && a.last12 === 0) : artists, {
         x: months[0], y: (a: Life) => artists.indexOf(a) + 0.55, text: (a: Life) => lc(a.artist), textAnchor: 'end', dx: -6,
-        fontSize: artists.length > 30 ? 9 : 12,
+        fontSize: Math.max(7.5, Math.min(12, rowH * 1.15)),
         fill: (a: Life) => (dropped ? (a.last12 === 0 ? ctx.colors.ink : ctx.colors.line) : ctx.colors.muted),
         fontWeight: (a: Life) => (dropped && a.last12 === 0 ? 600 : 400),
       }),
@@ -266,10 +270,11 @@ function favGrid(data: Fav[], ctx: ChartContext, height: number) {
   const n = narrow(ctx);
   return Plot.plot({
     ...base(ctx, Math.min(height, data.length * 26 + 34)),
-    marginLeft: n ? 112 : 150,
+    marginLeft: n ? 132 : 150,
     marginTop: 26,
     padding: 0.1,
-    x: { label: null, type: 'band', axis: 'top', tickSize: 0, tickFormat: (y: number) => (n ? `’${String(y).slice(2)}` : String(y)) },
+    // Phones: every other year, or the labels run into each other.
+    x: { label: null, type: 'band', axis: 'top', tickSize: 0, tickFormat: (y: number) => (n ? (y % 2 ? '' : `’${String(y).slice(2)}`) : String(y)) },
     y: { label: null, domain: data.map((a) => a.artist), tickSize: 0, tickFormat: lc },
     marks: [
       Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.line, rx: 2 }),

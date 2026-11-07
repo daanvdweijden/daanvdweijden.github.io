@@ -18,21 +18,42 @@
 </div>
 
 <script>
-  for (const root of document.querySelectorAll<HTMLElement>('.scrolly')) {
-    const steps = [...root.querySelectorAll<HTMLElement>('.scrolly-step')];
-    const activate = (i: number) => {
+  // A step is active once its top passes the trigger line. On wide screens
+  // that line is the middle of the screen; on phones the chart sits on top,
+  // so the line is in the free space below it, high enough that the whole
+  // card is readable when its step comes on. Checked on every
+  // scroll, so a fast scroll can never skip a step or leave the wrong one on.
+  const phone = matchMedia('(max-width: 760px)');
+  const roots = [...document.querySelectorAll<HTMLElement>('.scrolly')];
+  const update = () => {
+    for (const root of roots) {
+      const steps = [...root.querySelectorAll<HTMLElement>('.scrolly-step')];
+      const graphic = root.querySelector<HTMLElement>('.scrolly-graphic')!;
+      const top = phone.matches ? Math.max(0, graphic.getBoundingClientRect().bottom) : 0;
+      let i = 0;
+      steps.forEach((s, j) => {
+        const r = s.getBoundingClientRect();
+        // Phones: switch once the whole card is in view (or halfway up the free space).
+        const line = phone.matches
+          ? Math.max(top + 8, Math.min(top + (innerHeight - top) * 0.6, innerHeight - r.height - 16))
+          : innerHeight / 2;
+        if (r.top < line) i = j;
+      });
       steps.forEach((s, j) => s.classList.toggle('is-active', j === i));
-      if (root.dataset.step === String(i)) return;
+      if (root.dataset.step === String(i)) continue;
       root.dataset.step = String(i);
       root.dispatchEvent(new CustomEvent('stepchange', { detail: i }));
-    };
-    // A step becomes active when it crosses the middle of the screen.
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) activate(steps.indexOf(e.target as HTMLElement));
-    }, { rootMargin: '-50% 0px -50% 0px' });
-    steps.forEach((s) => io.observe(s));
-    activate(0);
-  }
+    }
+  };
+  let queued = false;
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; update(); });
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  update();
 </script>
 
 <style>
@@ -52,10 +73,15 @@
   .scrolly-steps { grid-column: 1; grid-row: 1; padding: 30vh 0 40vh; }
   .scrolly-steps :global(.scrolly-step:last-child) { margin-bottom: 0; }
 
-  /* Phones: graphic sticks to the top, steps scroll over it as cards. */
+  /* Phones: the graphic sticks to the top and the text cards scroll up from
+     below and slide under it, so text never covers the chart. */
   @media (max-width: 760px) {
     .scrolly { display: block; }
-    .scrolly-graphic { top: 0; min-height: 0; padding: 1rem 0; background: var(--bg); z-index: 1; }
-    .scrolly-steps { position: relative; z-index: 2; padding: 50vh 0 30vh; }
+    .scrolly-graphic {
+      top: 0; min-height: 0; padding: .75rem 0;
+      background: var(--bg); z-index: 2;
+      box-shadow: 0 10px 12px -10px color-mix(in srgb, var(--ink) 18%, transparent);
+    }
+    .scrolly-steps { position: relative; z-index: 1; padding: 35vh 0 45vh; }
   }
 </style>
