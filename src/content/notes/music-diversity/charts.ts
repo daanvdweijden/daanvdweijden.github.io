@@ -10,7 +10,7 @@ import { base, type ChartFn, type ChartContext } from '../../../lib/chart';
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const narrow = (ctx: ChartContext) => ctx.width < 560;
 const lc = (s: string) => s.toLowerCase();
-const yearAxis = (ctx: ChartContext) => ({ label: null, tickFormat: 'd', ticks: narrow(ctx) ? 4 : 6 });
+const yearAxis = (ctx: ChartContext) => ({ label: null, tickFormat: 'd', ticks: narrow(ctx) ? [2016, 2020, 2024] : 6 });
 const pctAxis = { label: null, percent: true, ticks: 5, tickFormat: (v: number) => `${v}%` };
 
 /** Middle of each stacked layer at one x, for labels (stacking a filtered subset
@@ -85,14 +85,20 @@ export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
 };
 
 // ---------------------------------------------------------------------------
-type ListRow = { year: number; list: 'tunes' | 'old' | 'liked' | 'none'; share: number };
+type ListRow = { year: number; list: 'tunes' | 'old' | 'liked' | 'album' | 'none'; share: number };
 
-/** Every play, per year: in tunes, in my other old playlists, in my likes, or none of them. */
+/** Every play, per year: in tunes, in my other old playlists, in my likes; the rest split into
+ *  full albums (3+ songs in a row from one album) and everything else. */
 export const lists: ChartFn<ListRow[]> = (data, ctx) => {
-  const order = ['tunes', 'old', 'liked', 'none'];
-  const name: Record<string, string> = { tunes: 'tunes', old: 'my other old playlists', liked: 'liked songs', none: 'in none of my lists' };
-  const fill: Record<string, string> = { tunes: ctx.colors.accent, old: ctx.colors.muted, liked: ctx.colors.accent2, none: ctx.colors.faint };
-  const labelAt: Record<string, number> = { tunes: 2016, old: 2020, liked: 2024, none: 2022 };
+  const order = ['tunes', 'old', 'liked', 'album', 'none'];
+  const n = narrow(ctx);
+  const name: Record<string, string> = n
+    ? { tunes: 'tunes', old: 'old playlists', liked: 'liked', album: 'full albums', none: 'everything else' }
+    : { tunes: 'tunes', old: 'my other old playlists', liked: 'liked songs', album: 'full albums', none: 'everything else' };
+  const fill: Record<string, string> = { tunes: ctx.colors.accent, old: ctx.colors.muted, liked: ctx.colors.accent2, album: ctx.colors.extra[0], none: ctx.colors.faint };
+  const labelAt: Record<string, number> = n
+    ? { tunes: 2017, old: 2018, liked: 2023, album: 2021, none: 2023 }
+    : { tunes: 2016, old: 2019, liked: 2024, album: 2021, none: 2023 };
   const stack = { x: 'year', y: 'share', z: 'list', order };
   return Plot.plot({
     ...base(ctx, 320),

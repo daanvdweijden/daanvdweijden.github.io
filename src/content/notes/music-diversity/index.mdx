@@ -1,13 +1,12 @@
 ---
 title: "how diverse is my spotify?"
-dek: "ten years of listening history, 119,199 plays, and the question wrapped never answers: has my taste actually changed?"
 date: 2026-11-07
 tags: [music, data]
 draft: true
 ---
 
 {/* EDIT (claude): text pass 3. everything lowercase, picture chips on artist/album names, scrolly for genres, favourites and the map.
-    new text written by me: the scrolly steps, the playlist paragraph, the who-dropped-out paragraph. title and dek are still placeholders.
+    new text written by me: the scrolly steps, the playlist paragraph, the who-dropped-out paragraph. the title is still a placeholder; the dek is removed.
     one fact fixed: dutch music didn't peak in 2024, it's highest now (3–5% in 2020–24, 15% in 2026), see the "where am i" section. */}
 
 import Figure from '../../../components/notes/Figure.astro';
@@ -67,15 +66,15 @@ unfortunately, that means my handcrafted-playlist era is invisible here. i can s
 radios alone beat every playlist with a name in it. the one exception is the first playlist i ever made: tunes. back in the day it was basically my likes, and it was all hip-hop (<Pic id="drake">drake</Pic>, <Pic id="future">future</Pic>, <Pic id="ronnie-flex">ronnie flex</Pic>, <Pic id="travis-scott">travis scott</Pic>). it's still the most played named playlist.
 
 <Figure
-  title="my old playlist faded out, and most of what i play now isn't on any list"
-  subtitle="every play per year, by which of my lists the song is in"
-  caption="matched by song and artist against what is in each list today, so songs i've since removed don't count. a song in more than one list counts once, in the first one from the bottom. my other old playlists are af en toe, ar en bi and elektronische hayeck. 2015 is october to december only."
+  title="my old playlist faded out; full albums and everything else took over"
+  subtitle="every play per year: which of my lists the song is in, and if none, whether i was playing a full album"
+  caption="matched by song and artist against what is in each list today, so songs i've since removed don't count. a song in more than one list counts once, in the first one from the bottom. my other old playlists are af en toe, ar en bi and elektronische hayeck. “full albums” are 3 or more songs in a row from the same album; see the technical report. 2015 is october to december only."
   source="stats.fm, spotify playlist exports"
 >
-  <Chart name="lists" data={lists} height={320} alt="stacked area per year: tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; songs in none of my lists grow from 16% to 75%." />
+  <Chart name="lists" data={lists} height={320} alt="stacked area per year: tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; full albums grow from 6% to about a third, and everything else from 6% to almost 40%." />
 </Figure>
 
-matching my listening history back against what's in tunes makes this much clearer. it used to be almost all i listened to; now it's more of a trip down memory lane with the occasional revisit. i started using likes around 2022, and ever since then they've been my main way of listening to more diverse music. but the biggest block by far is music that's on none of my lists: three quarters of what i play now, mostly full albums and those spotify radios.
+matching my listening history back against what's in tunes makes this much clearer. it used to be almost all i listened to; now it's more of a trip down memory lane with the occasional revisit. i started using likes around 2022, and ever since then they've been my main way of listening to more diverse music. but most of what i play now isn't on any of my lists at all. about a third is full albums (up from 6% in 2015), and the rest is mostly those spotify radios and mixes.
 
 ## genre dominance
 
@@ -158,3 +157,16 @@ many other countries are making a surprise appearance, but apparently i've liste
 ## i love data
 
 my biggest conclusion from this undertaking is aligned with some of the worst people in the world today, but i love data. being able to really look into my own listening behaviour like this is just fascinating, especially since i have almost a decade of it. let's see how things shift in the following decade, if spotify hasn't used all of our money to buy drones to destroy the world {'</3'}
+
+## technical report
+
+for the nerds, and for future me.
+
+- **plays**: every play since october 2015 from [stats.fm](https://stats.fm), through its public api. 119,199 plays; a play counts when it lasted more than 30 seconds. times are utc. there are no plays at all from november 2016 to may 2017, and i still don't know why.
+- **where a play came from** (album, playlist, artist page): spotify's own context field, which stats.fm only has from april 2024 on. playlist names come from spotify's oembed endpoint.
+- **my playlists and likes**: exported with [exportify](https://exportify.net) and matched to plays by song title and artist. this only sees what's in each list today, so songs i removed don't count.
+- **full albums**: before 2024 there is no source field, so a play counts as album listening when it's part of a run of 3 or more songs in a row from the same album. checked against spotify's real source data since 2024, that guess is right 98% of the time but misses about a quarter of album plays, so albums are, if anything, undercounted.
+- **genres**: spotify's artist tags, grouped into a handful of buckets by me.
+- **gender, groups and countries**: [musicbrainz](https://musicbrainz.org), matched through the spotify links in musicbrainz (no guessing by name). i labelled 57 artists it was missing by hand, and a small model looked up the country of about 60 more with one web search each. classical plays count the composer, not the performer.
+- **pictures**: artist and album images from spotify, via stats.fm.
+- **code**: python for the data, [observable plot](https://observablehq.com/plot/) for the charts, and [astro](https://astro.build) for this site. claude opus 5.5 (in claude code) was my coding agent: it fetched and cleaned the data, built the charts and helped edit the text.
