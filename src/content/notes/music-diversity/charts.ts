@@ -70,7 +70,9 @@ type PlaylistGroup = { group: string; plays: number; n: number; spotify: boolean
 export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
   const n = narrow(ctx);
   const max = Math.max(...data.map((d) => d.plays));
-  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => t.replace(/ \(\d+\)$/, '')).filter((t) => t !== '?').join(', ');
+  // Names as written for playlists people made (Tunes); lowercase for Spotify's own (daily mix 1).
+  const nm = (d: PlaylistGroup, t: string) => (d.spotify ? lc(t) : t);
+  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => nm(d, t.replace(/ \(\d+\)$/, ''))).filter((t) => t !== '?').join(', ');
   return Plot.plot({
     ...base(ctx, data.length * 38 + 20),
     marginLeft: n ? 150 : 230,
@@ -80,7 +82,7 @@ export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
     marks: [
       Plot.barX(data, { y: 'group', x: 'plays', fill: (d: PlaylistGroup) => (d.spotify ? ctx.colors.accent2 : d.group.startsWith('named') ? ctx.colors.accent : ctx.colors.faint), rx: 2 }),
       Plot.text(data, { y: 'group', x: 'plays', text: (d: PlaylistGroup) => (n || !ex(d) ? `${d.plays.toLocaleString()}` : `${d.plays.toLocaleString()} · ${ex(d)}`), dx: 6, textAnchor: 'start', fill: ctx.colors.muted }),
-      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.join('\n')}` })),
+      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.map((t) => nm(d, t)).join('\n')}` })),
     ],
   });
 };
