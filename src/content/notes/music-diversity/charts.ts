@@ -48,7 +48,15 @@ export const sources: ChartFn<Source[]> = (data, ctx) => {
     ...base(ctx, 300),
     marginRight: right,
     marginBottom: 36,
-    x: { label: null, padding: 0.2, tickFormat: (q: string) => (q.endsWith('Q1') || q === data[0].quarter ? q.replace(' ', '\n') : q.slice(5)) },
+    // Year under Q1 (and under the first bar). Phones only have room for those.
+    x: {
+      label: null, padding: 0.2,
+      tickFormat: (q: string) => {
+        const yearStart = q.endsWith('Q1') || q === data[0].quarter;
+        if (narrow(ctx)) return yearStart ? `${q.slice(5)}\n’${q.slice(2, 4)}` : '';
+        return yearStart ? q.replace(' ', '\n') : q.slice(5);
+      },
+    },
     y: pctAxis,
     color: { domain: keys, range: fill },
     marks: [
@@ -175,7 +183,12 @@ export const who: ChartFn<Who[]> = (data, ctx) => {
   return Plot.plot({
     ...base(ctx, 320),
     marginRight: right,
-    x: { label: null, type: 'band', padding: 0.15, tickFormat: (y: number) => (narrow(ctx) ? `’${String(y).slice(2)}` : String(y)) },
+    // Phones: every other year, or the labels run into each other.
+    x: {
+      label: null, type: 'band', padding: 0.15,
+      ticks: narrow(ctx) ? [...new Set(data.map((d) => d.year))].filter((y) => (lastYear - y) % 2 === 0) : undefined,
+      tickFormat: (y: number) => (narrow(ctx) ? `’${String(y).slice(2)}` : String(y)),
+    },
     y: pctAxis,
     marks: [
       Plot.barY(data, { ...stack, fill: (d: Who) => fill[d.who], fillOpacity: (d: Who) => (d.who === 'women-only group' ? 0.6 : 1), inset: 0.5 }),
