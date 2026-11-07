@@ -68,7 +68,7 @@ radios alone beat every playlist with a name in it. the one exception is the fir
 <Figure
   title="my old playlist faded out; full albums and everything else took over"
   subtitle="every play per year: which of my lists the song is in, and if none, whether i was playing a full album"
-  caption="matched by song and artist against what is in each list today, so songs i've since removed don't count. a song in more than one list counts once, in the first one from the bottom. my other old playlists are af en toe, ar en bi and elektronische hayeck. “full albums” are 3 or more songs in a row from the same album; see the technical report. 2015 is october to december only."
+  caption="matched by song and artist against what is in each list today, so songs i've since removed don't count. a song in more than one list counts once, in the first one from the bottom. my other old playlists are af en toe, ar en bi and elektronische hayeck. “full albums” are 3 or more songs in a row from the same album, a guess that is right 98% of the time when checked against spotify's own data since 2024. 2015 is october to december only."
   source="stats.fm, spotify playlist exports"
 >
   <Chart name="lists" data={lists} height={320} alt="stacked area per year: tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; full albums grow from 6% to about a third, and everything else from 6% to almost 40%." />
@@ -160,13 +160,6 @@ my biggest conclusion from this undertaking is aligned with some of the worst pe
 
 ## technical report
 
-for the nerds, and for future me.
-
-- **plays**: every play since october 2015 from [stats.fm](https://stats.fm), through its public api. 119,199 plays; a play counts when it lasted more than 30 seconds. times are utc. there are no plays at all from november 2016 to may 2017, and i still don't know why.
-- **where a play came from** (album, playlist, artist page): spotify's own context field, which stats.fm only has from april 2024 on. playlist names come from spotify's oembed endpoint.
-- **my playlists and likes**: exported with [exportify](https://exportify.net) and matched to plays by song title and artist. this only sees what's in each list today, so songs i removed don't count.
-- **full albums**: before 2024 there is no source field, so a play counts as album listening when it's part of a run of 3 or more songs in a row from the same album. checked against spotify's real source data since 2024, that guess is right 98% of the time but misses about a quarter of album plays, so albums are, if anything, undercounted.
-- **genres**: spotify's artist tags, grouped into a handful of buckets by me.
-- **gender, groups and countries**: [musicbrainz](https://musicbrainz.org), matched through the spotify links in musicbrainz (no guessing by name). i labelled 57 artists it was missing by hand, and a small model looked up the country of about 60 more with one web search each. classical plays count the composer, not the performer.
-- **pictures**: artist and album images from spotify, via stats.fm.
-- **code**: python for the data, [observable plot](https://observablehq.com/plot/) for the charts, and [astro](https://astro.build) for this site. claude opus 5.5 (in claude code) was my coding agent: it fetched and cleaned the data, built the charts and wrote this technical report.
+- **data**: [stats.fm](https://stats.fm) (plays), [musicbrainz](https://musicbrainz.org) (gender, groups, countries), spotify (genres, playlists, pictures) and [exportify](https://exportify.net) (playlist exports)
+- **code**: python, [observable plot](https://observablehq.com/plot/) and [astro](https://astro.build)
+- **coding agent**: claude opus 5.5 (in claude code), which also wrote this technical report
