@@ -8,7 +8,7 @@ import { getNotes, type Note } from '../../lib/notes';
 import { plainText, clip } from '../../lib/text';
 
 export async function getStaticPaths() {
-  const notes = await getNotes();
+  const notes = await getNotes({ includeUnlisted: true });
   return notes.map((note) => ({ params: { id: note.id }, props: { note } }));
 }
 
@@ -26,11 +26,12 @@ const opening = plainText((note.body ?? '').replace(/^import .*$/gm, '').replace
 const description = note.data.dek ?? clip(opening || note.data.title);
 ---
 
-<Layout title={note.data.title} description={description} active="notes" ogType="article">
+<Layout title={note.data.title} description={description} active="notes" ogType="article" noindex={note.data.unlisted}>
   <main class="wrap">
     <article class="note">
       <aside class="note-meta" data-reveal>
         {note.data.draft && <p class="draft">Draft, only visible in dev</p>}
+        {!note.data.draft && note.data.unlisted && import.meta.env.DEV && <p class="draft">Unlisted: live, but not linked anywhere</p>}
         <p><time datetime={iso(note.data.date)}>{fmtDate(note.data.date)}</time></p>
         {note.data.updated && <p>Updated <time datetime={iso(note.data.updated)}>{fmtDate(note.data.updated)}</time></p>}
         {note.data.tags.length > 0 && <p class="tags">{note.data.tags.join(' · ')}</p>}

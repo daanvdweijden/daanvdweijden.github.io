@@ -2,10 +2,25 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 // Pages marked `noindex` in their <Layout> (the footer easter eggs) are kept
 // out of the sitemap too, so crawlers get one consistent signal.
-const NOINDEX = ['/puzzles/', '/books/', '/music/'];
+// Unlisted notes (`unlisted: true` in their frontmatter) are added below.
+const NOINDEX = ['/puzzles/', '/books/', '/music/', ...unlistedNotes()];
+
+/** /notes/<slug>/ for every note whose frontmatter says `unlisted: true`. */
+function unlistedNotes() {
+  const dir = new URL('./src/content/notes/', import.meta.url);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(new URL(`${e.name}/index.mdx`, dir)))
+    .filter((e) => {
+      const fm = readFileSync(new URL(`${e.name}/index.mdx`, dir), 'utf8').split(/^---$/m)[1] ?? '';
+      return /^unlisted:\s*true\s*$/m.test(fm);
+    })
+    .map((e) => `/notes/${e.name}/`);
+}
 
 // Optional sub-path build, e.g. SITE_BASE=/preview/ for a design preview
 // published next to the live site. Unset = root.

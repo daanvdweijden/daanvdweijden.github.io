@@ -36,6 +36,7 @@ date: 2026-11-05
 updated: 2026-12-01      # optional
 tags: [music, data]      # optional
 draft: true              # default true; drafts never get built
+unlisted: true           # optional: live at its URL, but not in the nav, the notes list or the sitemap (noindex)
 ```
 
 ## Components

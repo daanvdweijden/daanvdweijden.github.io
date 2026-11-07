@@ -111,6 +111,9 @@ const notes = defineCollection({
     tags: z.array(z.string()).default([]),
     // Drafts are visible in `npm run dev` (marked as drafts) but never built.
     draft: z.boolean().default(true),
+    // Unlisted: built and live at its URL, but not in the nav, the notes
+    // list or the sitemap, and marked noindex. For sharing before launch.
+    unlisted: z.boolean().default(false),
   }),
 });
 
