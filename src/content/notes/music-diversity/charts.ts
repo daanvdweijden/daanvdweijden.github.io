@@ -48,7 +48,7 @@ export const sources: ChartFn<Source[]> = (data, ctx) => {
     ...base(ctx, 300),
     marginRight: right,
     marginBottom: 36,
-    x: { label: null, padding: 0.2, tickFormat: (q: string) => (q.endsWith('Q1') || q === data[0].quarter ? lc(q).replace(' ', '\n') : lc(q.slice(5))) },
+    x: { label: null, padding: 0.2, tickFormat: (q: string) => (q.endsWith('Q1') || q === data[0].quarter ? q.replace(' ', '\n') : q.slice(5)) },
     y: pctAxis,
     color: { domain: keys, range: fill },
     marks: [
@@ -57,7 +57,7 @@ export const sources: ChartFn<Source[]> = (data, ctx) => {
         ...stack, text: 'source', textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
       })),
       Plot.tip(long, Plot.pointerX(Plot.stackY({
-        ...stack, title: (d: any) => `${lc(d.quarter)} · ${d.source}: ${pct(d.share)}\n${d.total.toLocaleString()} plays that quarter`,
+        ...stack, title: (d: any) => `${d.quarter} · ${d.source}: ${pct(d.share)}\n${d.total.toLocaleString()} plays that quarter`,
       }))),
     ],
   });
@@ -70,7 +70,7 @@ type PlaylistGroup = { group: string; plays: number; n: number; spotify: boolean
 export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
   const n = narrow(ctx);
   const max = Math.max(...data.map((d) => d.plays));
-  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => lc(t.replace(/ \(\d+\)$/, ''))).filter((t) => t !== '?').join(', ');
+  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => t.replace(/ \(\d+\)$/, '')).filter((t) => t !== '?').join(', ');
   return Plot.plot({
     ...base(ctx, data.length * 38 + 20),
     marginLeft: n ? 150 : 230,
@@ -80,7 +80,7 @@ export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
     marks: [
       Plot.barX(data, { y: 'group', x: 'plays', fill: (d: PlaylistGroup) => (d.spotify ? ctx.colors.accent2 : d.group.startsWith('named') ? ctx.colors.accent : ctx.colors.faint), rx: 2 }),
       Plot.text(data, { y: 'group', x: 'plays', text: (d: PlaylistGroup) => (n || !ex(d) ? `${d.plays.toLocaleString()}` : `${d.plays.toLocaleString()} · ${ex(d)}`), dx: 6, textAnchor: 'start', fill: ctx.colors.muted }),
-      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.map(lc).join('\n')}` })),
+      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.join('\n')}` })),
     ],
   });
 };
@@ -94,8 +94,8 @@ export const lists: ChartFn<ListRow[]> = (data, ctx) => {
   const order = ['tunes', 'old', 'liked', 'album', 'none'];
   const n = narrow(ctx);
   const name: Record<string, string> = n
-    ? { tunes: 'tunes', old: 'old playlists', liked: 'liked', album: 'full albums', none: 'everything else' }
-    : { tunes: 'tunes', old: 'my other old playlists', liked: 'liked songs', album: 'full albums', none: 'everything else' };
+    ? { tunes: 'Tunes', old: 'old playlists', liked: 'liked', album: 'full albums', none: 'everything else' }
+    : { tunes: 'Tunes', old: 'my other old playlists', liked: 'liked songs', album: 'full albums', none: 'everything else' };
   const fill: Record<string, string> = { tunes: ctx.colors.accent, old: ctx.colors.muted, liked: ctx.colors.accent2, album: ctx.colors.extra[0], none: ctx.colors.faint };
   const labelAt: Record<string, number> = n
     ? { tunes: 2017, old: 2018, liked: 2023, album: 2021, none: 2023 }
@@ -136,7 +136,8 @@ export const genres: ChartFn<Genre[]> = (data, ctx) => {
   const fill = (d: Genre) => (on.includes(d.genre) ? hue[d.genre] : ctx.colors.faint);
   const lastYear = Math.max(...data.map((d) => d.year));
   const stack = { x: 'year', y: 'share', z: 'genre', order };
-  const label = (g: string) => lc(narrow(ctx) && g === 'Indie & alternative' ? 'indie' : g);
+  const genreName = (g: string) => lc(g).replace('r&b', 'R&B');
+  const label = (g: string) => genreName(narrow(ctx) && g === 'Indie & alternative' ? 'indie' : g);
   return Plot.plot({
     ...base(ctx, 340),
     marginRight: narrow(ctx) ? 84 : 130,
@@ -149,7 +150,7 @@ export const genres: ChartFn<Genre[]> = (data, ctx) => {
       Plot.text(mids(data.filter((d) => d.year === lastYear), 'genre', order, (g) => on.includes(g) || ctx.step === 3), {
         x: 'year', y: 'y', text: (d: Genre) => label(d.genre), textAnchor: 'start', dx: 8, fill: ctx.colors.ink,
       }),
-      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Genre) => `${d.year} · ${lc(d.genre)}: ${pct(d.share)}` }))),
+      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Genre) => `${d.year} · ${genreName(d.genre)}: ${pct(d.share)}` }))),
     ],
   });
 };
@@ -339,7 +340,7 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
     first.set(r.id, Math.min(first.get(r.id) ?? 9999, r.year));
   }
   const top = new Map(data.countries.map((c) => [c.id, c.top]));
-  const names = new Map(shapes.map((f: any) => [f.id, lc(f.properties.name)]));
+  const names = new Map(shapes.map((f: any) => [f.id, f.properties.name as string]));
   const max = Math.max(...cum.values());
   const isNew = (id: string) => step > 0 && !final && (first.get(id) ?? 0) > before;
   const mapH = Math.round(ctx.width * 0.48);
