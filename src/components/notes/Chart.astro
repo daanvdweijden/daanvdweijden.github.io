@@ -34,6 +34,22 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
 
   const charts = [...document.querySelectorAll<HTMLElement>('.chart[data-chart]')];
 
+  // Charts draw only when they come within NEAR of the screen, so opening a
+  // long note doesn't run every chart at once. Off-screen charts that need a
+  // redraw (theme switch, resize) are marked stale and redrawn on return.
+  const NEAR = '600px';
+  const onNear = new Map<Element, (near: boolean) => void>();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) onNear.get(e.target)?.(e.isIntersecting);
+  }, { rootMargin: `${NEAR} 0px` });
+
+  // Fetch the chart code (Plot + charts.ts) while the browser is idle, so
+  // the first chart doesn't wait on the network when it scrolls into view.
+  const idle = (cb: () => void) => ('requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 2000 }) : setTimeout(cb, 200));
+  idle(() => {
+    for (const from of new Set(charts.map((el) => el.dataset.from))) modules[`../../content/notes/${from}/charts.ts`]?.();
+  });
+
   for (const el of charts) {
     const canvas = el.querySelector<HTMLElement>('.chart-canvas')!;
     const dataEl = el.querySelector('script[type="application/json"]');
@@ -45,6 +61,9 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     let pending = 0;
     // Set by a scrolly step change: the next draw morphs from the old chart.
     let animate = false;
+    let near = false;
+    // Needs a (re)draw: never drawn yet, or something changed while away.
+    let stale = true;
 
     const fail = (msg: string) => {
       canvas.innerHTML = `<p class="chart-fallback">${msg}</p>`;
@@ -52,6 +71,9 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     };
 
     const draw = async () => {
+      // Off screen: no morph to show, just redraw in the latest state on return.
+      if (!near) { stale = true; animate = false; return; }
+      stale = false;
       lastWidth = canvas.clientWidth;
       if (!fn) {
         const load = modules[key];
@@ -84,7 +106,11 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
       pending = window.setTimeout(draw, 30);
     };
 
-    draw();
+    onNear.set(el, (isNear) => {
+      near = isNear;
+      if (near && stale) draw();
+    });
+    io.observe(el);
     // Redraw when the width changes (not on every height change we cause).
     new ResizeObserver(() => { if (canvas.clientWidth !== lastWidth) redraw(); }).observe(canvas);
     // Redraw when the colour scheme changes (footer switch or system).
