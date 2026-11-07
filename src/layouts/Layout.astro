@@ -42,9 +42,10 @@ const showNotes = await hasPublishedNotes();
 const nav = [
   { name: 'Home', href: base, key: 'home' },
   { name: 'News', href: `${base}news/`, key: 'news' },
-  ...(showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : []),
   { name: 'Publications', href: `${base}pubs/`, key: 'publications' },
   { name: 'CV', href: `${base}cv/`, key: 'cv' },
+  // Last: the personal side, after the work pages.
+  ...(showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : []),
 ];
 const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
 ---
