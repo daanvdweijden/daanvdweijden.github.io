@@ -22,6 +22,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       <div>
         <h1 class="page-title">Notes</h1>
         <p class="page-intro">Small hyperfixations: a question I couldn't let go of for a few nights, some data, and the story it told.</p>
+        <p class="page-intro more">These are not research. There is no peer review, no careful sampling, and the sample size is usually one: me. They are not about my work either, and they speak for nobody but me. Think of them as a notebook left open on the desk: written for fun, in a few evenings, and probably a little wrong in places.</p>
       </div>
     </section>
 
@@ -52,4 +53,5 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .title { font-size: 1.08rem; }
   .sub { line-height: 1.5; margin-top: .3rem; max-width: 36em; }
   .draft { display: block; color: var(--accent); }
+  .page-intro.more { margin-top: .8rem; }
 </style>

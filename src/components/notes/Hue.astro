@@ -1,0 +1,13 @@
+---
+// <Hue>teal</Hue> / <Hue>rust</Hue>: a colour word in the colour it names, so
+// "teal marks…" in the text matches the chart. Figure subtitles and captions
+// do this by themselves. The .hue styles live in Layout.astro, shared by both.
+interface Props {
+  /** Which colour; defaults to the word itself. */
+  c?: 'teal' | 'rust';
+}
+const text = (await Astro.slots.render('default')).trim();
+const c = Astro.props.c ?? (text.toLowerCase().startsWith('rust') ? 'rust' : 'teal');
+---
+
+<span class:list={['hue', c]}><Fragment set:html={text} /></span>

@@ -282,15 +282,17 @@ function favGrid(data: Fav[], ctx: ChartContext, height: number) {
 // ---------------------------------------------------------------------------
 type CountryYear = { year: number; id: string; cc: string; plays: number };
 type Country = { cc: string; id: string; plays: number; top: string[] };
-type MapData = { years: CountryYear[]; countries: Country[] };
-const shapes = (feature(world as any, (world as any).objects.countries) as any).features
+export type MapData = { years: CountryYear[]; countries: Country[] };
+export const shapes = (feature(world as any, (world as any).objects.countries) as any).features
   .filter((f: any) => f.properties.name !== 'Antarctica');
 export const MAP_STEPS = [2015, 2017, 2020, 2026];
 
 /** Countries heard so far (scrolly). Each step: everything up to that year;
- *  countries new since the previous step in rust. */
+ *  countries new since the previous step in rust. The last step is all teal.
+ *  One mark for every country (grey until heard), so steps can morph colours. */
 export const worldMap: ChartFn<MapData> = (data, ctx) => {
   const step = Math.min(ctx.step, MAP_STEPS.length - 1);
+  const final = step === MAP_STEPS.length - 1;
   const upto = MAP_STEPS[step];
   const before = step > 0 ? MAP_STEPS[step - 1] : 0;
   const cum = new Map<string, number>();
@@ -302,19 +304,16 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
   }
   const top = new Map(data.countries.map((c) => [c.id, c.top]));
   const max = Math.max(...cum.values());
-  const isNew = (id: string) => step > 0 && (first.get(id) ?? 0) > before;
+  const isNew = (id: string) => step > 0 && !final && (first.get(id) ?? 0) > before;
   const opacity = (p: number) => 0.25 + 0.75 * (Math.log10(p) / Math.log10(max));
-  const heard = shapes.filter((f: any) => cum.has(f.id));
+  const fill = (f: any) => (!cum.has(f.id) ? ctx.colors.line : isNew(f.id) ? ctx.colors.accent2 : ctx.colors.accent);
+  const fillOpacity = (f: any) => (!cum.has(f.id) || isNew(f.id) ? 1 : opacity(cum.get(f.id)!));
   return Plot.plot({
     ...base(ctx, Math.round(ctx.width * 0.52)),
     marginLeft: 0,
     projection: { type: 'equal-earth', domain: { type: 'FeatureCollection', features: shapes } },
     marks: [
-      Plot.geo(shapes, { fill: ctx.colors.line, stroke: ctx.colors.bg, strokeWidth: 0.5 }),
-      Plot.geo(heard, {
-        fill: (f: any) => (isNew(f.id) ? ctx.colors.accent2 : ctx.colors.accent),
-        fillOpacity: (f: any) => (isNew(f.id) ? 1 : opacity(cum.get(f.id)!)), stroke: ctx.colors.bg, strokeWidth: 0.5,
-      }),
+      Plot.geo(shapes, { fill, fillOpacity, stroke: ctx.colors.bg, strokeWidth: 0.5 }),
       Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: -4, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
       Plot.tip(shapes, Plot.pointer(Plot.geoCentroid({
         title: (f: any) => {
@@ -326,3 +325,4 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
     ],
   });
 };
+

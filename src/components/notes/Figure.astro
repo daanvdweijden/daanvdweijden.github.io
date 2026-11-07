@@ -17,19 +17,22 @@ interface Props {
 }
 const { title, subtitle, caption, source, sourceUrl, width = 'wide' } = Astro.props;
 const hasCaption = caption || source || Astro.slots.has('caption');
+// "teal" and "rust" in the subtitle or caption are shown in that colour (see Hue.astro).
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const colourWords = (t: string) => esc(t).replace(/\b(teal|rust)\b/gi, (w) => `<span class="hue ${w.toLowerCase()}">${w}</span>`);
 ---
 
 <figure class:list={['note-figure', { wide: width === 'wide' }]} data-reveal>
   {(title || subtitle) && (
     <div class="fig-head">
       {title && <p class="fig-title">{title}</p>}
-      {subtitle && <p class="fig-sub">{subtitle}</p>}
+      {subtitle && <p class="fig-sub" set:html={colourWords(subtitle)} />}
     </div>
   )}
   <slot />
   {hasCaption && (
     <figcaption>
-      {caption}<slot name="caption" />
+      {caption && <Fragment set:html={colourWords(caption)} />}<slot name="caption" />
       {source && (
         <span class="fig-source">
           Source: {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}

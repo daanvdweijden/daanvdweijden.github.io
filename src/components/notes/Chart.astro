@@ -25,6 +25,9 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
 
 <script>
   import { readTheme, type ChartFn } from '../../lib/chart';
+  import { morph } from '../../lib/morph';
+
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
   // Every note's charts.ts, loaded only when a chart on the page needs it.
   const modules = import.meta.glob<Record<string, ChartFn>>('../../content/notes/*/charts.ts');
@@ -40,6 +43,8 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     let fn: ChartFn | undefined;
     let lastWidth = 0;
     let pending = 0;
+    // Set by a scrolly step change: the next draw morphs from the old chart.
+    let animate = false;
 
     const fail = (msg: string) => {
       canvas.innerHTML = `<p class="chart-fallback">${msg}</p>`;
@@ -61,8 +66,13 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
         step: Number(scrolly?.dataset.step ?? 0),
         el,
       };
+      const smooth = animate && !reduceMotion.matches;
+      animate = false;
       try {
-        canvas.replaceChildren(await fn(data, ctx));
+        const node = await fn(data, ctx);
+        const prev = canvas.firstElementChild;
+        canvas.replaceChildren(node);
+        if (smooth && prev) morph(prev, node, canvas);
         el.style.minHeight = '';
       } catch (err) {
         fail(`"${el.dataset.chart}" threw: ${(err as Error).message}`);
@@ -81,13 +91,13 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
     // Redraw when a surrounding <Scrolly> moves to another step.
-    scrolly?.addEventListener('stepchange', redraw);
+    scrolly?.addEventListener('stepchange', () => { animate = true; redraw(); });
   }
 </script>
 
 <style>
   .chart { position: relative; width: 100%; --plot-background: var(--bg); }
-  .chart-canvas { width: 100%; }
+  .chart-canvas { width: 100%; position: relative; }
   .chart :global(svg) { display: block; max-width: 100%; height: auto; }
   .chart :global(.chart-fallback) { color: var(--muted); font-size: .9rem; margin: 0; }
 </style>

@@ -275,6 +275,10 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         letter-spacing: -.02em; margin: 0; max-width: 17em;
       }
       .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
+      /* Colour words in notes ("teal marks…"), see components/notes/Hue.astro. */
+      .hue { font-weight: 600; }
+      .hue.teal { color: var(--accent); }
+      .hue.rust { color: var(--accent-2, var(--p-red-fg)); }
 
       .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
       .body a, .prose a { text-decoration-color: var(--muted); }
