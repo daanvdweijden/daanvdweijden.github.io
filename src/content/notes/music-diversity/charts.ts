@@ -1,0 +1,322 @@
+// Charts for "how diverse is my spotify?". Data comes from the workshop
+// (~/Documents/Personal/blog/music_diversity/build_post_data.py).
+// House style: everything grey, the point in accent (teal), a contrast in
+// accent2 (rust). All labels lowercase, like the text.
+import * as Plot from '@observablehq/plot';
+import { feature } from 'topojson-client';
+import world from 'world-atlas/countries-110m.json';
+import { base, type ChartFn, type ChartContext } from '../../../lib/chart';
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const narrow = (ctx: ChartContext) => ctx.width < 560;
+const lc = (s: string) => s.toLowerCase();
+const yearAxis = (ctx: ChartContext) => ({ label: null, tickFormat: 'd', ticks: narrow(ctx) ? 4 : 6 });
+const pctAxis = { label: null, percent: true, ticks: 5, tickFormat: (v: number) => `${v}%` };
+
+/** Middle of each stacked layer at one x, for labels (stacking a filtered subset
+ *  with stackY would only stack the labels themselves). */
+function mids<T extends Record<string, any>>(rows: T[], key: string, order: string[], keep: (k: string) => boolean) {
+  let acc = 0;
+  return order.flatMap((k) => {
+    const r = rows.find((d) => d[key] === k);
+    const v = r ? r.share : 0;
+    const out = keep(k) && r ? [{ ...r, y: acc + v / 2 }] : [];
+    acc += v;
+    return out;
+  });
+}
+
+// ---------------------------------------------------------------------------
+type Source = { quarter: string; total: number; album: number; playlist: number; liked: number; artist: number; unknown: number };
+
+/** Where plays started, per quarter. Albums teal, playlists rust. */
+export const sources: ChartFn<Source[]> = (data, ctx) => {
+  const keys = ['album', 'playlist', 'liked songs', 'other'];
+  const fill = [ctx.colors.accent, ctx.colors.accent2, ctx.colors.muted, ctx.colors.faint];
+  const long = data.flatMap((q) => [
+    { quarter: q.quarter, source: 'album', share: q.album, total: q.total },
+    { quarter: q.quarter, source: 'playlist', share: q.playlist, total: q.total },
+    { quarter: q.quarter, source: 'liked songs', share: q.liked, total: q.total },
+    { quarter: q.quarter, source: 'other', share: q.artist + q.unknown, total: q.total },
+  ]);
+  const last = data[data.length - 1].quarter;
+  const right = narrow(ctx) ? 78 : 96;
+  const band = ((ctx.width - 44 - right) / data.length) * 0.8;
+  const stack = { x: 'quarter', y: 'share', z: 'source', order: keys };
+  return Plot.plot({
+    ...base(ctx, 300),
+    marginRight: right,
+    marginBottom: 36,
+    x: { label: null, padding: 0.2, tickFormat: (q: string) => (q.endsWith('Q1') || q === data[0].quarter ? lc(q).replace(' ', '\n') : lc(q.slice(5))) },
+    y: pctAxis,
+    color: { domain: keys, range: fill },
+    marks: [
+      Plot.barY(long, { ...stack, fill: 'source', inset: 0.5 }),
+      Plot.text(long.filter((d) => d.quarter === last), Plot.stackY({
+        ...stack, text: 'source', textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
+      })),
+      Plot.tip(long, Plot.pointerX(Plot.stackY({
+        ...stack, title: (d: any) => `${lc(d.quarter)} · ${d.source}: ${pct(d.share)}\n${d.total.toLocaleString()} plays that quarter`,
+      }))),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type PlaylistGroup = { group: string; plays: number; n: number; spotify: boolean; top: string[] };
+
+/** Playlist plays since April 2024, by kind of playlist. Made by Spotify in rust. */
+export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
+  const n = narrow(ctx);
+  const max = Math.max(...data.map((d) => d.plays));
+  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => lc(t.replace(/ \(\d+\)$/, ''))).filter((t) => t !== '?').join(', ');
+  return Plot.plot({
+    ...base(ctx, data.length * 38 + 20),
+    marginLeft: n ? 150 : 230,
+    marginRight: 10,
+    x: { axis: null, domain: [0, n ? max * 1.25 : max * 2.3] },
+    y: { label: null, domain: data.map((d) => d.group), padding: 0.25, tickSize: 0 },
+    marks: [
+      Plot.barX(data, { y: 'group', x: 'plays', fill: (d: PlaylistGroup) => (d.spotify ? ctx.colors.accent2 : d.group.startsWith('named') ? ctx.colors.accent : ctx.colors.faint), rx: 2 }),
+      Plot.text(data, { y: 'group', x: 'plays', text: (d: PlaylistGroup) => (n || !ex(d) ? `${d.plays.toLocaleString()}` : `${d.plays.toLocaleString()} · ${ex(d)}`), dx: 6, textAnchor: 'start', fill: ctx.colors.muted }),
+      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.map(lc).join('\n')}` })),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type ListRow = { year: number; list: 'tunes' | 'old' | 'liked' | 'none'; share: number };
+
+/** Every play, per year: in tunes, in my other old playlists, in my likes, or none of them. */
+export const lists: ChartFn<ListRow[]> = (data, ctx) => {
+  const order = ['tunes', 'old', 'liked', 'none'];
+  const name: Record<string, string> = { tunes: 'tunes', old: 'my other old playlists', liked: 'liked songs', none: 'in none of my lists' };
+  const fill: Record<string, string> = { tunes: ctx.colors.accent, old: ctx.colors.muted, liked: ctx.colors.accent2, none: ctx.colors.faint };
+  const labelAt: Record<string, number> = { tunes: 2016, old: 2020, liked: 2024, none: 2022 };
+  const stack = { x: 'year', y: 'share', z: 'list', order };
+  return Plot.plot({
+    ...base(ctx, 320),
+    x: yearAxis(ctx),
+    y: pctAxis,
+    marks: [
+      Plot.areaY(data, { ...stack, fill: (d: ListRow) => fill[d.list], stroke: ctx.colors.bg, strokeWidth: 1.5, curve: 'monotone-x' }),
+      // Label positions: the middle of each layer in its label year (stacked by hand,
+      // since stackY on a filtered subset would only stack the labels).
+      Plot.text(order.map((k) => {
+        const yr = labelAt[k];
+        const row = data.filter((d) => d.year === yr);
+        const below = order.slice(0, order.indexOf(k)).reduce((s, o) => s + (row.find((d) => d.list === o)?.share ?? 0), 0);
+        return { list: k, year: yr, y: below + (row.find((d) => d.list === k)?.share ?? 0) / 2 };
+      }), {
+        x: 'year', y: 'y', text: (d: any) => name[d.list], fill: (d: any) => (d.list === 'none' ? ctx.colors.ink : ctx.colors.bg), fontWeight: 600,
+      }),
+      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: ListRow) => `${d.year} · ${name[d.list]}: ${pct(d.share)}` }))),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type Genre = { year: number; genre: string; share: number };
+
+/** Genre mix per year (scrolly). 0: hip-hop · 1: the 2020 drop · 2: indie fills in · 3: everything. */
+export const genres: ChartFn<Genre[]> = (data, ctx) => {
+  const order = ['Hip-hop', 'Indie & alternative', 'Electronic', 'R&B & soul', 'Rock & metal', 'Everything else'];
+  const hue: Record<string, string> = {
+    'Hip-hop': ctx.colors.accent, 'Indie & alternative': ctx.colors.accent2, Electronic: ctx.colors.extra[0],
+    'R&B & soul': ctx.colors.extra[1], 'Rock & metal': ctx.colors.extra[2], 'Everything else': ctx.colors.faint,
+  };
+  const on = [['Hip-hop'], ['Hip-hop'], ['Hip-hop', 'Indie & alternative'], order][ctx.step] ?? order;
+  const fill = (d: Genre) => (on.includes(d.genre) ? hue[d.genre] : ctx.colors.faint);
+  const lastYear = Math.max(...data.map((d) => d.year));
+  const stack = { x: 'year', y: 'share', z: 'genre', order };
+  const label = (g: string) => lc(narrow(ctx) && g === 'Indie & alternative' ? 'indie' : g);
+  return Plot.plot({
+    ...base(ctx, 340),
+    marginRight: narrow(ctx) ? 84 : 130,
+    x: yearAxis(ctx),
+    y: pctAxis,
+    marks: [
+      Plot.areaY(data, { ...stack, fill, stroke: ctx.colors.bg, strokeWidth: 1.5, curve: 'monotone-x' }),
+      ctx.step === 1 ? Plot.ruleX([2020], { stroke: ctx.colors.ink, strokeDasharray: '3,3' }) : null,
+      ctx.step === 1 ? Plot.text([2020], { x: (d: number) => d, frameAnchor: 'top', dy: -10, text: () => '2020', fill: ctx.colors.ink }) : null,
+      Plot.text(mids(data.filter((d) => d.year === lastYear), 'genre', order, (g) => on.includes(g) || ctx.step === 3), {
+        x: 'year', y: 'y', text: (d: Genre) => label(d.genre), textAnchor: 'start', dx: 8, fill: ctx.colors.ink,
+      }),
+      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Genre) => `${d.year} · ${lc(d.genre)}: ${pct(d.share)}` }))),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type Who = { year: number; who: string; share: number };
+
+/** Who made the music, per year: the full split. Women in teal, mixed groups rust, men grey. */
+export const who: ChartFn<Who[]> = (data, ctx) => {
+  const order = ['solo woman', 'women-only group', 'solo non-binary', 'mixed group', 'men-only group', 'solo man'];
+  const fill: Record<string, string> = {
+    'solo woman': ctx.colors.accent, 'women-only group': ctx.colors.accent, 'solo non-binary': ctx.colors.extra[1],
+    'mixed group': ctx.colors.accent2, 'men-only group': ctx.colors.muted, 'solo man': ctx.colors.faint,
+  };
+  const labelled = new Set(['solo woman', 'mixed group', 'men-only group', 'solo man']);
+  const lastYear = Math.max(...data.map((d) => d.year));
+  const right = narrow(ctx) ? 108 : 124;
+  const band = ((ctx.width - 44 - right) / 11) * 0.85;
+  const stack = { x: 'year', y: 'share', z: 'who', order };
+  return Plot.plot({
+    ...base(ctx, 320),
+    marginRight: right,
+    x: { label: null, type: 'band', padding: 0.15, tickFormat: (y: number) => (narrow(ctx) ? `’${String(y).slice(2)}` : String(y)) },
+    y: pctAxis,
+    marks: [
+      Plot.barY(data, { ...stack, fill: (d: Who) => fill[d.who], fillOpacity: (d: Who) => (d.who === 'women-only group' ? 0.6 : 1), inset: 0.5 }),
+      Plot.text(mids(data.filter((d) => d.year === lastYear), 'who', order, (w) => labelled.has(w)), {
+        x: 'year', y: 'y', text: 'who', textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
+      }),
+      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Who) => `${d.year} · ${d.who}: ${(d.share * 100).toFixed(1)}%` }))),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type Top = { rank: number; artist: string; plays: number; who: string };
+const CLASSICAL = new Set(['Frédéric Chopin', 'Brigitte Engerer', 'Giuseppe Verdi', 'Plácido Domingo', 'Samuel Ramey',
+  'Metropolitan Opera Orchestra', 'James Levine', 'Aprile Millo', 'Dolora Zajick', 'James Morris']);
+
+/** All-time top 50. Women and mixed groups in teal, classical credits faded. */
+export const topArtists: ChartFn<Top[]> = (data, ctx) => {
+  const label = (d: Top) => `${d.rank}. ${lc(d.artist)}`;
+  const isWoman = (d: Top) => !CLASSICAL.has(d.artist) && /woman|mixed/.test(d.who);
+  const fill = (d: Top) => (isWoman(d) ? ctx.colors.accent : CLASSICAL.has(d.artist) ? ctx.colors.line : ctx.colors.faint);
+  return Plot.plot({
+    ...base(ctx, data.length * 17 + 30),
+    marginLeft: narrow(ctx) ? 150 : 190,
+    marginRight: 44,
+    x: { label: null, axis: 'top', grid: true, ticks: 4 },
+    y: { label: null, domain: data.map(label), padding: 0.18, tickSize: 0 },
+    marks: [
+      Plot.barX(data, { y: label, x: 'plays', fill, rx: 2 }),
+      Plot.text(data.filter(isWoman), { y: label, x: 'plays', text: (d: Top) => d.who, dx: 6, textAnchor: 'start', fill: ctx.colors.ink, fontSize: 11 }),
+      Plot.tip(data, Plot.pointerY({ y: label, x: 'plays', title: (d: Top) => `#${d.rank} ${lc(d.artist)}\n${d.plays.toLocaleString()} plays · ${CLASSICAL.has(d.artist) ? 'classical credit' : d.who}` })),
+    ],
+  });
+};
+
+// ---------------------------------------------------------------------------
+type Life = { artist: string; top10: number[]; plays: number[]; last12: number };
+type Fav = { artist: string; top10: number[]; total: number; years: { year: number; plays: number }[] };
+type FavData = { lifelines: { months: string[]; artists: Life[] }; favourites: Fav[] };
+
+/** Favourites (scrolly). 0: all 66 lifelines · 1: the six that dropped out ·
+ *  2: only the ones that came back · 3: the simple grid. */
+export const favourites: ChartFn<FavData> = (data, ctx) => {
+  const n = narrow(ctx);
+  // On phones the step cards scroll over the sticky chart, so leave room below it.
+  const height = n
+    ? Math.max(320, Math.round(window.innerHeight * 0.55))
+    : Math.min(640, Math.max(420, Math.round(window.innerHeight * 0.78)));
+  if (ctx.step >= 3) return favGrid(data.favourites, ctx, height);
+
+  const repeat = new Set(data.favourites.map((a) => a.artist));
+  const artists = ctx.step === 2 ? data.lifelines.artists.filter((a) => repeat.has(a.artist)) : data.lifelines.artists;
+  const months = data.lifelines.months.map((m) => new Date(`${m}-01T00:00:00Z`));
+  const gap = (m: string) => m >= '2016-11' && m <= '2017-05';
+  const rows: any[] = [];
+  artists.forEach((a, i) => {
+    const max = Math.max(...a.plays) || 1;
+    a.plays.forEach((p, k) => {
+      const m = data.lifelines.months[k];
+      const v = gap(m) ? NaN : Math.sqrt(p / max) * 0.88;
+      rows.push({ artist: a.artist, i, date: months[k], base: i + 1, v: i + 1 - v, p, top: a.top10.includes(+m.slice(0, 4)), gone: a.last12 === 0 });
+    });
+  });
+  const dropped = ctx.step === 1;
+  const thin = (height - 22) / artists.length < 8;
+  const grey = (d: any) => (dropped && d.gone ? ctx.colors.accent2 : dropped ? ctx.colors.line : ctx.colors.faint);
+  return Plot.plot({
+    ...base(ctx, height),
+    marginLeft: n ? (thin && !dropped ? 8 : 112) : 150,
+    marginTop: 22,
+    x: { label: null, axis: 'top', grid: true, ticks: n ? 4 : 6 },
+    y: { axis: null, domain: [artists.length, 0], reverse: false },
+    marks: [
+      Plot.areaY(rows, { x: 'date', y1: 'base', y2: 'v', z: 'artist', fill: grey, curve: 'step' }),
+      dropped ? null : Plot.areaY(rows, { x: 'date', y1: 'base', y2: (d: any) => (d.top ? d.v : NaN), z: 'artist', fill: ctx.colors.accent, curve: 'step' }),
+      // Rows thinner than ~8px (66 artists on a phone): only name the dropouts.
+      Plot.text(thin ? artists.filter((a) => dropped && a.last12 === 0) : artists, {
+        x: months[0], y: (a: Life) => artists.indexOf(a) + 0.55, text: (a: Life) => lc(a.artist), textAnchor: 'end', dx: -6,
+        fontSize: artists.length > 30 ? 9 : 12,
+        fill: (a: Life) => (dropped ? (a.last12 === 0 ? ctx.colors.ink : ctx.colors.line) : ctx.colors.muted),
+        fontWeight: (a: Life) => (dropped && a.last12 === 0 ? 600 : 400),
+      }),
+      Plot.tip(rows, Plot.pointer({ x: 'date', y: (d: any) => d.i + 0.5, maxRadius: 12,
+        title: (d: any) => `${lc(d.artist)}\n${d.date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }).toLowerCase()}: ${d.p} plays${d.top ? ' · top 10 year' : ''}` })),
+    ],
+  });
+};
+
+function favGrid(data: Fav[], ctx: ChartContext, height: number) {
+  const cells = data.flatMap((a) => a.years.map((y) => ({ artist: a.artist, year: y.year, plays: y.plays, top: a.top10.includes(y.year) })));
+  const n = narrow(ctx);
+  return Plot.plot({
+    ...base(ctx, Math.min(height, data.length * 26 + 34)),
+    marginLeft: n ? 112 : 150,
+    marginTop: 26,
+    padding: 0.1,
+    x: { label: null, type: 'band', axis: 'top', tickSize: 0, tickFormat: (y: number) => (n ? `’${String(y).slice(2)}` : String(y)) },
+    y: { label: null, domain: data.map((a) => a.artist), tickSize: 0, tickFormat: lc },
+    marks: [
+      Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.line, rx: 2 }),
+      Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.accent, fillOpacity: (d: any) => Math.min(1, Math.sqrt(d.plays / 700)), rx: 2 }),
+      Plot.dot(cells.filter((d) => d.top), { x: 'year', y: 'artist', r: 3.5, fill: ctx.colors.bg, stroke: ctx.colors.ink, strokeWidth: 1.2 }),
+      Plot.tip(cells, Plot.pointer({ x: 'year', y: 'artist', title: (d: any) => `${lc(d.artist)} · ${d.year}\n${d.plays} plays${d.top ? ' · top 10' : ''}` })),
+    ],
+  });
+}
+
+// ---------------------------------------------------------------------------
+type CountryYear = { year: number; id: string; cc: string; plays: number };
+type Country = { cc: string; id: string; plays: number; top: string[] };
+type MapData = { years: CountryYear[]; countries: Country[] };
+const shapes = (feature(world as any, (world as any).objects.countries) as any).features
+  .filter((f: any) => f.properties.name !== 'Antarctica');
+export const MAP_STEPS = [2015, 2017, 2020, 2026];
+
+/** Countries heard so far (scrolly). Each step: everything up to that year;
+ *  countries new since the previous step in rust. */
+export const worldMap: ChartFn<MapData> = (data, ctx) => {
+  const step = Math.min(ctx.step, MAP_STEPS.length - 1);
+  const upto = MAP_STEPS[step];
+  const before = step > 0 ? MAP_STEPS[step - 1] : 0;
+  const cum = new Map<string, number>();
+  const first = new Map<string, number>();
+  for (const r of data.years) {
+    if (r.year > upto) continue;
+    cum.set(r.id, (cum.get(r.id) ?? 0) + r.plays);
+    first.set(r.id, Math.min(first.get(r.id) ?? 9999, r.year));
+  }
+  const top = new Map(data.countries.map((c) => [c.id, c.top]));
+  const max = Math.max(...cum.values());
+  const isNew = (id: string) => step > 0 && (first.get(id) ?? 0) > before;
+  const opacity = (p: number) => 0.25 + 0.75 * (Math.log10(p) / Math.log10(max));
+  const heard = shapes.filter((f: any) => cum.has(f.id));
+  return Plot.plot({
+    ...base(ctx, Math.round(ctx.width * 0.52)),
+    marginLeft: 0,
+    projection: { type: 'equal-earth', domain: { type: 'FeatureCollection', features: shapes } },
+    marks: [
+      Plot.geo(shapes, { fill: ctx.colors.line, stroke: ctx.colors.bg, strokeWidth: 0.5 }),
+      Plot.geo(heard, {
+        fill: (f: any) => (isNew(f.id) ? ctx.colors.accent2 : ctx.colors.accent),
+        fillOpacity: (f: any) => (isNew(f.id) ? 1 : opacity(cum.get(f.id)!)), stroke: ctx.colors.bg, strokeWidth: 0.5,
+      }),
+      Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: -4, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
+      Plot.tip(shapes, Plot.pointer(Plot.geoCentroid({
+        title: (f: any) => {
+          const p = cum.get(f.id);
+          const name = lc(f.properties.name);
+          return p ? `${name}: ${p.toLocaleString()} plays by ${upto}, first in ${first.get(f.id)}\n${(top.get(f.id) ?? []).map(lc).join(', ')}` : `${name}: nothing yet`;
+        },
+      }))),
+    ],
+  });
+};

@@ -11,7 +11,7 @@
 // chart is just "data + context → SVG".
 //
 // The house style: everything grey, the one thing the sentence is about in
-// --accent. Axes are muted, so they recede.
+// --accent; --accent-2 (rust) when a chart needs a contrast. Axes are muted, so they recede.
 // ---------------------------------------------------------------------------
 import type { PlotOptions } from '@observablehq/plot';
 
@@ -21,6 +21,10 @@ export interface ChartColors {
   line: string;
   bg: string;
   accent: string;
+  /** Second colour, for a contrast with the accent (rust; --accent-2 or --p-red-fg). */
+  accent2: string;
+  /** Extra hues for charts that need more than two categories (blue, yellow, green). */
+  extra: string[];
   /** De-emphasised marks: the "everything else" grey. */
   faint: string;
 }
@@ -60,6 +64,8 @@ export function readTheme(el: HTMLElement): Pick<ChartContext, 'colors' | 'font'
       line: v('--line'),
       bg: v('--bg'),
       accent: v('--accent'),
+      accent2: resolve(el, 'var(--accent-2, var(--p-red-fg))'),
+      extra: [v('--p-blue-fg'), v('--p-yellow-fg'), v('--p-green-fg')],
       faint: resolve(el, 'color-mix(in srgb, var(--muted) 45%, var(--bg))'),
     },
     font: cs.getPropertyValue('--font').trim() || 'sans-serif',
