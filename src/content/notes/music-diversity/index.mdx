@@ -40,8 +40,7 @@ fresh out of high school, ready to start studying, i used spotify completely dif
 
 <Figure
   title="albums still make up more than half of what i play"
-  subtitle="share of plays per quarter, by where i started them"
-  caption="“liked songs” are plays with no recorded source whose song was in my likes at the time; spotify doesn't log the likes list as a source. “other” is artist pages and plays with no source at all. the last quarter runs to 7 november."
+  caption="share of plays per quarter, by where i started them. spotify only logs this from april 2024. “liked songs” are plays without a source whose song was in my likes."
   source="stats.fm, spotify"
 >
   <Chart name="sources" data={sources} height={300} alt="stacked bars per quarter from mid-2024: albums are 50 to 70% of plays in most quarters, playlists 20 to 30%, except late 2025 when playlists were about half." />
@@ -49,16 +48,11 @@ fresh out of high school, ready to start studying, i used spotify completely dif
 
 {/* EDIT: 2025 q3–q4 is the one stretch where playlists beat albums. real, or a tracking gap? worth a sentence either way. */}
 
-<Aside>
-spotify only records where a play started from april 2024 onwards, so this chart can't go back further.
-</Aside>
-
 unfortunately, that means my handcrafted-playlist era is invisible here. i can still see the algorithm taking over, although it's closer to lane assist than to fully self-driving. full albums still dominate, but within playlists the curating has been outsourced to the computer. when i don't know what to listen to in the morning, my daylist or one of the daily mixes is the go-to.
 
 <Figure
   title="seven in ten playlist plays are on something spotify made for me"
-  subtitle="plays from playlists since april 2024, by kind of playlist. made by spotify in rust."
-  caption="“named playlists” are mine and other people's: tunes, funk it up, best of griselda… spotify only gives me the name, not who made it. “no name” are playlists that have since been deleted or made private."
+  caption="playlist plays since april 2024; made by spotify in rust."
   source="stats.fm, spotify"
 >
   <Chart name="playlists" data={playlists} height={300} alt="horizontal bars: song and artist radios 1,331 plays, other spotify playlists 1,274, named playlists 1,041, no name 572, daily mixes 564, daylist 323, my yearly top tracks 120." />
@@ -68,8 +62,7 @@ radios alone beat every playlist with a name in it. the one exception is the fir
 
 <Figure
   title="my old playlist faded out; full albums and everything else took over"
-  subtitle="every play per year: which of my lists the song is in, and if none, whether i was playing a full album"
-  caption="matched by song and artist against what is in each list today, so songs i've since removed don't count. a song in more than one list counts once, in the first one from the bottom. my other old playlists are af en toe, ar en bi and elektronische hayeck. “full albums” are 3 or more songs in a row from the same album, a guess that is right 98% of the time when checked against spotify's own data since 2024. 2015 is october to december only."
+  caption="every play per year, by which of my lists the song is in today. “full albums” are 3+ songs in a row from one album, a guess that is right 98% of the time. my other old playlists are af en toe, ar en bi and elektronische hayeck."
   source="stats.fm, spotify playlist exports"
 >
   <Chart name="lists" data={lists} height={320} alt="stacked area per year: tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; full albums grow from 6% to about a third, and everything else from 6% to almost 40%." />
@@ -101,8 +94,7 @@ looking at my indie artists, i was surprised not to see many women pop up. i kno
 
 <Figure
   title="solo men went from 84% of my plays to half"
-  subtitle="who made the music, as a share of plays with a known artist gender, per year. women in teal, mixed groups in rust."
-  caption="women-only groups and non-binary artists are there too, but under 1% in every year. classical plays count the composer, not the performer."
+  caption="share of plays with a known artist gender, per year. women-only groups and non-binary artists stay under 1%; classical counts the composer."
   source="stats.fm, musicbrainz, plus hand labels for 57 artists"
 >
   <Chart name="who" data={who} height={320} alt="stacked bars per year: solo men shrink from 84% in 2016 to 51% in 2026; solo women grow from 6% to 21%, men-only groups from 8% to 20%, mixed groups from 3% to 8%." />
@@ -116,8 +108,7 @@ my all-time favourite artists don't follow the same trend, though. in the overal
 
 <Figure
   title="of my top 50 artists of all time, five are not men"
-  subtitle="plays since october 2015. women and mixed groups in teal, classical credits faded."
-  caption="classical recordings credit the performers as separate artists: brigitte engerer (#19) is the pianist on chopin's nocturnes, and #30 to #37 are mostly one verdi opera recording."
+  caption="plays since october 2015; women and mixed groups in teal. faded bars are classical performers credited separately: #19 is the pianist on chopin's nocturnes, #30 to #37 mostly one verdi opera."
   source="stats.fm, musicbrainz"
 >
   <Chart name="topArtists" data={top} height={880} alt="bar chart of the top 50 artists by plays, led by future with 3,731. the first bars in teal are crumb at #38 and khruangbin at #39." />
@@ -148,7 +139,7 @@ i've been listening to more dutch music recently, and wanted to know if my geogr
 </Scrolly>
 
 <Aside>
-country of the main artist on each play, from musicbrainz plus web lookups for about 60 artists. 10% of plays have no known country, and some small countries (barbados, curaçao, monaco…) are too small to make it onto this map.
+country of the main artist on each play. 10% of plays have no known country, and a few tiny ones (barbados, curaçao, monaco) aren't on the map.
 </Aside>
 
 not too surprising to see the us so high up on the list, although i was not expecting it to drop in the last 2 years. the dutch return did happen, but later than i thought: dutch music hovered around 3 to 5% of my plays from 2020 to 2024, and is back at 15% this year (<Pic id="sef">sef</Pic>, <Pic id="lil-kleine">lil kleine</Pic>, <Pic id="ronnie-flex">ronnie flex</Pic>), about where it was when i started.
