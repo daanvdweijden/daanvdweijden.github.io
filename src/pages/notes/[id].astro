@@ -41,7 +41,7 @@ const description = note.data.dek ?? clip(opening || note.data.title);
         <h1 class="page-title">{note.data.title}</h1>
         {note.data.dek && <p class="dek">{note.data.dek}</p>}
       </header>
-      <div class="prose"><Content /></div>
+      <div class="prose prose-reveal"><Content /></div>
     </article>
   </main>
 </Layout>

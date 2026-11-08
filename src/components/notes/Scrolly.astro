@@ -20,6 +20,8 @@
 </div>
 
 <script>
+  import { gsap, ScrollTrigger, reduceMotion } from '../../lib/motion';
+
   // Scroll-linked progress (as in Google's scrollytell / Scrollama's
   // `progress`): rather than firing once when a step crosses a trigger line,
   // every scroll frame turns the steps' on-screen coordinates into one
@@ -60,50 +62,46 @@
     }
   };
 
-  // The chart follows the scroll position through a short ease instead of
+  // The chart follows the scroll position with a short lag instead of
   // jumping to it. Scroll events arrive unevenly (wheel notches, trackpad
   // momentum, Safari's irregular timing), so binding the morph straight to
-  // them makes it move in little steps; easing towards the target on every
-  // frame turns that into one smooth motion. TAU is how far behind the
-  // scroll the chart may trail (ms); the loop stops once it has caught up.
-  const TAU = 90;
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const target = new Map<HTMLElement, number>();
-  const shown = new Map<HTMLElement, number>();
+  // them makes it move in little steps. Each frame on GSAP's ticker closes a
+  // fixed share of the remaining distance (scaled by deltaRatio, so it's the
+  // same at 60 and 120 Hz): the speed changes smoothly, even when a new scroll
+  // event moves the target mid-motion, unlike restarting a tween each time.
+  const FOLLOW = 0.18;
   const emit = (root: HTMLElement, pos: number) => {
-    shown.set(root, pos);
     root.dataset.pos = pos.toFixed(4);
     root.dispatchEvent(new CustomEvent('scrollprogress', { detail: pos }));
   };
-  let looping = false;
-  let last = 0;
-  const frame = (now: number) => {
-    const dt = Math.min(64, now - last);
-    last = now;
-    const k = 1 - Math.exp(-dt / TAU);
+  const state = new Map(roots.map((root) => [root, { pos: 0, to: 0 }]));
+  const follow = () => {
     let moving = false;
-    for (const root of roots) {
-      const to = target.get(root) ?? 0, from = shown.get(root) ?? to;
-      if (from === to) continue;
-      const next = Math.abs(to - from) < 0.002 || reduceMotion.matches ? to : from + (to - from) * k;
-      emit(root, next);
-      if (next !== to) moving = true;
+    for (const [root, s] of state) {
+      if (s.pos === s.to) continue;
+      const k = 1 - (1 - FOLLOW) ** gsap.ticker.deltaRatio();
+      s.pos = Math.abs(s.to - s.pos) < 0.001 ? s.to : s.pos + (s.to - s.pos) * k;
+      emit(root, s.pos);
+      moving = true;
     }
-    looping = moving;
-    if (moving) requestAnimationFrame(frame);
+    if (!moving) gsap.ticker.remove(follow);
   };
-  const onScroll = () => {
-    update();
-    if (looping) return;
-    looping = true;
-    last = performance.now();
-    requestAnimationFrame(frame);
+  const target = {
+    set(root: HTMLElement, pos: number) {
+      const s = state.get(root)!;
+      s.to = pos;
+      // First paint (also when reloading halfway down the page): no easing.
+      if (reduceMotion() || !ready) { s.pos = pos; emit(root, pos); return; }
+      gsap.ticker.add(follow);
+    },
   };
-  addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', onScroll);
-  // First paint (also when reloading halfway down the page): no easing.
+  let ready = false;
+  // Recompute only while a scrolly is on screen, on GSAP's ticker.
+  for (const root of roots) {
+    ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onUpdate: update, onRefresh: update });
+  }
   update();
-  for (const root of roots) emit(root, target.get(root) ?? 0);
+  ready = true;
 </script>
 
 <style>

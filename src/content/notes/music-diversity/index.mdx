@@ -1,5 +1,5 @@
 ---
-title: "how diverse is my spotify?"
+title: "How diverse is my Spotify?"
 date: 2026-11-07
 tags: [music, data]
 draft: false
@@ -23,128 +23,128 @@ import lifelines from './data/lifelines.json';
 import countries from './data/countries.json';
 import countryYears from './data/country_years.json';
 
-spotify wrapped is everyone's favourite christmas present. you get to see your own horrible taste, or silently judge everyone else's. i look forward to it every year, but it never quite satisfies me. i want to know more. a single year of music tells you nothing about how your taste develops, and nothing beyond your favourite song of the year.
+Spotify Wrapped is everyone's favourite Christmas present. You get to see your own horrible taste, or silently judge everyone else's. I look forward to it every year, but it never quite satisfies me. I want to know more. A single year of music tells you nothing about how your taste develops, and nothing beyond your favourite song of the year.
 
-part of that hunger was already stilled a few years ago, when i downloaded [stats.fm](https://stats.fm) (still called spotistats back then). it's one of the few apps i've ever paid for, with all the google rewards i'd gathered over the years. it let me look past last year's stats, at my favourite artist (<Pic id="future">future</Pic>), most played album (<Pic id="album-nocturnes" album>chopin's nocturnes</Pic>) and my top song of all time (<Pic id="album-iv" album>time moves slow</Pic> by badbadnotgood). you can already see these on my [music page](/music/), along with what i've been listening to recently.
+Part of that hunger was already stilled a few years ago, when I downloaded [stats.fm](https://stats.fm) (still called Spotistats back then). It's one of the few apps I've ever paid for, with all the Google rewards I'd gathered over the years. It let me look past last year's stats, at my favourite artist (<Pic id="future">Future</Pic>), most played album (<Pic id="album-nocturnes" album>Chopin's Nocturnes</Pic>) and my top song of all time (<Pic id="album-iv" album>Time Moves Slow</Pic> by BADBADNOTGOOD). You can already see these on my [music page](/music/), along with what I've been listening to recently.
 
-but i wanted more. i had a feeling my taste had evolved over the years and become more diverse, and my all-time top songs and artists didn't tell me anything about that. they're a static blob: anything new has a lot of catching up to do before it breaks into a top 10. so here is my "deep dive" into the last decade of my listening history, starting in 2015.
+But I wanted more. I had a feeling my taste had evolved over the years and become more diverse, and my all-time top songs and artists didn't tell me anything about that. They're a static blob: anything new has a lot of catching up to do before it breaks into a top 10. So here is my "deep dive" into the last decade of my listening history, starting in 2015.
 
-## fighting the algorithm
+## Fighting the algorithm
 
-fresh out of high school, ready to start studying, i used spotify completely differently than i do now. i made a playlist for every genre, mood or niche i was into, and listened either to full albums or to those playlists. nowadays i feel like i've let "the algorithm" take the wheel: i lean much more on dynamic playlists and song radios. albums are still my favourite, though. you can crawl into an artist's head much more easily and see (or hear) their ideas more clearly. that said, the first album i ever saved was <Pic id="album-flockaveli" album>flockaveli</Pic> by <Pic id="waka-flocka-flame">waka flocka flame</Pic>, so i'm not sure that was the vision.
-
-<Figure
-  title="albums still make up more than half of what i play"
-  caption="share of plays per quarter, by where i started them. spotify only logs this from april 2024. “liked songs” are plays without a source whose song was in my likes."
-  source="stats.fm, spotify"
->
-  <Chart name="sources" data={sources} height={300} alt="stacked bars per quarter from mid-2024: albums are 50 to 70% of plays in most quarters, playlists 20 to 30%, except late 2025 when playlists were about half." />
-</Figure>
-
-unfortunately, that means my handcrafted-playlist era is invisible here. i can still see the algorithm taking over, although it's closer to lane assist than to fully self-driving. full albums still dominate, but within playlists the curating has been outsourced to the computer. when i don't know what to listen to in the morning, my daylist or one of the daily mixes is the go-to.
+Fresh out of high school, ready to start studying, I used Spotify completely differently than I do now. I made a playlist for every genre, mood or niche I was into, and listened either to full albums or to those playlists. Nowadays I feel like I've let "the algorithm" take the wheel: I lean much more on dynamic playlists and song radios. Albums are still my favourite, though. You can crawl into an artist's head much more easily and see (or hear) their ideas more clearly. That said, the first album I ever saved was <Pic id="album-flockaveli" album>Flockaveli</Pic> by <Pic id="waka-flocka-flame">Waka Flocka Flame</Pic>, so I'm not sure that was the vision.
 
 <Figure
-  title="seven in ten playlist plays are on something spotify made for me"
-  caption="playlist plays since april 2024; made by spotify in sage."
-  source="stats.fm, spotify"
+  title="Albums still make up more than half of what I play"
+  caption="Share of plays per quarter, by where I started them. Spotify only logs this from April 2024. “Liked songs” are plays without a source whose song was in my likes."
+  source="stats.fm, Spotify"
 >
-  <Chart name="playlists" data={playlists} height={300} alt="horizontal bars: song and artist radios 1,331 plays, other spotify playlists 1,274, named playlists 1,041, no name 572, daily mixes 564, daylist 323, my yearly top tracks 120." />
+  <Chart name="sources" data={sources} height={300} alt="Stacked bars per quarter from mid-2024: albums are 50 to 70% of plays in most quarters, playlists 20 to 30%, except late 2025 when playlists were about half." />
 </Figure>
 
-radios alone beat every playlist with a name in it. the one exception is the first playlist i ever made: Tunes. back in the day it was basically my likes, and it was all hip-hop (<Pic id="drake">drake</Pic>, <Pic id="future">future</Pic>, <Pic id="ronnie-flex">ronnie flex</Pic>, <Pic id="travis-scott">travis scott</Pic>). it's still the most played named playlist.
+Unfortunately, that means my handcrafted-playlist era is invisible here. I can still see the algorithm taking over, although it's closer to lane assist than to fully self-driving. Full albums still dominate, but within playlists the curating has been outsourced to the computer. When I don't know what to listen to in the morning, my daylist or one of the daily mixes is the go-to.
 
 <Figure
-  title="my old playlist faded out; full albums and everything else took over"
-  caption="every play per year, by which of my lists the song is in today. “full albums” are 3+ songs in a row from one album, a guess that is right 98% of the time. my other old playlists are Af en toe, Ar en Bi and Elektronische Hayeck."
-  source="stats.fm, spotify playlist exports"
+  title="Seven in ten playlist plays are on something Spotify made for me"
+  caption="Playlist plays since April 2024; made by Spotify in sage."
+  source="stats.fm, Spotify"
 >
-  <Chart name="lists" data={lists} height={320} alt="stacked area per year: Tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; full albums grow from 6% to about a third, and everything else from 6% to almost 40%." />
+  <Chart name="playlists" data={playlists} height={300} alt="Horizontal bars: song and artist radios 1,331 plays, other Spotify playlists 1,274, named playlists 1,041, no name 572, daily mixes 564, daylist 323, my yearly top tracks 120." />
 </Figure>
 
-matching my listening history back against what's in Tunes makes this much clearer. it used to be almost all i listened to; now it's more of a trip down memory lane with the occasional revisit. i started using likes around 2022, and ever since then they've been my main way of listening to more diverse music. but most of what i play now isn't on any of my lists at all. about a third is full albums (up from 6% in 2015), and the rest is mostly those spotify radios and mixes.
+Radios alone beat every playlist with a name in it. The one exception is the first playlist I ever made: Tunes. Back in the day it was basically my likes, and it was all hip-hop (<Pic id="drake">Drake</Pic>, <Pic id="future">Future</Pic>, <Pic id="ronnie-flex">Ronnie Flex</Pic>, <Pic id="travis-scott">Travis Scott</Pic>). It's still the most played named playlist.
 
-## genre dominance
+<Figure
+  title="My old playlist faded out; full albums and everything else took over"
+  caption="Every play per year, by which of my lists the song is in today. “Full albums” are 3+ songs in a row from one album, a guess that is right 98% of the time. My other old playlists are Af en toe, Ar en Bi and Elektronische Hayeck."
+  source="stats.fm, Spotify playlist exports"
+>
+  <Chart name="lists" data={lists} height={320} alt="Stacked area per year: Tunes falls from 73% of plays in 2016 to about 10% from 2023; liked songs grows from 2022 to about 15 to 20%; full albums grow from 6% to about a third, and everything else from 6% to almost 40%." />
+</Figure>
 
-seeing Tunes still that high up after 2024 made me want to see how my genres have shifted over the years. i'd guess (or basically know) that hip-hop is still a big part of what i listen to, but i feel like i've spread out across a lot more genres.
+Matching my listening history back against what's in Tunes makes this much clearer. It used to be almost all I listened to; now it's more of a trip down memory lane with the occasional revisit. I started using likes around 2022, and ever since then they've been my main way of listening to more diverse music. But most of what I play now isn't on any of my lists at all. About a third is full albums (up from 6% in 2015), and the rest is mostly those Spotify radios and mixes.
+
+## Genre dominance
+
+Seeing Tunes still that high up after 2024 made me want to see how my genres have shifted over the years. I'd guess (or basically know) that hip-hop is still a big part of what I listen to, but I feel like I've spread out across a lot more genres.
 
 <Scrolly>
-  <Chart slot="graphic" name="genres" data={genres} height={340} alt="stacked area of genre shares per year: hip-hop shrinks from about 60% in 2015 to about 25% from 2020 on, while indie and the other genres grow." />
-  <Step>this is every year since 2015, split by genre. in the beginning, hip-hop was about 60% of everything i played.</Step>
-  <Step>it held at around 45% until 2019. then in 2020 it dropped to about a quarter, and it has stayed there ever since.</Step>
-  <Step>a lot of that gap was filled by indie: from barely anything to between 15 and 28% of my plays.</Step>
-  <Step>and the rest spread out over everything else: electronic, R&B, rock, jazz, a bit of classical. no single genre runs the show anymore.</Step>
+  <Chart slot="graphic" name="genres" data={genres} height={340} alt="Stacked area of genre shares per year: hip-hop shrinks from about 60% in 2015 to about 25% from 2020 on, while indie and the other genres grow." />
+  <Step>This is every year since 2015, split by genre. In the beginning, hip-hop was about 60% of everything I played.</Step>
+  <Step>It held at around 45% until 2019. Then in 2020 it dropped to about a quarter, and it has stayed there ever since.</Step>
+  <Step>A lot of that gap was filled by indie: from barely anything to between 15 and 28% of my plays.</Step>
+  <Step>And the rest spread out over everything else: electronic, R&B, rock, jazz, a bit of classical. No single genre runs the show anymore.</Step>
 </Scrolly>
 
 <Aside>
-genres are my own grouping of spotify's artist tags. no plays were recorded from november 2016 to may 2017, so those two years are thinner than they look.
+Genres are my own grouping of Spotify's artist tags. No plays were recorded from November 2016 to May 2017, so those two years are thinner than they look.
 </Aside>
 
-looks like my gut feeling was right: from over 60% at the start of my history to only a quarter now. a lot of that gap has been filled by indie, which i listened to much more before i joined spotify (my CD collection is almost entirely indie and rock). i'm not quite sure what caused the change, but it isn't just nostalgia. newer artists (<Pic id="men-i-trust">men i trust</Pic>, <Pic id="the-strokes">the strokes</Pic>) sit side by side with older ones (<Pic id="vampire-weekend">vampire weekend</Pic>, <Pic id="arctic-monkeys">arctic monkeys</Pic>, <Pic id="bloc-party">bloc party</Pic>).
+Looks like my gut feeling was right: from over 60% at the start of my history to only a quarter now. A lot of that gap has been filled by indie, which I listened to much more before I joined Spotify (my CD collection is almost entirely indie and rock). I'm not quite sure what caused the change, but it isn't just nostalgia. Newer artists (<Pic id="men-i-trust">Men I Trust</Pic>, <Pic id="the-strokes">The Strokes</Pic>) sit side by side with older ones (<Pic id="vampire-weekend">Vampire Weekend</Pic>, <Pic id="arctic-monkeys">Arctic Monkeys</Pic>, <Pic id="bloc-party">Bloc Party</Pic>).
 
-## the patriarchy
+## The patriarchy
 
-looking at my indie artists, i was surprised not to see many women pop up. i know i don't listen to many women in hip-hop (<Pic id="little-simz">little simz</Pic> is probably the only exception?), but i expected at least some of my girlies to show up. so how patriarchal is my listening history?
-
-<Figure
-  title="solo men went from 84% of my plays to half"
-  caption="share of plays with a known artist gender, per year. women-only groups and non-binary artists stay under 1%; classical counts the composer."
-  source="stats.fm, musicbrainz, plus hand labels for 57 artists"
->
-  <Chart name="who" data={who} height={320} alt="stacked bars per year: solo men shrink from 84% in 2016 to 51% in 2026; solo women grow from 6% to 21%, men-only groups from 8% to 20%, mixed groups from 3% to 8%." />
-</Figure>
-
-it's almost embarrassing: in the first years, not even a tenth of my plays had a woman in them. looking back that's not too surprising, given what i was listening to, but seeing the numbers was still a bit of a shock. i'm glad i turned it around, mostly thanks to <Pic id="faye-webster">faye webster</Pic>, <Pic id="clairo">clairo</Pic>, <Pic id="kali-uchis">kali uchis</Pic>, <Pic id="mitski">mitski</Pic> and <Pic id="jorja-smith">jorja smith</Pic>. we can defeat the patriarchy one song at a time, guys!
-
-## my faves
-
-my all-time favourite artists don't follow the same trend, though. in the overall ranking, the first woman (not counting the pianist on the chopin album at #19) is <Pic id="crumb">crumb</Pic>'s lead singer at #38, then <Pic id="faye-webster">faye webster</Pic> at #41. the top itself is no surprise, partly because i know i've listened to (and still listen to) these artists a lot, and partly because this is the exact stat i got stats.fm for.
+Looking at my indie artists, I was surprised not to see many women pop up. I know I don't listen to many women in hip-hop (<Pic id="little-simz">Little Simz</Pic> is probably the only exception?), but I expected at least some of my girlies to show up. So how patriarchal is my listening history?
 
 <Figure
-  title="of my top 50 artists of all time, five are not men"
-  caption="plays since october 2015; women and mixed groups in terracotta. faded bars are classical performers credited separately: #19 is the pianist on chopin's nocturnes, #30 to #37 mostly one verdi opera."
-  source="stats.fm, musicbrainz"
+  title="Solo men went from 84% of my plays to half"
+  caption="Share of plays with a known artist gender, per year. Women-only groups and non-binary artists stay under 1%; classical counts the composer."
+  source="stats.fm, MusicBrainz, plus hand labels for 57 artists"
 >
-  <Chart name="topArtists" data={top} height={880} alt="bar chart of the top 50 artists by plays, led by future with 3,731. the first bars in terracotta are crumb at #38 and khruangbin at #39." />
+  <Chart name="who" data={who} height={320} alt="Stacked bars per year: solo men shrink from 84% in 2016 to 51% in 2026; solo women grow from 6% to 21%, men-only groups from 8% to 20%, mixed groups from 3% to 8%." />
 </Figure>
 
-what i couldn't see was how long these artists stayed with me through the years. i know <Pic id="future">future</Pic> keeps popping up in wrapped every year, but lots of artists seem to come and go. how many actually reappear, and who simply fades away, never to be listened to again?
+It's almost embarrassing: in the first years, not even a tenth of my plays had a woman in them. Looking back that's not too surprising, given what I was listening to, but seeing the numbers was still a bit of a shock. I'm glad I turned it around, mostly thanks to <Pic id="faye-webster">Faye Webster</Pic>, <Pic id="clairo">Clairo</Pic>, <Pic id="kali-uchis">Kali Uchis</Pic>, <Pic id="mitski">Mitski</Pic> and <Pic id="jorja-smith">Jorja Smith</Pic>. We can defeat the patriarchy one song at a time, guys!
+
+## My faves
+
+My all-time favourite artists don't follow the same trend, though. In the overall ranking, the first woman (not counting the pianist on the Chopin album at #19) is <Pic id="crumb">Crumb</Pic>'s lead singer at #38, then <Pic id="faye-webster">Faye Webster</Pic> at #41. The top itself is no surprise, partly because I know I've listened to (and still listen to) these artists a lot, and partly because this is the exact stat I got stats.fm for.
+
+<Figure
+  title="Of my top 50 artists of all time, five are not men"
+  caption="Plays since October 2015; women and mixed groups in terracotta. Faded bars are classical performers credited separately: #19 is the pianist on Chopin's Nocturnes, #30 to #37 mostly one Verdi opera."
+  source="stats.fm, MusicBrainz"
+>
+  <Chart name="topArtists" data={top} height={880} alt="Bar chart of the top 50 artists by plays, led by Future with 3,731. The first bars in terracotta are Crumb at #38 and Khruangbin at #39." />
+</Figure>
+
+What I couldn't see was how long these artists stayed with me through the years. I know <Pic id="future">Future</Pic> keeps popping up in Wrapped every year, but lots of artists seem to come and go. How many actually reappear, and who simply fades away, never to be listened to again?
 
 <Scrolly>
-  <Chart slot="graphic" name="favourites" data={{ lifelines, favourites }} height={600} alt="first: monthly plays for all 66 artists that were ever in a yearly top 10. then the six that dropped out, then only the 19 that made the top 10 more than once, and finally a simple grid of those 19 by year." />
-  <Step>these are all 66 artists that ever made one of my yearly top 10s, in the order they first got there. the grey is how much i played them each month; <Hue>terracotta</Hue> marks the years they were in my top 10.</Step>
-  <Step>almost all of them are still around: 60 of the 66 got played in the last year. these six didn't: <Pic id="bryson-tiller">bryson tiller</Pic>, <Pic id="a-day-to-remember">a day to remember</Pic>, <Pic id="shlohmo">shlohmo</Pic>, <Pic id="burial">burial</Pic>, <Pic id="pop-smoke">pop smoke</Pic> and <Pic id="mild-high-club">mild high club</Pic>. three of them were 2020 favourites.</Step>
-  <Step>most artists have one big year and then fade into the background. only 19 made it back into a top 10 at least once more.</Step>
-  <Step>summed up per year, with a dot for every top 10 year. <Pic id="future">future</Pic> and <Pic id="bring-me-the-horizon">bring me the horizon</Pic> made it eight times, <Pic id="drake">drake</Pic> six. newer regulars: <Pic id="tyler-the-creator">tyler, the creator</Pic> and <Pic id="yeat">yeat</Pic>.</Step>
+  <Chart slot="graphic" name="favourites" data={{ lifelines, favourites }} height={600} alt="First: monthly plays for all 66 artists that were ever in a yearly top 10. Then the six that dropped out, then only the 19 that made the top 10 more than once, and finally a simple grid of those 19 by year." />
+  <Step>These are all 66 artists that ever made one of my yearly top 10s, in the order they first got there. The grey is how much I played them each month; <Hue>terracotta</Hue> marks the years they were in my top 10.</Step>
+  <Step>Almost all of them are still around: 60 of the 66 got played in the last year. These six didn't: <Pic id="bryson-tiller">Bryson Tiller</Pic>, <Pic id="a-day-to-remember">A Day To Remember</Pic>, <Pic id="shlohmo">Shlohmo</Pic>, <Pic id="burial">Burial</Pic>, <Pic id="pop-smoke">Pop Smoke</Pic> and <Pic id="mild-high-club">Mild High Club</Pic>. Three of them were 2020 favourites.</Step>
+  <Step>Most artists have one big year and then fade into the background. Only 19 made it back into a top 10 at least once more.</Step>
+  <Step>Summed up per year, with a dot for every top 10 year. <Pic id="future">Future</Pic> and <Pic id="bring-me-the-horizon">Bring Me The Horizon</Pic> made it eight times, <Pic id="drake">Drake</Pic> six. Newer regulars: <Pic id="tyler-the-creator">Tyler, The Creator</Pic> and <Pic id="yeat">Yeat</Pic>.</Step>
 </Scrolly>
 
-only a handful of artists stay in my top 10 year after year. some come and go, while the household names stay remarkably constant. diversity and consistency at the same time: a nice balance.
+Only a handful of artists stay in my top 10 year after year. Some come and go, while the household names stay remarkably constant. Diversity and consistency at the same time: a nice balance.
 
-## where am i
+## Where am I
 
-i've been listening to more Dutch music recently, and wanted to know if my geography is spreading out too. how many countries have my ears visited, and which areas are still undiscovered?
+I've been listening to more Dutch music recently, and wanted to know if my geography is spreading out too. How many countries have my ears visited, and which areas are still undiscovered?
 
 <Scrolly>
-  <Chart slot="graphic" name="worldMap" data={{ years: countryYears, countries }} height={360} alt="dot map of the world in four steps: countries i had heard music from by 2015 (11), 2017 (30), 2020 (64) and 2026 (85), with new ones highlighted each step." />
-  <Step>end of 2015: 11 countries. 60% of it American, with Dutch hip-hop (<Pic id="ronnie-flex">ronnie flex</Pic>) and a Canadian (<Pic id="drake">drake</Pic>) as runners-up.</Step>
-  <Step>by 2017, 30 countries. <Hue>sage</Hue> marks the ones that are new since the last step.</Step>
-  <Step>2018 to 2020 is when it really opened up: 64 countries. the UK took over from the Netherlands as number two (<Pic id="arctic-monkeys">arctic monkeys</Pic>, <Pic id="mount-kimbie">mount kimbie</Pic>, <Pic id="bring-me-the-horizon">bring me the horizon</Pic>).</Step>
-  <Step>now: 85 countries all together. most of Central Asia and a big part of Africa are still grey.</Step>
+  <Chart slot="graphic" name="worldMap" data={{ years: countryYears, countries }} height={360} alt="Dot map of the world in four steps: countries I had heard music from by 2015 (11), 2017 (30), 2020 (64) and 2026 (85), with new ones highlighted each step." />
+  <Step>End of 2015: 11 countries. 60% of it American, with Dutch hip-hop (<Pic id="ronnie-flex">Ronnie Flex</Pic>) and a Canadian (<Pic id="drake">Drake</Pic>) as runners-up.</Step>
+  <Step>By 2017, 30 countries. <Hue>Sage</Hue> marks the ones that are new since the last step.</Step>
+  <Step>2018 to 2020 is when it really opened up: 64 countries. The UK took over from the Netherlands as number two (<Pic id="arctic-monkeys">Arctic Monkeys</Pic>, <Pic id="mount-kimbie">Mount Kimbie</Pic>, <Pic id="bring-me-the-horizon">Bring Me The Horizon</Pic>).</Step>
+  <Step>Now: 85 countries all together. Most of Central Asia and a big part of Africa are still grey.</Step>
 </Scrolly>
 
 <Aside>
-country of the main artist on each play. 10% of plays have no known country, and a few tiny ones (Barbados, Curaçao, Monaco) aren't on the map.
+Country of the main artist on each play. 10% of plays have no known country, and a few tiny ones (Barbados, Curaçao, Monaco) aren't on the map.
 </Aside>
 
-not too surprising to see the US so high up on the list, although i was not expecting it to drop in the last 2 years. the Dutch return did happen, but later than i thought: Dutch music hovered around 3 to 5% of my plays from 2020 to 2024, and is back at 15% this year (<Pic id="sef">sef</Pic>, <Pic id="lil-kleine">lil kleine</Pic>, <Pic id="ronnie-flex">ronnie flex</Pic>), about where it was when i started.
+Not too surprising to see the US so high up on the list, although I was not expecting it to drop in the last 2 years. The Dutch return did happen, but later than I thought: Dutch music hovered around 3 to 5% of my plays from 2020 to 2024, and is back at 15% this year (<Pic id="sef">Sef</Pic>, <Pic id="lil-kleine">Lil Kleine</Pic>, <Pic id="ronnie-flex">Ronnie Flex</Pic>), about where it was when I started.
 
-many other countries are making a surprise appearance, but apparently i've listened to some Mongolian (<Pic id="bodikhuu">bodikhuu</Pic>), Angolan (<Pic id="puto-prata">puto prata</Pic>) and Bolivian (<Pic id="jaime-laredo">jaime laredo</Pic>) bangers.
+Many other countries are making a surprise appearance, but apparently I've listened to some Mongolian (<Pic id="bodikhuu">Bodikhuu</Pic>), Angolan (<Pic id="puto-prata">Puto Prata</Pic>) and Bolivian (<Pic id="jaime-laredo">Jaime Laredo</Pic>) bangers.
 
-## i love data
+## I love data
 
-my biggest conclusion from this whole undertaking is a simple one: i love data. being able to really look into my own listening behaviour like this is just fascinating, especially since i have almost a decade of it. let's see how things shift in the following decade, if spotify is still around by then {'<3'}
+My biggest conclusion from this whole undertaking is a simple one: I love data. Being able to really look into my own listening behaviour like this is just fascinating, especially since I have almost a decade of it. Let's see how things shift in the following decade, if Spotify is still around by then {'<3'}
 
-## technical report
+## Technical report
 
-- **data**: [stats.fm](https://stats.fm) (plays), [musicbrainz](https://musicbrainz.org) (gender, groups, countries), spotify (genres, playlists, pictures) and [exportify](https://exportify.net) (playlist exports)
-- **code**: python, [observable plot](https://observablehq.com/plot/) and [astro](https://astro.build)
-- **coding agent**: claude opus 5.5 (in claude code), which also wrote this technical report
+- **Data**: [stats.fm](https://stats.fm) (plays), [MusicBrainz](https://musicbrainz.org) (gender, groups, countries), Spotify (genres, playlists, pictures) and [Exportify](https://exportify.net) (playlist exports)
+- **Code**: Python, [Observable Plot](https://observablehq.com/plot/) and [Astro](https://astro.build)
+- **Coding agent**: Claude Opus 5.5 (in Claude Code), which also wrote this technical report

@@ -86,6 +86,8 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
 </Layout>
 
 <script>
+  import { gsap } from '../lib/motion';
+
   // Tap to colour the portrait on touch screens (the hover state elsewhere);
   // it springs back on its own after a second. Another tap restarts the timer.
   const portrait = document.querySelector('.portrait');
@@ -96,18 +98,29 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     clearTimeout(colorTimer);
     colorTimer = setTimeout(() => portrait.classList.remove('is-color'), 1000);
   });
-  // Once the opening slide has finished, switch back to the normal (snappier)
-  // hover transitions. The timer is a fallback for when the events don't fire
-  // (e.g. the page loaded in a background tab).
-  const settle = () => portrait?.classList.add('settled');
-  const img = portrait?.querySelector('img');
-  for (const type of ['transitionend', 'transitioncancel'] as const) {
-    img?.addEventListener(type, (e) => { if (e.propertyName === 'translate') settle(); });
+  // Opening: the hover state played in reverse, by GSAP. The page opens with
+  // photo and block pulled apart and the photo in colour; both slide home
+  // together as the photo fades to gray, then hand over to the CSS hover.
+  // --p is how far apart the pair is: 1 = the hover pose, 0 = home (CSS below).
+  // Since the opening pose is the hover pose, hovering during the intro just
+  // tweens --p back towards 1 (and leaving lets it settle), so it never jumps.
+  if (portrait && document.documentElement.classList.contains('motion')) {
+    const settle = () => portrait.classList.add('settled');
+    const home = (delay = 0) => gsap.to(portrait, {
+      '--p': 0, delay, duration: 1.4, ease: 'power3.out', overwrite: true, onComplete: settle,
+    });
+    gsap.set(portrait, { '--p': 1 });
+    home(0.8);
+    portrait.addEventListener('pointerenter', () => {
+      if (portrait.classList.contains('settled')) return;
+      gsap.to(portrait, { '--p': 1, duration: 0.7, ease: 'power3.out', overwrite: true });
+    });
+    portrait.addEventListener('pointerleave', () => {
+      if (!portrait.classList.contains('settled')) home();
+    });
+  } else {
+    portrait?.classList.add('settled');
   }
-  const hero = document.querySelector('.hero');
-  if (hero) new MutationObserver((_, mo) => {
-    if (hero.classList.contains('is-in')) { mo.disconnect(); setTimeout(settle, 2500); }
-  }).observe(hero, { attributes: true, attributeFilter: ['class'] });
 </script>
 
 <style>
@@ -134,22 +147,19 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     background: var(--accent);
     transition: transform .7s cubic-bezier(.22, .61, .36, 1);
   }
-  /* Opening: the hover state played in reverse. The page opens with photo and
-     block pulled apart and the photo in colour; both then slide home together
-     as the photo fades to gray. This uses the separate `translate`/`scale`
-     properties so it never interferes with the hover `transform`. The slower
-     intro timing only applies until the script marks the portrait `.settled`. */
-  :global(html.motion) .hero:not(.is-in) .portrait img { translate: -3% -3%; scale: 1.05; filter: none; }
-  :global(html.motion) .hero:not(.is-in) .portrait .block { translate: 8% 20%; }
+  /* Opening, driven by GSAP tweening --p from 1 to 0 (script above). It
+     uses the separate `translate`/`scale` properties, so it never fights the
+     hover `transform`. Until it's done (.settled), GSAP also plays the hover
+     (script above), so the CSS hover and its transitions are off. */
   :global(html.motion) .portrait:not(.settled) img {
-    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
-                scale 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
-                filter 1.4s ease .8s,
-                transform .7s cubic-bezier(.22, .61, .36, 1);
+    translate: calc(var(--p, 1) * -3%) calc(var(--p, 1) * -3%);
+    scale: calc(1 + var(--p, 1) * .05);
+    filter: grayscale(calc(1 - var(--p, 1))) contrast(calc(1 + (1 - var(--p, 1)) * .08));
+    transform: none; transition: none;
   }
   :global(html.motion) .portrait:not(.settled) .block {
-    transition: translate 1.4s cubic-bezier(.22, .61, .36, 1) .8s,
-                transform .7s cubic-bezier(.22, .61, .36, 1);
+    translate: calc(var(--p, 1) * 8%) calc(var(--p, 1) * 20%);
+    transform: none; transition: none;
   }
 
   /* Hover: the photo and block pull apart (photo up-left, block down-right)

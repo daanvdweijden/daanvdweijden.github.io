@@ -1,82 +1,134 @@
 // ---------------------------------------------------------------------------
-// Scroll-linked entrance for charts outside a <Scrolly>. The marks (not the
-// axes) are revealed from left to right as the chart scrolls up into view:
-// for charts over time it reads as time unfolding, for horizontal bars as the
-// bars growing. Like the scrollies it follows the scroll position (and runs
-// backwards when scrolling up), eased per frame so it never steps.
+// Entrance for charts outside a <Scrolly>, on GSAP. Once a chart comes into
+// view it plays one timed cascade (about a second and a half), the same for
+// every chart; only the marks move, axes stay put.
 //
-// Short charts sweep in with one straight edge, timed by where the chart's
-// upper part is on screen. Tall charts made of rows (the top 50) reveal row by
-// row instead: every bar has its own flat edge, timed by where that row is.
+// - Horizontal bars (the top 50) grow from the left, row after row.
+// - Vertical bars, stacked or not, grow up from the axis, column by column.
+// - Anything else (areas, lines, dots) is wiped in from left to right.
+// Labels drawn next to the marks fade in as their bar or the wipe reaches them.
+// A redraw (resize, theme switch) after the cascade shows the chart at once.
 // ---------------------------------------------------------------------------
+import { gsap, ScrollTrigger } from './motion';
 
-/** A height on screen is hidden at START × viewport and fully shown at END × viewport. */
-const START = 0.9;
-const END = 0.55;
-/** How far the reveal may trail behind the scroll (ms). */
-const TAU = 90;
+const NS = 'http://www.w3.org/2000/svg';
 const FAR = 1e4;
+/** Time from the first bar starting to the last one starting (s). */
+const SPREAD = 1;
+/** How long one bar takes to grow (s). */
+const GROW = 0.7;
+let uid = 0;
 
-interface Item {
-  svg: SVGSVGElement;
-  edge: SVGPathElement;
-  x0: number; x1: number;
-  /** Horizontal bands (svg units) that each get their own edge: [top, bottom]. */
-  bands: [number, number][];
-  /** Eased on-screen top of the chart. */
-  top: number;
+/** Animations of earlier renders, killed once their svg is replaced. */
+const live = new Set<{ svg: SVGSVGElement; kill: () => void }>();
+/** Hosts whose cascade already played. */
+const played = new WeakSet<Element>();
+
+const markGroups = (svg: SVGSVGElement) =>
+  [...svg.children].filter(
+    (g) => g.tagName.toLowerCase() === 'g' && !/axis|grid|frame/i.test(g.getAttribute('aria-label') ?? ''),
+  ) as SVGGElement[];
+
+const tag = (el: Element) => el.tagName.toLowerCase();
+
+/** Group items by a key, rounded so bars in the same row or column share it. */
+function groupBy<T>(items: T[], key: (t: T) => number): T[][] {
+  const map = new Map<number, T[]>();
+  for (const it of items) {
+    const k = Math.round(key(it));
+    if (!map.has(k)) map.set(k, []);
+    map.get(k)!.push(it);
+  }
+  return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v);
 }
 
-/** Rows of a horizontal bar chart: rect bands that don't overlap, merged. */
-function rows(marks: Element[]): [number, number][] {
-  const spans = marks
-    .flatMap((g) => [...g.querySelectorAll('rect')])
-    .map((r) => [+(r.getAttribute('y') ?? NaN), +(r.getAttribute('height') ?? NaN)])
-    .filter(([y, h]) => isFinite(y) && isFinite(h) && h > 0)
-    .map(([y, h]) => [y, y + h] as [number, number])
-    .sort((a, b) => a[0] - b[0]);
-  const out: [number, number][] = [];
-  for (const sp of spans) {
-    const last = out[out.length - 1];
-    if (last && sp[0] < last[1] - 0.5) last[1] = Math.max(last[1], sp[1]);
-    else out.push([...sp]);
+/** Put every label with the group whose middle is closest to it. */
+function attach(texts: SVGGraphicsElement[], centres: number[], axis: 'x' | 'y') {
+  const out: SVGGraphicsElement[][] = centres.map(() => []);
+  for (const t of texts) {
+    const b = t.getBBox();
+    const mid = axis === 'y' ? b.y + b.height / 2 : b.x + b.width / 2;
+    let i = 0;
+    centres.forEach((c, k) => { if (Math.abs(c - mid) < Math.abs(centres[i] - mid)) i = k; });
+    out[i].push(t);
   }
   return out;
 }
 
-const items = new Set<Item>();
-const clamp = (v: number) => Math.min(1, Math.max(0, v));
-// Slow, fast, slow: the sweep eases in and out like a physical motion.
-const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
-let uid = 0;
-
-const NS = 'http://www.w3.org/2000/svg';
-
-/** Wrap the mark groups of a freshly inserted chart in a scroll-driven clip. */
 export function reveal(node: Element) {
-  const svg = (node.tagName.toLowerCase() === 'svg' ? node : node.querySelector('svg')) as SVGSVGElement | null;
+  for (const it of live) if (!it.svg.isConnected) { it.kill(); live.delete(it); }
+  const svg = (tag(node) === 'svg' ? node : node.querySelector('svg')) as SVGSVGElement | null;
   if (!svg) return;
-  const marks = [...svg.children].filter(
-    (g) => g.tagName.toLowerCase() === 'g' && !/axis|tip|grid|frame/i.test(g.getAttribute('aria-label') ?? ''),
-  ) as SVGGElement[];
+  const host = svg.parentElement ?? svg;
+  if (played.has(host)) return;
+  const marks = markGroups(svg);
   if (!marks.length) return;
 
-  // Extent of the marks, in the svg's own units.
-  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const all = marks.flatMap((g) => [...g.querySelectorAll<SVGGraphicsElement>('*')]);
+  const rects = all.filter((e) => tag(e) === 'rect');
+  const texts = all.filter((e) => tag(e) === 'text');
+  const others = all.filter((e) => !['rect', 'text', 'g', 'tspan', 'title'].includes(tag(e)));
+
+  const tl = gsap.timeline({ paused: true, onComplete: () => { played.add(host); } });
+  if (rects.length >= 3 && !others.length) bars(tl, rects, texts);
+  else wipe(tl, svg, marks);
+
+  const st = ScrollTrigger.create({ trigger: svg, start: 'top 85%', once: true, onEnter: () => tl.play() });
+  // Just stop: the old svg is gone, and finishing it would mark the host as
+  // played, so the new render would skip its cascade.
+  live.add({ svg, kill: () => { st.kill(); tl.kill(); } });
+}
+
+/** Bars grow one row (horizontal) or column (vertical) at a time. */
+function bars(tl: gsap.core.Timeline, rects: SVGGraphicsElement[], texts: SVGGraphicsElement[]) {
+  const boxes = new Map(rects.map((r) => [r, r.getBBox()]));
+  const box = (r: SVGGraphicsElement) => boxes.get(r)!;
+  // Horizontal bars all have the band's height and differ in width; vertical
+  // bars (and stack segments) share a width and differ in height.
+  const distinct = (f: (b: DOMRect) => number) => new Set(rects.map((r) => Math.round(f(box(r))))).size;
+  const horizontal = distinct((b) => b.height) < distinct((b) => b.width);
+  // Bars in one row share their top; bars in one column share their left.
+  const groups = horizontal ? groupBy(rects, (r) => box(r).y) : groupBy(rects, (r) => box(r).x);
+  const each = Math.min(0.06, SPREAD / groups.length);
+  const centres = groups.map((g) => {
+    const b = box(g[0]);
+    return horizontal ? b.y + b.height / 2 : b.x + b.width / 2;
+  });
+  const labels = attach(texts, centres, horizontal ? 'y' : 'x');
+  gsap.set(texts, { autoAlpha: 0 });
+
+  groups.forEach((g, i) => {
+    const at = i * each;
+    if (horizontal) {
+      gsap.set(g, { scaleX: 0, transformOrigin: '0% 50%' });
+      tl.to(g, { scaleX: 1, duration: GROW, ease: 'power3.out' }, at);
+    } else {
+      // The whole column grows from the axis, so a stack rises as one bar.
+      const base = Math.max(...g.map((r) => box(r).y + box(r).height));
+      const cx = box(g[0]).x + box(g[0]).width / 2;
+      gsap.set(g, { scaleY: 0, svgOrigin: `${cx} ${base}` });
+      tl.to(g, { scaleY: 1, duration: GROW, ease: 'power3.out' }, at);
+    }
+    if (labels[i].length) tl.to(labels[i], { autoAlpha: 1, duration: 0.4 }, at + GROW / 2);
+  });
+}
+
+/** Areas, lines and dots: a clip edge that runs from left to right. */
+function wipe(tl: gsap.core.Timeline, svg: SVGSVGElement, marks: SVGGElement[]) {
+  let x0 = Infinity, x1 = -Infinity;
   for (const g of marks) {
     const b = g.getBBox();
     if (!b.width && !b.height) continue;
     x0 = Math.min(x0, b.x); x1 = Math.max(x1, b.x + b.width);
-    y0 = Math.min(y0, b.y); y1 = Math.max(y1, b.y + b.height);
   }
   if (!isFinite(x0)) return;
-
   const id = `reveal-${++uid}`;
   const defs = document.createElementNS(NS, 'defs');
   const clip = document.createElementNS(NS, 'clipPath');
   clip.id = id;
   clip.setAttribute('clipPathUnits', 'userSpaceOnUse');
-  const edge = document.createElementNS(NS, 'path');
+  const edge = document.createElementNS(NS, 'rect');
+  for (const [k, v] of Object.entries({ x: -FAR, y: -FAR, height: 2 * FAR, width: x0 - 4 + FAR })) edge.setAttribute(k, String(v));
   clip.append(edge);
   defs.append(clip);
   svg.prepend(defs);
@@ -88,68 +140,7 @@ export function reveal(node: Element) {
     g.replaceWith(wrap);
     wrap.append(g);
   }
-
-  const rect = svg.getBoundingClientRect();
-  const scale = rect.height / (svg.viewBox.baseVal?.height || Number(svg.getAttribute('height')) || rect.height);
-  const r = rows(marks);
-  const tall = (y1 - y0) * scale > innerHeight * 0.5 && r.length >= 6;
-  const bands: [number, number][] = tall ? r : [[y0, y1]];
-  const item: Item = { svg, edge, x0: x0 - 4, x1: x1 + 4, bands, top: rect.top };
-  items.add(item);
-  paint(item);
-  kick();
+  tl.to(edge, { attr: { width: x1 + 4 + FAR }, duration: SPREAD + GROW / 2, ease: 'power2.inOut' })
+    // Fully in: open the clip all the way, so nothing is ever cut off.
+    .set(edge, { attr: { width: 3 * FAR } });
 }
-
-function paint(it: Item) {
-  const rect = it.svg.getBoundingClientRect();
-  const vbH = it.svg.viewBox.baseVal?.height || Number(it.svg.getAttribute('height')) || rect.height;
-  const scale = rect.height / vbH;
-  const vh = innerHeight;
-  const pts: string[] = [`M${-FAR},${-FAR}`];
-  let all = true;
-  const n = it.bands.length;
-  it.bands.forEach(([b0, b1], i) => {
-    // Timed by a point a quarter down the band, so a short chart has grown
-    // in by the time most of it is on screen.
-    const mid = b0 + (b1 - b0) * 0.25;
-    const p = easeInOut(clamp((vh * START - (it.top + mid * scale)) / (vh * (START - END))));
-    if (p < 1) all = false;
-    const x = (it.x0 + (it.x1 - it.x0) * p).toFixed(1);
-    // Each band's edge runs to halfway into the gaps around it.
-    const from = i === 0 ? -FAR : (b0 + it.bands[i - 1][1]) / 2;
-    const to = i === n - 1 ? FAR : (b1 + it.bands[i + 1][0]) / 2;
-    pts.push(`L${x},${from.toFixed(1)}L${x},${to.toFixed(1)}`);
-  });
-  pts.push(`L${-FAR},${FAR}Z`);
-  // Fully in view: no clip edge at all, so nothing is ever cut off.
-  it.edge.setAttribute('d', all ? `M${-FAR},${-FAR}H${FAR}V${FAR}H${-FAR}Z` : pts.join(''));
-}
-
-let looping = false;
-let last = 0;
-function frame(now: number) {
-  const k = 1 - Math.exp(-Math.min(64, now - last) / TAU);
-  last = now;
-  let moving = false;
-  for (const it of items) {
-    if (!it.svg.isConnected) { items.delete(it); continue; }
-    const to = it.svg.getBoundingClientRect().top;
-    // Off screen (and not about to come on): nothing to show.
-    if (to > innerHeight * 1.5 || to + it.svg.getBoundingClientRect().height < -innerHeight * 0.5) { it.top = to; continue; }
-    const next = Math.abs(to - it.top) < 0.5 ? to : it.top + (to - it.top) * k;
-    if (next === it.top && next === to) continue;
-    it.top = next;
-    paint(it);
-    if (next !== to) moving = true;
-  }
-  looping = moving;
-  if (moving) requestAnimationFrame(frame);
-}
-function kick() {
-  if (looping) return;
-  looping = true;
-  last = performance.now();
-  requestAnimationFrame(frame);
-}
-addEventListener('scroll', kick, { passive: true });
-addEventListener('resize', kick);

@@ -1,16 +1,15 @@
-// Charts for "how diverse is my spotify?". Data comes from the workshop
+// Charts for "How diverse is my Spotify?". Data comes from the workshop
 // (~/Documents/Personal/blog/music_diversity/build_post_data.py).
 // House style: everything grey, the point in accent (terracotta), a contrast in
-// accent2 (sage). All labels lowercase, like the text.
+// accent2 (sage). Labels in sentence case, names as written, like the text.
 import * as Plot from '@observablehq/plot';
 import { feature } from 'topojson-client';
 import { geoBounds, geoCentroid, geoContains, geoEqualEarth } from 'd3-geo';
 import world from 'world-atlas/countries-110m.json';
 import { base, type ChartFn, type ChartContext } from '../../../lib/chart';
 
-const pct = (v: number) => `${Math.round(v * 100)}%`;
 const narrow = (ctx: ChartContext) => ctx.width < 560;
-const lc = (s: string) => s.toLowerCase();
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const yearAxis = (ctx: ChartContext) => ({ label: null, tickFormat: 'd', ticks: narrow(ctx) ? [2016, 2020, 2024] : 6 });
 const pctAxis = { label: null, percent: true, ticks: 5, tickFormat: (v: number) => `${v}%` };
 
@@ -62,11 +61,8 @@ export const sources: ChartFn<Source[]> = (data, ctx) => {
     marks: [
       Plot.barY(long, { ...stack, fill: 'source', inset: 0.5 }),
       Plot.text(long.filter((d) => d.quarter === last), Plot.stackY({
-        ...stack, text: 'source', textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
+        ...stack, text: (d: any) => cap(d.source), textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
       })),
-      Plot.tip(long, Plot.pointerX(Plot.stackY({
-        ...stack, title: (d: any) => `${d.quarter} · ${d.source}: ${pct(d.share)}\n${d.total.toLocaleString()} plays that quarter`,
-      }))),
     ],
   });
 };
@@ -78,19 +74,16 @@ type PlaylistGroup = { group: string; plays: number; n: number; spotify: boolean
 export const playlists: ChartFn<PlaylistGroup[]> = (data, ctx) => {
   const n = narrow(ctx);
   const max = Math.max(...data.map((d) => d.plays));
-  // Names as written for playlists people made (Tunes); lowercase for Spotify's own (daily mix 1).
-  const nm = (d: PlaylistGroup, t: string) => (d.spotify ? lc(t) : t);
-  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => nm(d, t.replace(/ \(\d+\)$/, ''))).filter((t) => t !== '?').join(', ');
+  const ex = (d: PlaylistGroup) => d.top.slice(0, 2).map((t) => t.replace(/ \(\d+\)$/, '')).filter((t) => t !== '?').join(', ');
   return Plot.plot({
     ...base(ctx, data.length * 38 + 20),
     marginLeft: n ? 150 : 230,
     marginRight: 10,
     x: { axis: null, domain: [0, n ? max * 1.25 : max * 2.3] },
-    y: { label: null, domain: data.map((d) => d.group), padding: 0.25, tickSize: 0 },
+    y: { label: null, domain: data.map((d) => d.group), padding: 0.25, tickSize: 0, tickFormat: cap },
     marks: [
       Plot.barX(data, { y: 'group', x: 'plays', fill: (d: PlaylistGroup) => (d.spotify ? ctx.colors.accent2 : d.group.startsWith('named') ? ctx.colors.accent : ctx.colors.faint), rx: 2 }),
       Plot.text(data, { y: 'group', x: 'plays', text: (d: PlaylistGroup) => (n || !ex(d) ? `${d.plays.toLocaleString()}` : `${d.plays.toLocaleString()} · ${ex(d)}`), dx: 6, textAnchor: 'start', fill: ctx.colors.muted }),
-      Plot.tip(data, Plot.pointerY({ y: 'group', x: 'plays', title: (d: PlaylistGroup) => `${d.group}: ${d.plays.toLocaleString()} plays in ${d.n} playlist${d.n > 1 ? 's' : ''}\n${d.top.map((t) => nm(d, t)).join('\n')}` })),
     ],
   });
 };
@@ -104,8 +97,8 @@ export const lists: ChartFn<ListRow[]> = (data, ctx) => {
   const order = ['tunes', 'old', 'liked', 'album', 'none'];
   const n = narrow(ctx);
   const name: Record<string, string> = n
-    ? { tunes: 'Tunes', old: 'old playlists', liked: 'liked', album: 'full albums', none: 'everything else' }
-    : { tunes: 'Tunes', old: 'my other old playlists', liked: 'liked songs', album: 'full albums', none: 'everything else' };
+    ? { tunes: 'Tunes', old: 'Old playlists', liked: 'Liked', album: 'Full albums', none: 'Everything else' }
+    : { tunes: 'Tunes', old: 'My other old playlists', liked: 'Liked songs', album: 'Full albums', none: 'Everything else' };
   const fill: Record<string, string> = { tunes: ctx.colors.accent, old: ctx.colors.muted, liked: ctx.colors.accent2, album: ctx.colors.extra[0], none: ctx.colors.faint };
   const labelAt: Record<string, number> = n
     ? { tunes: 2017, old: 2018, liked: 2023, album: 2021, none: 2023 }
@@ -127,7 +120,6 @@ export const lists: ChartFn<ListRow[]> = (data, ctx) => {
       }), {
         x: 'year', y: 'y', text: (d: any) => name[d.list], fill: (d: any) => (d.list === 'none' ? ctx.colors.ink : ctx.colors.bg), fontWeight: 600,
       }),
-      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: ListRow) => `${d.year} · ${name[d.list]}: ${pct(d.share)}` }))),
     ],
   });
 };
@@ -146,8 +138,7 @@ export const genres: ChartFn<Genre[]> = (data, ctx) => {
   const fill = (d: Genre) => (on.includes(d.genre) ? hue[d.genre] : ctx.colors.faint);
   const lastYear = Math.max(...data.map((d) => d.year));
   const stack = { x: 'year', y: 'share', z: 'genre', order };
-  const genreName = (g: string) => lc(g).replace('r&b', 'R&B');
-  const label = (g: string) => genreName(narrow(ctx) && g === 'Indie & alternative' ? 'indie' : g);
+  const label = (g: string) => (narrow(ctx) && g === 'Indie & alternative' ? 'Indie' : g);
   return Plot.plot({
     ...base(ctx, 340),
     marginRight: narrow(ctx) ? 84 : 130,
@@ -160,7 +151,6 @@ export const genres: ChartFn<Genre[]> = (data, ctx) => {
       Plot.text(mids(data.filter((d) => d.year === lastYear), 'genre', order, (g) => on.includes(g) || ctx.step === 3), {
         x: 'year', y: 'y', text: (d: Genre) => label(d.genre), textAnchor: 'start', dx: 8, fill: ctx.colors.ink,
       }),
-      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Genre) => `${d.year} · ${genreName(d.genre)}: ${pct(d.share)}` }))),
     ],
   });
 };
@@ -193,9 +183,8 @@ export const who: ChartFn<Who[]> = (data, ctx) => {
     marks: [
       Plot.barY(data, { ...stack, fill: (d: Who) => fill[d.who], fillOpacity: (d: Who) => (d.who === 'women-only group' ? 0.6 : 1), inset: 0.5 }),
       Plot.text(mids(data.filter((d) => d.year === lastYear), 'who', order, (w) => labelled.has(w)), {
-        x: 'year', y: 'y', text: 'who', textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
+        x: 'year', y: 'y', text: (d: Who) => cap(d.who), textAnchor: 'start', dx: band / 2 + 6, fill: ctx.colors.ink,
       }),
-      Plot.tip(data, Plot.pointerX(Plot.stackY({ ...stack, title: (d: Who) => `${d.year} · ${d.who}: ${(d.share * 100).toFixed(1)}%` }))),
     ],
   });
 };
@@ -207,7 +196,7 @@ const CLASSICAL = new Set(['Frédéric Chopin', 'Brigitte Engerer', 'Giuseppe Ve
 
 /** All-time top 50. Women and mixed groups in terracotta, classical credits faded. */
 export const topArtists: ChartFn<Top[]> = (data, ctx) => {
-  const label = (d: Top) => `${d.rank}. ${lc(d.artist)}`;
+  const label = (d: Top) => `${d.rank}. ${d.artist}`;
   const isWoman = (d: Top) => !CLASSICAL.has(d.artist) && /woman|mixed/.test(d.who);
   const fill = (d: Top) => (isWoman(d) ? ctx.colors.accent : CLASSICAL.has(d.artist) ? ctx.colors.line : ctx.colors.faint);
   return Plot.plot({
@@ -218,8 +207,7 @@ export const topArtists: ChartFn<Top[]> = (data, ctx) => {
     y: { label: null, domain: data.map(label), padding: 0.18, tickSize: 0 },
     marks: [
       Plot.barX(data, { y: label, x: 'plays', fill, rx: 2 }),
-      Plot.text(data.filter(isWoman), { y: label, x: 'plays', text: (d: Top) => d.who, dx: 6, textAnchor: 'start', fill: ctx.colors.ink, fontSize: 11 }),
-      Plot.tip(data, Plot.pointerY({ y: label, x: 'plays', title: (d: Top) => `#${d.rank} ${lc(d.artist)}\n${d.plays.toLocaleString()} plays · ${CLASSICAL.has(d.artist) ? 'classical credit' : d.who}` })),
+      Plot.text(data.filter(isWoman), { y: label, x: 'plays', text: (d: Top) => cap(d.who), dx: 6, textAnchor: 'start', fill: ctx.colors.ink, fontSize: 11 }),
     ],
   });
 };
@@ -270,13 +258,11 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
       dropped ? null : Plot.areaY(rows, { x: 'date', y1: 'base', y2: (d: any) => (d.top ? d.v : NaN), z: 'artist', fill: ctx.colors.accent, curve: 'step' }),
       // Rows thinner than ~8px (66 artists on a phone): only name the dropouts.
       Plot.text(thin ? artists.filter((a) => dropped && a.last12 === 0) : artists, {
-        x: months[0], y: (a: Life) => artists.indexOf(a) + 0.55, text: (a: Life) => lc(a.artist), textAnchor: 'end', dx: -6,
+        x: months[0], y: (a: Life) => artists.indexOf(a) + 0.55, text: (a: Life) => a.artist, textAnchor: 'end', dx: -6,
         fontSize: Math.max(7.5, Math.min(12, rowH * 1.15)),
         fill: (a: Life) => (dropped ? (a.last12 === 0 ? ctx.colors.ink : ctx.colors.line) : ctx.colors.muted),
         fontWeight: (a: Life) => (dropped && a.last12 === 0 ? 600 : 400),
       }),
-      Plot.tip(rows, Plot.pointer({ x: 'date', y: (d: any) => d.i + 0.5, maxRadius: 12,
-        title: (d: any) => `${lc(d.artist)}\n${d.date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }).toLowerCase()}: ${d.p} plays${d.top ? ' · top 10 year' : ''}` })),
     ],
   });
 };
@@ -291,12 +277,11 @@ function favGrid(data: Fav[], ctx: ChartContext, height: number) {
     padding: 0.1,
     // Phones: every other year, or the labels run into each other.
     x: { label: null, type: 'band', axis: 'top', tickSize: 0, tickFormat: (y: number) => (n ? (y % 2 ? '' : `’${String(y).slice(2)}`) : String(y)) },
-    y: { label: null, domain: data.map((a) => a.artist), tickSize: 0, tickFormat: lc },
+    y: { label: null, domain: data.map((a) => a.artist), tickSize: 0 },
     marks: [
       Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.line, rx: 2 }),
       Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.accent, fillOpacity: (d: any) => Math.min(1, Math.sqrt(d.plays / 700)), rx: 2 }),
       Plot.dot(cells.filter((d) => d.top), { x: 'year', y: 'artist', r: 3.5, fill: ctx.colors.bg, stroke: ctx.colors.ink, strokeWidth: 1.2 }),
-      Plot.tip(cells, Plot.pointer({ x: 'year', y: 'artist', title: (d: any) => `${lc(d.artist)} · ${d.year}\n${d.plays} plays${d.top ? ' · top 10' : ''}` })),
     ],
   });
 }
@@ -354,8 +339,6 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
     cum.set(r.id, (cum.get(r.id) ?? 0) + r.plays);
     first.set(r.id, Math.min(first.get(r.id) ?? 9999, r.year));
   }
-  const top = new Map(data.countries.map((c) => [c.id, c.top]));
-  const names = new Map(shapes.map((f: any) => [f.id, f.properties.name as string]));
   const max = Math.max(...cum.values());
   const isNew = (id: string) => step > 0 && !final && (first.get(id) ?? 0) > before;
   const mapH = Math.round(ctx.width * 0.48);
@@ -373,12 +356,6 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
         fillOpacity: (d: any) => (!cum.has(d.id) || isNew(d.id) ? 1 : 0.3 + 0.7 * (Math.log10(cum.get(d.id)!) / Math.log10(max))),
       }),
       Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: 22, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
-      Plot.tip(dots, Plot.pointer({ x: 'x', y: 'y', maxRadius: gap * 1.5,
-        title: (d: any) => {
-          const p = cum.get(d.id);
-          return p ? `${names.get(d.id)}: ${p.toLocaleString()} plays by ${upto}, first in ${first.get(d.id)}\n${(top.get(d.id) ?? []).map(lc).join(', ')}` : `${names.get(d.id)}: nothing yet`;
-        },
-      })),
     ],
   });
 };
