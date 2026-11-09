@@ -69,7 +69,8 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
     let building = false;
     // Bumped on every redraw, so a transition rendered before it is thrown away.
     let gen = 0;
-    let render: (step: number) => Promise<Element> = async () => { throw new Error('not loaded'); };
+    // Unset until the chart code has loaded (scroll events can come first).
+    let render: ((step: number) => Promise<Element>) | null = null;
 
     const fail = (msg: string) => {
       canvas.innerHTML = `<p class="chart-fallback">${msg}</p>`;
@@ -87,10 +88,10 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
 
     /** Show the scrolly chart at the current scroll position. */
     const sync = async (): Promise<void> => {
-      if (!near || stale || building) return;
+      if (!near || stale || building || !render) return;
       const { n, p } = position();
       if (n < 2) {
-        canvas.replaceChildren(await render(0));
+        canvas.replaceChildren(await render!(0));
         return;
       }
       const k = Math.min(Math.floor(p), n - 2);
@@ -102,13 +103,13 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
         building = true;
         const g = gen;
         try {
-          const a = await render(k);
-          const b = await render(k + 1);
+          const a = await render!(k);
+          const b = await render!(k + 1);
           if (g === gen) {
             seg = { k, scrub: scrubber(a, b) };
             // Render the neighbouring steps while the reader is reading, so
             // the next transition doesn't have to wait for them.
-            for (const s of [k + 2, k - 1]) if (s >= 0 && s < n) idle(() => { if (g === gen) render(s); });
+            for (const s of [k + 2, k - 1]) if (s >= 0 && s < n) idle(() => { if (g === gen) render!(s); });
           }
         } finally {
           building = false;
@@ -143,7 +144,7 @@ const json = data === undefined ? undefined : JSON.stringify(data).replace(/</g,
       try {
         if (scrolly) await sync();
         else {
-          const node = await render(0);
+          const node = await render!(0);
           canvas.replaceChildren(node);
           // Grow in with the scroll position, like the scrollies.
           if (!reduceMotion.matches) reveal(node);

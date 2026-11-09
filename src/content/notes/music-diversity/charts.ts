@@ -218,7 +218,12 @@ type Fav = { artist: string; top10: number[]; total: number; years: { year: numb
 type FavData = { lifelines: { months: string[]; artists: Life[] }; favourites: Fav[] };
 
 /** Favourites (scrolly). 0: all 66 lifelines · 1: the six that dropped out ·
- *  2: only the ones that came back · 3: the simple grid. */
+ *  2: the 19 that came back, highlighted among all 66 · 3: zoomed in on those
+ *  19 · 4: those 19 summed per year. Colour and position never change in the
+ *  same step: step 2 only recolours, step 3 only moves.
+ *  Every step draws the same 66 rows and 66 names (the ones not in a step
+ *  squashed flat and faded out), so the morph can move each row and name to
+ *  its new place instead of cross-fading two different charts. */
 export const favourites: ChartFn<FavData> = (data, ctx) => {
   const n = narrow(ctx);
   // Height follows the page layout, not the chart width: on phones the chart
@@ -228,63 +233,90 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
   const height = phone
     ? Math.max(320, Math.round(window.innerHeight * 0.55))
     : Math.min(680, Math.max(420, Math.round(window.innerHeight * 0.84)));
-  if (ctx.step >= 3) return favGrid(data.favourites, ctx, height);
+  const step = Math.min(ctx.step, 4);
+  const all = data.lifelines.artists;
+  const fav = new Map(data.favourites.map((a) => [a.artist, a]));
 
-  const repeat = new Set(data.favourites.map((a) => a.artist));
-  const artists = ctx.step === 2 ? data.lifelines.artists.filter((a) => repeat.has(a.artist)) : data.lifelines.artists;
+  // Row of each artist in this step. Steps 3 and 4 have 19 rows: the others
+  // are squashed onto the line between the rows they sat between.
+  const kept = all.filter((a) => fav.has(a.artist));
+  const row = new Map<string, number>();
+  all.forEach((a, i) => {
+    if (step < 3) row.set(a.artist, i);
+    else if (fav.has(a.artist)) row.set(a.artist, kept.indexOf(a));
+    else row.set(a.artist, all.slice(0, i).filter((b) => fav.has(b.artist)).length - 0.5);
+  });
+  const shown = (a: string) => step < 3 || fav.has(a);
+  const nRows = step < 3 ? all.length : kept.length;
+
   const months = data.lifelines.months.map((m) => new Date(`${m}-01T00:00:00Z`));
   const gap = (m: string) => m >= '2016-11' && m <= '2017-05';
   const rows: any[] = [];
-  artists.forEach((a, i) => {
+  for (const a of all) {
     const max = Math.max(...a.plays) || 1;
+    const r = row.get(a.artist)!;
+    const s = shown(a.artist) ? 1 : 0;
     a.plays.forEach((p, k) => {
       const m = data.lifelines.months[k];
-      const v = gap(m) ? NaN : Math.sqrt(p / max) * 0.88;
-      rows.push({ artist: a.artist, i, date: months[k], base: i + 1, v: i + 1 - v, p, top: a.top10.includes(+m.slice(0, 4)), gone: a.last12 === 0 });
+      const v = gap(m) ? NaN : Math.sqrt(p / max) * 0.88 * s;
+      rows.push({ artist: a.artist, date: months[k], base: r + 1, v: r + 1 - v, top: a.top10.includes(+m.slice(0, 4)), gone: a.last12 === 0 });
     });
-  });
-  const dropped = ctx.step === 1;
-  const rowH = (height - 22) / artists.length;
+  }
+  const dropped = step === 1;
+  const highlight = step === 2;
+  const rowH = (height - 22) / nRows;
   const thin = rowH < 6.5;
-  const grey = (d: any) => (dropped && d.gone ? ctx.colors.accent2 : dropped ? ctx.colors.line : ctx.colors.faint);
+  const grey = (d: any) =>
+    dropped ? (d.gone ? ctx.colors.accent2 : ctx.colors.line)
+      : highlight ? (fav.has(d.artist) ? ctx.colors.faint : ctx.colors.line)
+        : ctx.colors.faint;
+  // Terracotta (top 10 years): off while the dropouts are shown, only on the
+  // 19 in the highlight step. Per row, so the colour can come in without the
+  // shapes changing.
+  const topOn = (d: any) => (dropped || step === 4 || (highlight && !fav.has(d.artist)) ? 0 : 1);
+  // Step 4: the lifelines fade out and yearly blocks take their place, on the
+  // same time axis, so each block sits right over the year it sums up.
+  const lines = step === 4 ? 0 : 1;
+  const first = months[0], last = months[months.length - 1];
+  const yearStart = (y: number) => new Date(Math.max(+first, Date.UTC(y, 0, 1)));
+  const yearEnd = (y: number) => new Date(Math.min(+last, Date.UTC(y + 1, 0, 1)));
+  const cells = step < 4 ? [] : data.favourites.flatMap((a) => a.years.map((y) => ({
+    year: y.year, plays: y.plays, r: row.get(a.artist)!, top: a.top10.includes(y.year),
+  })));
+  const cell = { x1: (d: any) => yearStart(d.year), x2: (d: any) => yearEnd(d.year), y1: (d: any) => d.r + 0.08, y2: (d: any) => d.r + 0.92, insetLeft: 1, insetRight: 1, rx: 2 };
   return Plot.plot({
     ...base(ctx, height),
     marginLeft: n ? (thin && !dropped ? 8 : 112) : 150,
     marginTop: 22,
-    x: { label: null, axis: 'top', grid: true, ticks: n ? 4 : 6 },
-    y: { axis: null, domain: [artists.length, 0], reverse: false },
+    x: { label: null, axis: 'top', grid: true, ticks: n ? 4 : 6, domain: [first, last] },
+    y: { axis: null, domain: [nRows, 0], reverse: false },
     marks: [
-      Plot.areaY(rows, { x: 'date', y1: 'base', y2: 'v', z: 'artist', fill: grey, curve: 'step' }),
-      dropped ? null : Plot.areaY(rows, { x: 'date', y1: 'base', y2: (d: any) => (d.top ? d.v : NaN), z: 'artist', fill: ctx.colors.accent, curve: 'step' }),
+      // Opacities as per-row channels (not constants), so they always sit on
+      // the same elements and the morph can tween them.
+      Plot.areaY(rows, { x: 'date', y1: 'base', y2: 'v', z: 'artist', fill: grey, fillOpacity: () => lines, curve: 'step' }),
+      // Drawn in every step, invisible where it's off, so it always moves
+      // with its row instead of fading in somewhere else.
+      Plot.areaY(rows, { x: 'date', y1: 'base', y2: (d: any) => (d.top ? d.v : NaN), z: 'artist', fill: ctx.colors.accent, fillOpacity: topOn, curve: 'step' }),
+      step === 4 ? Plot.rect(cells, { ...cell, fill: ctx.colors.line }) : null,
+      step === 4 ? Plot.rect(cells, { ...cell, fill: ctx.colors.accent, fillOpacity: (d: any) => Math.min(1, Math.sqrt(d.plays / 700)) }) : null,
+      step === 4 ? Plot.dot(cells.filter((d) => d.top), {
+        x: (d: any) => new Date((+yearStart(d.year) + +yearEnd(d.year)) / 2), y: (d: any) => d.r + 0.5,
+        r: 3.5, fill: ctx.colors.bg, stroke: ctx.colors.ink, strokeWidth: 1.2,
+      }) : null,
       // Rows thinner than ~8px (66 artists on a phone): only name the dropouts.
-      Plot.text(thin ? artists.filter((a) => dropped && a.last12 === 0) : artists, {
-        x: months[0], y: (a: Life) => artists.indexOf(a) + 0.55, text: (a: Life) => a.artist, textAnchor: 'end', dx: -6,
+      Plot.text(all, {
+        x: first, y: (a: Life) => row.get(a.artist)! + 0.55, text: (a: Life) => a.artist, textAnchor: 'end', dx: -6,
         fontSize: Math.max(7.5, Math.min(12, rowH * 1.15)),
-        fill: (a: Life) => (dropped ? (a.last12 === 0 ? ctx.colors.ink : ctx.colors.line) : ctx.colors.muted),
-        fontWeight: (a: Life) => (dropped && a.last12 === 0 ? 600 : 400),
+        fillOpacity: (a: Life) => (!shown(a.artist) || (thin && !(dropped && a.last12 === 0)) ? 0 : 1),
+        fontWeight: (a: Life) => ((dropped && a.last12 === 0) || (highlight && fav.has(a.artist)) ? 600 : 400),
+        fill: (a: Life) =>
+          dropped ? (a.last12 === 0 ? ctx.colors.ink : ctx.colors.line)
+            : highlight ? (fav.has(a.artist) ? ctx.colors.ink : ctx.colors.line)
+              : step === 4 ? ctx.colors.ink : ctx.colors.muted,
       }),
     ],
   });
 };
-
-function favGrid(data: Fav[], ctx: ChartContext, height: number) {
-  const cells = data.flatMap((a) => a.years.map((y) => ({ artist: a.artist, year: y.year, plays: y.plays, top: a.top10.includes(y.year) })));
-  const n = narrow(ctx);
-  return Plot.plot({
-    ...base(ctx, Math.min(height, data.length * 26 + 34)),
-    marginLeft: n ? 132 : 150,
-    marginTop: 26,
-    padding: 0.1,
-    // Phones: every other year, or the labels run into each other.
-    x: { label: null, type: 'band', axis: 'top', tickSize: 0, tickFormat: (y: number) => (n ? (y % 2 ? '' : `’${String(y).slice(2)}`) : String(y)) },
-    y: { label: null, domain: data.map((a) => a.artist), tickSize: 0 },
-    marks: [
-      Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.line, rx: 2 }),
-      Plot.cell(cells, { x: 'year', y: 'artist', fill: ctx.colors.accent, fillOpacity: (d: any) => Math.min(1, Math.sqrt(d.plays / 700)), rx: 2 }),
-      Plot.dot(cells.filter((d) => d.top), { x: 'year', y: 'artist', r: 3.5, fill: ctx.colors.bg, stroke: ctx.colors.ink, strokeWidth: 1.2 }),
-    ],
-  });
-}
 
 // ---------------------------------------------------------------------------
 type CountryYear = { year: number; id: string; cc: string; plays: number };
@@ -324,6 +356,23 @@ function dotGrid(width: number, height: number, gap: number) {
   return dots;
 }
 
+/** The dot grid as one <path> per country (every dot a small circle in it).
+ *  A few hundred elements instead of thousands of circles, so changing a
+ *  country's colour between scrolly steps tweens one attribute, not one per dot. */
+const pathCache = new Map<string, { id: string; d: string }[]>();
+function countryPaths(width: number, height: number, gap: number, r: number) {
+  const key = `${width}x${height}x${gap}x${r}`;
+  if (pathCache.has(key)) return pathCache.get(key)!;
+  const by = new Map<string, string[]>();
+  for (const { x, y, id } of dotGrid(width, height, gap)) {
+    if (!by.has(id)) by.set(id, []);
+    by.get(id)!.push(`M${(x - r).toFixed(1)},${y.toFixed(1)}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0`);
+  }
+  const out = [...by].map(([id, parts]) => ({ id, d: parts.join('') }));
+  pathCache.set(key, out);
+  return out;
+}
+
 /** Countries heard so far (scrolly), as a dot map. Each step: everything up to
  *  that year; countries new since the previous step in sage. The last step is
  *  all terracotta. The dots stay the same between steps, so their colours morph. */
@@ -343,18 +392,27 @@ export const worldMap: ChartFn<MapData> = (data, ctx) => {
   const isNew = (id: string) => step > 0 && !final && (first.get(id) ?? 0) > before;
   const mapH = Math.round(ctx.width * 0.48);
   const gap = Math.max(4, ctx.width / 140);
-  const dots = dotGrid(ctx.width, mapH, gap);
+  const paths = countryPaths(ctx.width, mapH, gap, +(gap * 0.36).toFixed(2));
   return Plot.plot({
     ...base(ctx, mapH + 30),
     marginTop: 0, marginRight: 0, marginLeft: 0, marginBottom: 30,
     x: { axis: null, domain: [0, ctx.width] },
     y: { axis: null, domain: [mapH, 0] },
     marks: [
-      Plot.dot(dots, {
-        x: 'x', y: 'y', r: gap * 0.36, stroke: null,
-        fill: (d: any) => (!cum.has(d.id) ? ctx.colors.line : isNew(d.id) ? ctx.colors.accent2 : ctx.colors.accent),
-        fillOpacity: (d: any) => (!cum.has(d.id) || isNew(d.id) ? 1 : 0.3 + 0.7 * (Math.log10(cum.get(d.id)!) / Math.log10(max))),
-      }),
+      // Pixel coordinates already (the scales are the identity), so this is a
+      // plain render function instead of a Plot mark.
+      () => {
+        const ns = 'http://www.w3.org/2000/svg';
+        const g = document.createElementNS(ns, 'g');
+        for (const c of paths) {
+          const p = document.createElementNS(ns, 'path');
+          p.setAttribute('d', c.d);
+          p.setAttribute('fill', !cum.has(c.id) ? ctx.colors.line : isNew(c.id) ? ctx.colors.accent2 : ctx.colors.accent);
+          p.setAttribute('fill-opacity', String(!cum.has(c.id) || isNew(c.id) ? 1 : +(0.3 + 0.7 * (Math.log10(cum.get(c.id)!) / Math.log10(max))).toFixed(3)));
+          g.append(p);
+        }
+        return g;
+      },
       Plot.text([`${upto}: ${cum.size} countries`], { frameAnchor: 'bottom-left', dy: 22, fill: ctx.colors.ink, fontSize: 15, fontWeight: 600 }),
     ],
   });

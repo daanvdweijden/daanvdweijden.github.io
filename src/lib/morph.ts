@@ -19,7 +19,7 @@
 import { gsap } from './motion';
 
 /** Attributes holding numbers that can be interpolated (paths, positions). */
-const GEOMETRY = ['d', 'x', 'y', 'x1', 'x2', 'y1', 'y2', 'cx', 'cy', 'r', 'width', 'height', 'transform', 'points'];
+const GEOMETRY = ['d', 'x', 'y', 'x1', 'x2', 'y1', 'y2', 'cx', 'cy', 'r', 'width', 'height', 'transform', 'points', 'font-size'];
 /** Attributes holding colours or opacities. */
 const PAINT = ['fill', 'stroke', 'fill-opacity', 'stroke-opacity', 'opacity'];
 
@@ -60,6 +60,9 @@ function signature(g: Element): string {
 
 type Change = { el: Element; attr: string; from: string; to: string | null };
 
+/** What SVG uses for a paint attribute that isn't set. */
+const paintDefault = (attr: string) => (attr === 'stroke' ? 'none' : attr === 'fill' ? 'black' : '1');
+
 /** Attribute changes from `o` to `n` (same structure), or null if a shape can't be interpolated. */
 function groupChanges(o: Element, n: Element): Change[] | null {
   const olds = [o, ...o.querySelectorAll('*')];
@@ -76,9 +79,9 @@ function groupChanges(o: Element, n: Element): Change[] | null {
     for (const attr of PAINT) {
       const from = a.getAttribute(attr), to = b.getAttribute(attr);
       if (from === to) continue;
-      // Missing on one side: use the SVG default (fill black, stroke none, opacity 1).
-      const dflt = attr === 'stroke' ? 'none' : attr === 'fill' ? 'black' : '1';
-      out.push({ el: b, attr, from: from ?? dflt, to });
+      // Missing on one side: tween from/to the SVG default (fill black,
+      // stroke none, opacity 1). Plot leaves out fill-opacity when it is 1.
+      out.push({ el: b, attr, from: from ?? paintDefault(attr), to });
     }
   }
   return out;
@@ -142,9 +145,10 @@ function tweened(a: Element, b: Element, sa: Element, sb: Element, place: Place)
     tl = seekable();
     for (const c of changes) {
       // Colours go through rgba(); anything else that can't tween switches halfway.
+      const end = c.to ?? (PAINT.includes(c.attr) ? paintDefault(c.attr) : null);
       const isPaint = PAINT.includes(c.attr) && isNaN(+c.from);
       const from = isPaint ? rgba(c.from) : c.from;
-      const to = c.to === null ? null : isPaint ? rgba(c.to) : c.to;
+      const to = end === null ? null : isPaint ? rgba(end) : end;
       if (from !== null && to !== null) tl.fromTo(c.el, { attr: { [c.attr]: from } }, { attr: { [c.attr]: to } }, 0);
       else tl.set(c.el, { attr: { [c.attr]: c.to ?? c.from } }, 0.5);
     }
