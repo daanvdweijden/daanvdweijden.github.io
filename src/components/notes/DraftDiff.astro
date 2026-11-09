@@ -1,0 +1,374 @@
+---
+// <DraftDiff draft={raw}>: the "Show AI edits" toggle. The page
+// passes the note's draft.md (the messy original, see the blog workshop); the
+// published text stays what you read, and switching the toggle on marks every
+// word that differs from the draft. Hover (or tap) a mark to see the draft's
+// version. The comparison runs in the browser on the rendered text, so it is
+// a heuristic word diff, not an exact one:
+//   sage dotted     = spelling or capitals
+//   terracotta      = reworded (hover shows the draft words)
+//   terracotta line = added, not in the draft
+//   small caret     = cut from the draft
+// Only prose is compared (paragraphs, headings, lists), not scrolly steps, figures, asides or
+// the technical report.
+interface Props {
+  draft: string;
+}
+// Obsidian comments (%% … %%, often notes to Claude) never leave the build.
+const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
+---
+
+<div class="dd-ctl">
+  <button type="button" class="dd-toggle" aria-pressed="false">
+    <span class="dd-switch" aria-hidden="true"></span>
+    Show AI edits
+  </button>
+  <p class="dd-legend" hidden>
+    <span class="dd-stat"></span><br />
+    <span class="dd dd-reworded">reworded</span> · <span class="dd dd-typo">spelling</span> ·
+    <span class="dd dd-added">added</span> · <span class="dd-cut-key">‸</span>&nbsp;cut<br />
+    Hover a mark to see my first draft.
+  </p>
+  <script type="application/json" class="dd-draft" set:html={JSON.stringify(draft)} />
+</div>
+
+<script>
+  type Tok = { raw: string; key: string };
+  // own: link text or an <Own> span. Links are sources I collected and <Own>
+  // is text I wrote after the draft, so neither is marked as an AI edit.
+  type FTok = Tok & { node: Text; start: number; end: number; own: boolean };
+  type Hunk = { type: 'typo' | 'reworded' | 'added' | 'cut'; was: string; els: HTMLElement[] };
+
+  const key = (w: string) => w.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]/gu, '');
+  const bare = (w: string) => w.replace(/[‘’]/g, "'").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+  // Same word, give or take a typo ("vailidity" ~ "validity").
+  const near = (a: string, b: string) =>
+    a === b || a.replace('~', '') === b.replace('~', '') || (a.length >= 4 && b.length >= 4 && Math.abs(a.length - b.length) <= 2 && a[0] === b[0] && lev(a, b) <= Math.max(1, Math.floor(Math.max(a.length, b.length) / 4)));
+
+  // The draft as plain words: no title line, no Obsidian comments, no
+  // Markdown syntax. Bracketed placeholders ("[three examples]") stay in, so
+  // the hover shows what the final text replaced them with.
+  // Contractions: "I have" and "I've" get the same key on both sides, so the
+  // switch counts as tidying (shown as spelling) rather than a rewording.
+  const PRON = 'i|you|we|they|he|she|it|that|there|what|who|let';
+  const AUX: Record<string, string> = { have: 've', would: 'd', had: 'd', is: 's', has: 's', are: 're', will: 'll', am: 'm', us: 's' };
+  const NEG = new Set(['do', 'does', 'did', 'is', 'are', 'was', 'were', 'have', 'has', 'had', 'could', 'would', 'should', 'need', 'must']);
+  function contractedKey(w: string): string | null {
+    const b = bare(w).toLowerCase();
+    let m = b.match(new RegExp(`^(${PRON})'(ve|d|s|re|ll|m)$`));
+    if (m) return `${m[1]}~${m[2]}`;
+    if (b === "can't" || b === 'cannot') return 'can~not';
+    if (b === "won't") return 'will~not';
+    m = b.match(/^(\w+)n't$/);
+    if (m && NEG.has(m[1])) return `${m[1]}~not`;
+    return null;
+  }
+  function pairKey(a: string, b: string): string | null {
+    const x = bare(a).toLowerCase(), y = bare(b).toLowerCase();
+    if (/[^\p{L}]$/u.test(a.replace(/[’']/g, ''))) return null; // "I, have" is not a pair
+    if (new RegExp(`^(${PRON})$`).test(x) && AUX[y] && !(y === 'us' && x !== 'let')) return `${x}~${AUX[y]}`;
+    if (y === 'not' && (NEG.has(x) || x === 'can' || x === 'will')) return `${x}~not`;
+    return null;
+  }
+  function contract<T extends Tok>(toks: T[], join: (a: T, b: T) => T | null): T[] {
+    const out: T[] = [];
+    for (let i = 0; i < toks.length; i++) {
+      const c = contractedKey(toks[i].raw);
+      if (c) { out.push({ ...toks[i], key: c }); continue; }
+      const k = i + 1 < toks.length ? pairKey(toks[i].raw, toks[i + 1].raw) : null;
+      const joined = k ? join(toks[i], toks[i + 1]) : null;
+      if (k && joined) { out.push({ ...joined, key: k }); i++; continue; }
+      out.push(toks[i]);
+    }
+    return out;
+  }
+
+  function draftTokens(md: string): Tok[] {
+    const text = md
+      .replace(/%%[\s\S]*?%%/g, ' ')
+      .replace(/^#\s.*$/m, ' ')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+      .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '$1')
+      // Other [brackets] are placeholders for links and examples: notes, not prose.
+      .replace(/\[[^\]]*\]/g, ' ')
+      // So are <chart: …> placeholders.
+      .replace(/<[^>\n]*>/g, ' ')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/[*_`]/g, '');
+    const toks = (text.match(/\S+/g) ?? []).map((raw) => ({ raw, key: key(raw) })).filter((t) => t.key);
+    return contract(toks, (a, b) => ({ raw: `${a.raw} ${b.raw}`, key: '' }));
+  }
+
+  // The published prose as words, each remembering its text node and offset.
+  function finalTokens(root: HTMLElement): FTok[] {
+    const out: FTok[] = [];
+    const blocks = [...root.querySelectorAll<HTMLElement>(':scope > :is(p, h2, h3, ul, ol, blockquote)')];
+    const report = blocks.findIndex((b) => /^technical report/i.test(b.textContent?.trim() ?? ''));
+    for (const block of report >= 0 ? blocks.slice(0, report) : blocks) {
+      const walk = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+        acceptNode: (n) => (n.parentElement?.closest('figure, aside, script, style, .margin-note') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+      });
+      for (let n = walk.nextNode() as Text | null; n; n = walk.nextNode() as Text | null) {
+        const own = !!n.parentElement?.closest('a, [data-own]');
+        for (const m of n.data.matchAll(/\S+/g)) {
+          const k = key(m[0]);
+          if (k) out.push({ raw: m[0], key: k, node: n, start: m.index!, end: m.index! + m[0].length, own });
+        }
+      }
+    }
+    // Two words become one mark only when they sit in the same text node.
+    return contract(out, (a, b) => (a.node === b.node ? { ...a, raw: `${a.raw} ${b.raw}`, end: b.end } : null));
+  }
+
+  // LCS over the word keys (typos count as a match); fine for a few thousand words.
+  type Op = ['=', number, number] | ['-', number] | ['+', number];
+  function diff(a: Tok[], b: Tok[]): Op[] {
+    const n = a.length, m = b.length, w = m + 1;
+    const L = new Uint16Array((n + 1) * w);
+    for (let i = n - 1; i >= 0; i--)
+      for (let j = m - 1; j >= 0; j--)
+        L[i * w + j] = near(a[i].key, b[j].key) ? L[(i + 1) * w + j + 1] + 1 : Math.max(L[(i + 1) * w + j], L[i * w + j + 1]);
+    const ops: Op[] = [];
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (near(a[i].key, b[j].key) && L[i * w + j] === L[(i + 1) * w + j + 1] + 1) ops.push(['=', i++, j++]);
+      else if (L[(i + 1) * w + j] >= L[i * w + j + 1]) ops.push(['-', i++]);
+      else ops.push(['+', j++]);
+    }
+    while (i < n) ops.push(['-', i++]);
+    while (j < m) ops.push(['+', j++]);
+    return ops;
+  }
+
+  function lev(a: string, b: string) {
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+
+  function build(root: HTMLElement, md: string) {
+    const D = draftTokens(md);
+    const F = finalTokens(root);
+    let ops = diff(D, F);
+
+    // Heuristic clean-up: a lone matching word ("the", "and") between two
+    // changes is usually a coincidence; fold it into one bigger change.
+    for (let k = 1; k < ops.length - 1; k++) {
+      if (ops[k][0] === '=' && ops[k - 1][0] !== '=' && ops[k + 1][0] !== '=') {
+        const [, i, j] = ops[k] as ['=', number, number];
+        ops.splice(k, 1, ['-', i], ['+', j]);
+      }
+    }
+
+    // Walk the ops into hunks, and note per final word which hunk it is in.
+    const hunks: Hunk[] = [];
+    const wordHunk = new Map<number, number>(); // final token index → hunk index
+    const cutBefore = new Map<number, number>(); // final token index → cut hunk shown before it
+    let kept = 0;
+    let k = 0;
+    while (k < ops.length) {
+      const op = ops[k];
+      if (op[0] === '=') {
+        const d = D[op[1]], f = F[op[2]];
+        if (d.key === f.key && bare(d.raw).toLowerCase() === bare(f.raw).toLowerCase()) kept++;
+        if (!f.own && bare(d.raw) !== bare(f.raw)) {
+          wordHunk.set(op[2], hunks.push({ type: 'typo', was: bare(d.raw), els: [] }) - 1);
+        }
+        k++;
+        continue;
+      }
+      const del: number[] = [], ins: number[] = [];
+      while (k < ops.length && ops[k][0] !== '=') {
+        const o = ops[k++];
+        if (o[0] === '-') del.push(o[1]); else ins.push((o as ['+', number])[1]);
+      }
+      const was = del.map((i) => D[i].raw).join(' ');
+      if (!ins.length) {
+        const at = k < ops.length ? (ops[k] as ['=', number, number])[2] : F.length - 1;
+        cutBefore.set(at, hunks.push({ type: 'cut', was, els: [] }) - 1);
+        continue;
+      }
+      // A long new passage after a word or two of draft is an addition, not a
+      // rewording of those words.
+      let type: Hunk['type'] = del.length && !(del.length <= 2 && ins.length >= 8) ? 'reworded' : 'added';
+      if (del.length === 1 && ins.length === 1) {
+        const a = D[del[0]].key, b = F[ins[0]].key;
+        if (lev(a, b) <= Math.max(1, Math.floor(Math.max(a.length, b.length) / 3))) type = 'typo';
+      }
+      const h = hunks.push({ type, was: type === 'typo' ? bare(was) : was, els: [] }) - 1;
+      ins.filter((j) => !F[j].own).forEach((j) => wordHunk.set(j, h));
+    }
+
+    // Wrap the marked words, one text node at a time (right to left so the
+    // offsets stay valid).
+    const byNode = new Map<Text, number[]>();
+    F.forEach((t, j) => {
+      if (wordHunk.has(j) || cutBefore.has(j)) (byNode.get(t.node) ?? byNode.set(t.node, []).get(t.node)!).push(j);
+    });
+    for (const [node, js] of byNode) {
+      for (const j of js.reverse()) {
+        const t = F[j];
+        const after = node.splitText(t.start);
+        if (wordHunk.has(j)) {
+          const h = wordHunk.get(j)!;
+          // Next word in this node is part of the same change: keep the space
+          // in the mark so a reworded phrase reads as one highlight.
+          const joined = F[j + 1]?.node === node && wordHunk.get(j + 1) === h && !cutBefore.has(j + 1);
+          if (!joined) after.splitText(t.end - t.start);
+          const span = document.createElement('span');
+          span.className = `dd dd-${hunks[h].type}`;
+          span.dataset.h = String(h);
+          after.replaceWith(span);
+          span.append(after);
+          hunks[h].els.unshift(span);
+        }
+        if (cutBefore.has(j)) {
+          const h = cutBefore.get(j)!;
+          const mark = document.createElement('span');
+          mark.className = 'dd dd-cut';
+          mark.dataset.h = String(h);
+          mark.setAttribute('aria-label', `cut: ${hunks[h].was}`);
+          // At the very end of the text the caret goes after the last word.
+          const lastCut = j === F.length - 1 && k >= ops.length && ops[ops.length - 1][0] === '-';
+          if (lastCut) node.parentNode!.append(mark); else node.parentNode!.insertBefore(mark, node.nextSibling);
+          hunks[h].els.push(mark);
+        }
+      }
+    }
+    return { hunks, kept, draftWords: D.length, finalWords: F.length };
+  }
+
+  for (const ctl of document.querySelectorAll<HTMLElement>('.dd-ctl')) {
+    const root = document.querySelector<HTMLElement>('.prose');
+    const btn = ctl.querySelector<HTMLButtonElement>('.dd-toggle')!;
+    const legend = ctl.querySelector<HTMLElement>('.dd-legend')!;
+    const md = JSON.parse(ctl.querySelector('.dd-draft')!.textContent!);
+    if (!root) continue;
+
+    let hunks: Hunk[] | null = null;
+    const tip = document.createElement('div');
+    tip.className = 'dd-tip';
+    tip.setAttribute('role', 'tooltip');
+    tip.hidden = true;
+    document.body.append(tip);
+
+    const label = { typo: 'Spelling or contraction', reworded: 'My first draft', added: 'Added', cut: 'Cut' };
+    let active: number | null = null;
+    const show = (h: number) => {
+      if (!hunks) return;
+      hide();
+      active = h;
+      const hk = hunks[h];
+      hk.els.forEach((e) => e.classList.add('is-hot'));
+      tip.innerHTML = '';
+      const l = document.createElement('span');
+      l.className = 'dd-tip-label';
+      l.textContent = label[hk.type];
+      tip.append(l);
+      if (hk.was) {
+        const q = document.createElement('span');
+        q.className = 'dd-tip-was';
+        q.textContent = hk.was;
+        tip.append(q);
+      }
+      tip.hidden = false;
+      const r = hk.els[0].getBoundingClientRect();
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      const x = Math.min(Math.max(8, r.left + window.scrollX), window.scrollX + document.documentElement.clientWidth - tw - 8);
+      const above = r.top - th - 8 > 0;
+      tip.style.left = `${x}px`;
+      tip.style.top = `${(above ? r.top - th - 8 : r.bottom + 8) + window.scrollY}px`;
+    };
+    const hide = () => {
+      if (active !== null && hunks) hunks[active].els.forEach((e) => e.classList.remove('is-hot'));
+      active = null;
+      tip.hidden = true;
+    };
+
+    root.addEventListener('pointerover', (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>('.dd[data-h]');
+      if (el && document.documentElement.classList.contains('dd-on')) show(+el.dataset.h!);
+    });
+    root.addEventListener('pointerout', (e) => {
+      const to = (e as PointerEvent).relatedTarget as HTMLElement | null;
+      if (e.pointerType === 'mouse' && !to?.closest?.('.dd[data-h]')) hide();
+    });
+    // Touch: a tap shows the tooltip; a tap elsewhere hides it.
+    document.addEventListener('click', (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>('.dd[data-h]');
+      if (!el || !document.documentElement.classList.contains('dd-on')) return hide();
+      if (el.closest('a')) e.preventDefault();
+      show(+el.dataset.h!);
+    });
+    window.addEventListener('scroll', () => active !== null && hide(), { passive: true });
+
+    btn.addEventListener('click', () => {
+      if (!hunks) {
+        const r = build(root, md);
+        hunks = r.hunks;
+        const pct = Math.round((r.kept / r.draftWords) * 100);
+        const count = (t: Hunk['type']) => r.hunks.filter((h) => h.type === t && h.els.length > 0).length;
+        ctl.querySelector('.dd-stat')!.textContent =
+          `From my first draft to this note, ${pct}% of my words stayed exactly as I wrote them. AI edits: ${count('reworded')} rewordings, ${count('typo')} spelling fixes, ${count('added')} additions and ${count('cut')} cuts.`;
+      }
+      const on = document.documentElement.classList.toggle('dd-on');
+      btn.setAttribute('aria-pressed', String(on));
+      legend.hidden = !on;
+      if (!on) hide();
+    });
+  }
+</script>
+
+<style is:global>
+  .dd-ctl { margin-top: .9rem; }
+  .dd-toggle {
+    display: inline-flex; align-items: center; gap: .5em;
+    font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
+  }
+  .dd-toggle:hover { color: var(--ink); }
+  .dd-switch {
+    position: relative; width: 1.9em; height: 1.05em; border-radius: 1em;
+    border: 1px solid currentColor; transition: background .2s;
+  }
+  .dd-switch::after {
+    content: ''; position: absolute; top: 50%; left: .15em; width: .7em; height: .7em; border-radius: 50%;
+    background: currentColor; transform: translateY(-50%); transition: left .2s;
+  }
+  .dd-toggle[aria-pressed='true'] { color: var(--accent); }
+  .dd-toggle[aria-pressed='true'] .dd-switch::after { left: calc(100% - .85em); }
+  .dd-legend { margin: .5rem 0 0; font-size: .85rem; line-height: 1.5; max-width: 22em; }
+  .dd-cut-key { color: var(--accent); font-weight: 600; }
+
+  /* Marks: invisible until the toggle is on (the legend shows them always). */
+  .dd-reworded, .dd-typo, .dd-added { transition: background-color .2s, text-decoration-color .2s; }
+  :is(html.dd-on .prose, .dd-legend) .dd-reworded {
+    background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: 2px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  :is(html.dd-on .prose, .dd-legend) .dd-typo {
+    text-decoration: underline dotted var(--accent-2); text-decoration-thickness: 2px; text-underline-offset: .2em;
+  }
+  :is(html.dd-on .prose, .dd-legend) .dd-added {
+    text-decoration: underline var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: .2em;
+  }
+  .dd-cut { display: none; }
+  html.dd-on .prose .dd-cut { display: inline; }
+  html.dd-on .prose .dd-cut::before {
+    content: '‸'; color: var(--accent); font-weight: 700; padding: 0 .1em; cursor: help;
+  }
+  html.dd-on .prose .dd[data-h] { cursor: help; }
+  html.dd-on .prose .dd.is-hot.dd-reworded { background: color-mix(in srgb, var(--accent) 36%, transparent); }
+  html.dd-on .prose .dd.is-hot:is(.dd-typo, .dd-added) { background: color-mix(in srgb, var(--accent-2) 18%, transparent); }
+
+  .dd-tip {
+    position: absolute; z-index: 50; max-width: min(22rem, calc(100vw - 16px));
+    padding: .45rem .65rem; border-radius: 4px; font-size: .85rem; line-height: 1.4;
+    background: var(--ink); color: var(--bg); pointer-events: none;
+  }
+  .dd-tip-label { display: block; font-size: .75rem; opacity: .7; }
+  .dd-tip-was { display: block; }
+</style>

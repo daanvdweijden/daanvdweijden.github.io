@@ -6,6 +6,11 @@ import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { getNotes, type Note } from '../../lib/notes';
 import { plainText, clip } from '../../lib/text';
+import DraftDiff from '../../components/notes/DraftDiff.astro';
+
+// A note folder with a draft.md (the original from the blog workshop) gets the
+// "Show AI edits" toggle.
+const drafts = import.meta.glob<string>('../../content/notes/*/draft.md', { query: '?raw', import: 'default' });
 
 export async function getStaticPaths() {
   const notes = await getNotes({ includeUnlisted: true });
@@ -17,6 +22,8 @@ interface Props {
 }
 const { note } = Astro.props;
 const { Content } = await render(note);
+const loadDraft = drafts[`../../content/notes/${note.id}/draft.md`];
+const draft = loadDraft ? await loadDraft() : null;
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -36,6 +43,7 @@ const description = note.data.dek ?? clip(opening || note.data.title);
         {note.data.updated && <p>Updated <time datetime={iso(note.data.updated)}>{fmtDate(note.data.updated)}</time></p>}
         {note.data.tags.length > 0 && <p class="tags">{note.data.tags.join(' · ')}</p>}
         <p><a class="back" href={`${import.meta.env.BASE_URL}notes/`}>← All notes</a></p>
+        {draft && <DraftDiff draft={draft} />}
       </aside>
       <header class="note-head" data-reveal>
         <h1 class="page-title">{note.data.title}</h1>
