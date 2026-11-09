@@ -64,13 +64,16 @@ def render_page(pdf_path: str, out_path: str, width: int, page_number: int) -> N
 
 
 OG_WIDTH, OG_HEIGHT = 2400, 1260
+# PDFs whose page 1 is a repository cover sheet: the page (1-indexed) with the
+# paper's real title block, used for the link preview.
+OG_PAGE = {"2024-playing-with-fire": 2}
 
 
-def render_og(pdf_path: str, out_path: str) -> None:
-    """Render the top of page 1 (title, authors, start of the text) as a wide preview."""
+def render_og(pdf_path: str, out_path: str, page_number: int = 1) -> None:
+    """Render the top of the title page (title, authors, start of the text) as a wide preview."""
     doc = fitz.open(pdf_path)
     try:
-        page = doc.load_page(0)
+        page = doc.load_page(page_number - 1)
         # Horizontal text lines only, so arXiv's sideways margin stamp doesn't
         # widen the crop.
         boxes = [
@@ -83,9 +86,9 @@ def render_og(pdf_path: str, out_path: str) -> None:
             x0 = min(b[0] for b in boxes)
             x1 = max(b[2] for b in boxes)
             y0 = min(b[1] for b in boxes)
-        else:  # scanned PDF without a text layer: fall back to the page margins
-            x0, x1, y0 = 50, page.rect.width - 50, 50
-        pad = 0.04 * (x1 - x0)
+        else:  # scanned page without a text layer: the full width, from the top
+            x0, x1, y0 = 0, page.rect.width, 0.04 * page.rect.height
+        pad = 0.04 * (x1 - x0) if boxes else 0
         x0, x1, y0 = max(0, x0 - pad), min(page.rect.width, x1 + pad), max(0, y0 - 1.5 * pad)
         clip = fitz.Rect(x0, y0, x1, y0 + (x1 - x0) * OG_HEIGHT / OG_WIDTH)
         zoom = OG_WIDTH / clip.width
@@ -141,7 +144,7 @@ def main() -> None:
         og_out = os.path.join(og_dir, f"{stem}.jpg")
         if not os.path.exists(og_out) or args.force:
             try:
-                render_og(os.path.join(papers_dir, pdf), og_out)
+                render_og(os.path.join(papers_dir, pdf), og_out, OG_PAGE.get(stem, 1))
                 print(f"  ok    og/{stem}.jpg")
             except Exception as e:  # noqa: BLE001
                 print(f"  FAIL  og/{stem}.jpg: {e}")
