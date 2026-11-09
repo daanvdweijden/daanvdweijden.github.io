@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-09",
-  "mini_streak": 394,
+  "mini_streak": 395,
   "game_meta": {
     "crux": {
       "label": "Crux",
@@ -52,6 +52,14 @@
     }
   },
   "days": [
+    {
+      "date": "2026-11-09",
+      "played": [
+        "mini",
+        "briljant",
+        "crux"
+      ]
+    },
     {
       "date": "2026-11-08",
       "played": [
