@@ -17,8 +17,10 @@ interface Props {
   hideMarkUntilScroll?: boolean;
   /** Keep a page out of search engines without removing it from the site (e.g. the /puzzles/ easter egg). */
   noindex?: boolean;
-  /** Share-preview image, a path under public/ (defaults to the avatar). */
+  /** Share-preview image, a path under public/ (defaults to the wide site image). */
   image?: string;
+  /** Whether `image` is wide (about 1.91:1); picks the large Twitter/X card. */
+  imageWide?: boolean;
   /** Open Graph type: 'article' for papers/news, 'website' otherwise. */
   ogType?: 'website' | 'article' | 'profile';
 }
@@ -27,7 +29,8 @@ const {
   description = site.tagline,
   active,
   noindex = false,
-  image = site.avatar,
+  image = site.ogImage,
+  imageWide = image === site.ogImage,
   ogType = 'website',
 } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
@@ -110,7 +113,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={imageUrl} />
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content={imageWide ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title ?? site.name} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageUrl} />

@@ -12,6 +12,7 @@ import {
   actionLinks,
   bibtexFor,
   thumbSrc,
+  ogSrc,
   figureSrc,
   localPdfHref,
   plainAbstract,
@@ -100,7 +101,8 @@ const scholarlyArticle = {
   description={description}
   active="publications"
   ogType="article"
-  image={thumbSrc(pub) ?? undefined}
+  image={ogSrc(pub) ?? thumbSrc(pub) ?? undefined}
+  imageWide={!!ogSrc(pub)}
 >
   <Fragment slot="head">
     <meta name="citation_title" content={pub.data.title} />

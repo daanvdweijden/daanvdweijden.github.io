@@ -64,6 +64,13 @@ export function thumbSrc(p: Pub): string | null {
 }
 
 /** URL of the paper's `figure`, or null when it has none. */
+export function ogSrc(p: Pub): string | null {
+  if (p.data.ogImage) return p.data.ogImage.replace(/^\/+/, '');
+  if (!p.data.file) return null;
+  const rel = `papers/og/${fileStem(p.data.file)}.jpg`;
+  return existsSync(join(PUBLIC_DIR, rel)) ? rel : null;
+}
+
 export function figureSrc(p: Pub): string | null {
   const src = p.data.figure?.src;
   return src ? `${import.meta.env.BASE_URL}${src.replace(/^\/+/, '')}` : null;

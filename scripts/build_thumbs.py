@@ -13,6 +13,11 @@ Workflow:
   3. Run this script:  python3 scripts/build_thumbs.py
   4. Commit the PDF and the generated thumbs/<slug>.jpg
 
+It also writes a wide link-preview image (2400×1260, the 1.91:1 crop LinkedIn,
+Bluesky and Slack show) to public/papers/og/<slug>.jpg: the top of page 1, so
+the title and authors, rendered sharp. Paper pages use it automatically as
+their og:image; an `ogImage:` frontmatter path overrides it.
+
 Existing thumbnails are left untouched, so if an auto thumbnail looks wrong you
 can simply replace public/papers/thumbs/<slug>.jpg with your own image and it
 will survive future runs. Use --force to regenerate everything, or point the
@@ -58,6 +63,38 @@ def render_page(pdf_path: str, out_path: str, width: int, page_number: int) -> N
         doc.close()
 
 
+OG_WIDTH, OG_HEIGHT = 2400, 1260
+
+
+def render_og(pdf_path: str, out_path: str) -> None:
+    """Render the top of page 1 (title, authors, start of the text) as a wide preview."""
+    doc = fitz.open(pdf_path)
+    try:
+        page = doc.load_page(0)
+        # Horizontal text lines only, so arXiv's sideways margin stamp doesn't
+        # widen the crop.
+        boxes = [
+            line["bbox"]
+            for block in page.get_text("dict")["blocks"]
+            for line in block.get("lines", [])
+            if abs(line["dir"][1]) < 0.01 and "".join(sp["text"] for sp in line["spans"]).strip()
+        ]
+        if boxes:
+            x0 = min(b[0] for b in boxes)
+            x1 = max(b[2] for b in boxes)
+            y0 = min(b[1] for b in boxes)
+        else:  # scanned PDF without a text layer: fall back to the page margins
+            x0, x1, y0 = 50, page.rect.width - 50, 50
+        pad = 0.04 * (x1 - x0)
+        x0, x1, y0 = max(0, x0 - pad), min(page.rect.width, x1 + pad), max(0, y0 - 1.5 * pad)
+        clip = fitz.Rect(x0, y0, x1, y0 + (x1 - x0) * OG_HEIGHT / OG_WIDTH)
+        zoom = OG_WIDTH / clip.width
+        pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), clip=clip, alpha=False)
+        pix.pil_save(out_path, quality=88, optimize=True) if hasattr(pix, "pil_save") else pix.save(out_path)
+    finally:
+        doc.close()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Generate first-page PDF thumbnails.")
     ap.add_argument(
@@ -87,7 +124,9 @@ def main() -> None:
     thumbs_dir = os.path.join(papers_dir, "thumbs")
     if not os.path.isdir(papers_dir):
         sys.exit(f"No papers folder at {papers_dir} — create it and drop <slug>.pdf files in.")
+    og_dir = os.path.join(papers_dir, "og")
     os.makedirs(thumbs_dir, exist_ok=True)
+    os.makedirs(og_dir, exist_ok=True)
 
     pdfs = sorted(f for f in os.listdir(papers_dir) if f.lower().endswith(".pdf"))
     if args.only:
@@ -99,6 +138,14 @@ def main() -> None:
     made = skipped = failed = 0
     for pdf in pdfs:
         stem = os.path.splitext(pdf)[0]
+        og_out = os.path.join(og_dir, f"{stem}.jpg")
+        if not os.path.exists(og_out) or args.force:
+            try:
+                render_og(os.path.join(papers_dir, pdf), og_out)
+                print(f"  ok    og/{stem}.jpg")
+            except Exception as e:  # noqa: BLE001
+                print(f"  FAIL  og/{stem}.jpg: {e}")
+                failed += 1
         out = os.path.join(thumbs_dir, f"{stem}.jpg")
         if os.path.exists(out) and not args.force:
             print(f"  skip  {stem}.jpg (exists — --force to redo, or replace it by hand)")

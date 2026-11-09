@@ -52,6 +52,9 @@ const publications = defineCollection({
     // is used verbatim and the generator leaves it alone; otherwise the auto
     // thumbnail at papers/thumbs/<file-stem>.jpg is used when it exists.
     thumb: z.string().optional(),
+    // Link-preview image (LinkedIn, Bluesky …), a path relative to public/, ideally
+    // 1200×630. Defaults to papers/og/<file-stem>.jpg from scripts/build_thumbs.py.
+    ogImage: z.string().optional(),
     // Any subset of these renders as an action button, in this order.
     links: z
       .object({

@@ -15,6 +15,8 @@ export const site = {
   location: 'Zurich, Switzerland',
   // Lives in /public; prefix with import.meta.env.BASE_URL wherever it's used.
   avatar: 'profile_pic.jpeg',
+  // Default link-preview image (1200×630, the wide crop LinkedIn and others show).
+  ogImage: 'og.jpg',
 
   // One short line that introduces you. Markdown-free, plain text for now.
   tagline: 'PhD Candidate at DDIS, University of Zurich.',
