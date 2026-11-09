@@ -324,7 +324,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
 </script>
 
 <style is:global>
-  .dd-ctl { margin-top: .9rem; }
+  .dd-ctl { margin-top: .9rem; position: relative; }
   .dd-toggle {
     display: inline-flex; align-items: center; gap: .5em;
     font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer;
@@ -341,6 +341,12 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   .dd-toggle[aria-pressed='true'] { color: var(--accent); }
   .dd-toggle[aria-pressed='true'] .dd-switch::after { left: calc(100% - .85em); }
   .dd-legend { margin: .5rem 0 0; font-size: .85rem; line-height: 1.5; max-width: 22em; }
+  /* Two columns: the legend hangs into the empty left column instead of
+     making the first row taller (which would push the text down). On a
+     phone the meta sits above the text, so there it stays in the flow. */
+  @media (min-width: 761px) {
+    .dd-legend { position: absolute; top: 100%; left: 0; right: 0; }
+  }
   .dd-cut-key { color: var(--accent); font-weight: 600; }
 
   /* Marks: invisible until the toggle is on (the legend shows them always). */
@@ -356,9 +362,11 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
     text-decoration: underline var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: .2em;
   }
   .dd-cut { display: none; }
-  html.dd-on .prose .dd-cut { display: inline; }
+  /* Zero-width, so a caret never re-wraps the line it sits in. */
+  html.dd-on .prose .dd-cut { display: inline-block; position: relative; width: 0; }
   html.dd-on .prose .dd-cut::before {
-    content: '‸'; color: var(--accent); font-weight: 700; padding: 0 .1em; cursor: help;
+    content: '‸'; position: absolute; left: 0; bottom: -.15em; transform: translateX(-50%);
+    color: var(--accent); font-weight: 700; cursor: help;
   }
   html.dd-on .prose .dd[data-h] { cursor: help; }
   html.dd-on .prose .dd.is-hot.dd-reworded { background: color-mix(in srgb, var(--accent) 36%, transparent); }
