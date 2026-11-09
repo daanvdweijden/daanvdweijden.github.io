@@ -96,6 +96,24 @@
     },
   };
   let ready = false;
+  // Under ScrollSmoother (html.smooth) the page content moves by transform,
+  // where CSS sticky doesn't work. ScrollTrigger pins the graphic instead,
+  // from the moment the scrolly reaches the sticky line until the graphic
+  // would leave the scrolly's bottom. pinSpacing: false because the steps
+  // already give the scrolly its height.
+  if (document.documentElement.classList.contains('smooth')) {
+    for (const root of roots) {
+      const graphic = root.querySelector<HTMLElement>('.scrolly-graphic')!;
+      ScrollTrigger.create({
+        trigger: root,
+        pin: graphic,
+        pinSpacing: false,
+        start: () => (phone.matches ? 'top top' : 'top 12%'),
+        end: () => `+=${Math.max(0, root.offsetHeight - graphic.offsetHeight)}`,
+        invalidateOnRefresh: true,
+      });
+    }
+  }
   // Recompute only while a scrolly is on screen, on GSAP's ticker.
   for (const root of roots) {
     ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onUpdate: update, onRefresh: update });
@@ -117,6 +135,8 @@
     position: sticky; top: 12vh; align-self: start;
     min-height: 60vh; display: flex; align-items: center;
   }
+  /* Under ScrollSmoother, ScrollTrigger pins the graphic instead (script). */
+  :global(html.smooth) .scrolly-graphic { position: relative; top: auto; }
   .scrolly-graphic > :global(*) { width: 100%; }
   .scrolly-steps { grid-column: 1; grid-row: 1; padding: 30vh 0 40vh; }
   .scrolly-steps :global(.scrolly-step:last-child) { margin-bottom: 0; }
