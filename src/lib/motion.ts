@@ -30,6 +30,41 @@ if (root.classList.contains('smooth') && document.getElementById('smooth-content
   root.classList.remove('smooth');
 }
 
+// Frame-rate check. Smooth scroll moves the page with JavaScript, so it is
+// only as fluid as requestAnimationFrame. When the browser throttles that
+// (Safari in Low Power Mode drops to 30fps, a stuck background-tab throttle),
+// the glide turns choppy and native scrolling is better. Measured on every
+// page once it has settled; the result is remembered per device and read by
+// the head script in Layout.astro, so the next page decides before any script
+// runs. It re-checks every page, so a device that speeds up again gets the
+// smooth scroll back. Native scroll doesn't change the frame rate, so the check
+// works with the smoother on or off.
+const SLOW_KEY = 'smooth-slow';
+function measureFrames() {
+  if (document.hidden || window.innerHeight === 0) return;
+  const gaps: number[] = [];
+  let last = 0;
+  const start = performance.now();
+  const tick = (t: number) => {
+    if (last) gaps.push(t - last);
+    last = t;
+    if (t - start < 600) return requestAnimationFrame(tick);
+    if (document.hidden || gaps.length < 5) return; // tab left mid-check: no verdict
+    gaps.sort((a, b) => a - b);
+    const median = gaps[gaps.length >> 1];
+    const slow = median > 1000 / 45; // below ~45fps: 30fps throttle or worse
+    try {
+      if (slow) localStorage.setItem(SLOW_KEY, '1');
+      else localStorage.removeItem(SLOW_KEY);
+    } catch {}
+  };
+  requestAnimationFrame(tick);
+}
+// After load and a quiet moment, so charts drawing in don't count as slow.
+const afterLoad = () => setTimeout(measureFrames, 1500);
+if (document.readyState === 'complete') afterLoad();
+else window.addEventListener('load', afterLoad, { once: true });
+
 // ScrollTrigger measures where each trigger starts once. Charts drawing in,
 // images loading and fonts swapping change the page height afterwards, which
 // would leave those positions stale (a chart cascading while still below the

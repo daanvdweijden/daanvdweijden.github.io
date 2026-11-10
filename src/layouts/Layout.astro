@@ -97,7 +97,11 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
           // Smooth scroll (ScrollSmoother, set up at the end of the page) only
           // with a mouse or trackpad. Decided here, before any page script
           // runs, so components (the scrolly) know whether it will be on.
-          if (window.matchMedia('(pointer: fine)').matches) {
+          // Skipped when the last frame-rate check (lib/motion.ts) found this
+          // browser throttled: choppy smoothing is worse than native scroll.
+          var slow = false;
+          try { slow = localStorage.getItem('smooth-slow') === '1'; } catch (e) {}
+          if (window.matchMedia('(pointer: fine)').matches && !slow) {
             document.documentElement.classList.add('smooth');
           }
         }
