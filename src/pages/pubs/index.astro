@@ -1,8 +1,8 @@
 ---
 // Publications: one row per year (year as the label). Each paper shows its
-// first-page thumbnail in the narrow meta column, grayscale until hovered
-// (the same treatment as the homepage portrait), then title, authors, venue
-// and links.
+// first-page thumbnail in the narrow meta column; on hover it lifts slightly
+// and an accent square slides out from behind it (the same move as the
+// homepage portrait), then title, authors, venue and links.
 import Layout from '../../layouts/Layout.astro';
 import { getPublications, groupByYear, isOwner, actionLinks, pubHref, thumbSrc } from '../../lib/pubs';
 
@@ -28,6 +28,7 @@ const groups = groupByYear(await getPublications());
             return (
               <li>
                 <a class="thumb" href={pubHref(p)} aria-hidden="true" tabindex="-1">
+                  {thumb && <span class="block" />}
                   {thumb && <img src={thumb} alt="" loading="lazy" />}
                 </a>
                 <div>
@@ -69,12 +70,27 @@ const groups = groupByYear(await getPublications());
   .list .actions a { text-decoration: underline; text-decoration-color: var(--line); }
   .list .actions a:hover { text-decoration-color: var(--accent); }
 
-  .thumb { display: block; align-self: start; }
+  /* Thumbnail: the covers are black and white anyway, so instead of a colour
+     reveal they borrow the portrait's motion. An accent square hides behind
+     the page; on hover the page lifts up-left and grows a little while the
+     square slides out down-right. */
+  .thumb { display: block; align-self: start; position: relative; isolation: isolate; }
   .thumb img {
+    position: relative; z-index: 1;
     width: 100%; height: auto; display: block;
-    filter: grayscale(1); opacity: .85;
     outline: 1px solid var(--line);
-    transition: filter .5s ease, opacity .5s ease;
+    transition: transform .7s cubic-bezier(.22, .61, .36, 1);
   }
-  .pubs > li:hover .thumb img { filter: none; opacity: 1; }
+  .thumb .block {
+    position: absolute; right: 0; bottom: 0; width: 60%; aspect-ratio: 1 / 1;
+    background: var(--accent);
+    transition: transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  @media (hover: hover) {
+    .pubs > li:hover .thumb img { transform: translate(-3%, -2%) scale(1.04); }
+    .pubs > li:hover .thumb .block { transform: translate(26%, 22%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .thumb img, .thumb .block { transition: none; }
+  }
 </style>
