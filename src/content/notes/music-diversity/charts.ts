@@ -255,7 +255,9 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
   for (const a of all) {
     const max = Math.max(...a.plays) || 1;
     const r = row.get(a.artist)!;
-    const s = shown(a.artist) ? 1 : 0;
+    // Rows that leave shrink to 2% and fade, rather than to nothing: a
+    // squashed-flat row can't be morphed as a transform (see lib/morph.ts).
+    const s = shown(a.artist) ? 1 : 0.02;
     a.plays.forEach((p, k) => {
       const m = data.lifelines.months[k];
       const v = gap(m) ? NaN : Math.sqrt(p / max) * 0.88 * s;
@@ -273,7 +275,7 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
   // Terracotta (top 10 years): off while the dropouts are shown, only on the
   // 19 in the highlight step. Per row, so the colour can come in without the
   // shapes changing.
-  const topOn = (d: any) => (dropped || step === 4 || (highlight && !fav.has(d.artist)) ? 0 : 1);
+  const topOn = (d: any) => (dropped || step === 4 || !shown(d.artist) || (highlight && !fav.has(d.artist)) ? 0 : 1);
   // Step 4: the lifelines fade out and yearly blocks take their place, on the
   // same time axis, so each block sits right over the year it sums up.
   const lines = step === 4 ? 0 : 1;
@@ -293,7 +295,7 @@ export const favourites: ChartFn<FavData> = (data, ctx) => {
     marks: [
       // Opacities as per-row channels (not constants), so they always sit on
       // the same elements and the morph can tween them.
-      Plot.areaY(rows, { x: 'date', y1: 'base', y2: 'v', z: 'artist', fill: grey, fillOpacity: () => lines, curve: 'step' }),
+      Plot.areaY(rows, { x: 'date', y1: 'base', y2: 'v', z: 'artist', fill: grey, fillOpacity: (d: any) => (shown(d.artist) ? lines : 0), curve: 'step' }),
       // Drawn in every step, invisible where it's off, so it always moves
       // with its row instead of fading in somewhere else.
       Plot.areaY(rows, { x: 'date', y1: 'base', y2: (d: any) => (d.top ? d.v : NaN), z: 'artist', fill: ctx.colors.accent, fillOpacity: topOn, curve: 'step' }),

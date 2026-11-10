@@ -58,7 +58,40 @@ function signature(g: Element): string {
   return els.map((e) => e.tagName).join(',') + '|' + (g.textContent ?? '');
 }
 
-type Change = { el: Element; attr: string; from: string; to: string | null };
+/** `to` is what reset() puts back (null: remove the attribute); `end`, if
+ *  given, is what the tween ends on when that differs from `to`. */
+type Change = { el: Element; attr: string; from: string; to: string | null; end?: string };
+
+/** Path data that only moved and stretched: the new path is the old one with
+ *  x → ax·x + bx and y → ay·y + by. Returns the transform that puts the new
+ *  path back where the old one was, or null if it changed shape some other way.
+ *  Tweening that transform to none looks exactly like tweening the path data,
+ *  but GSAP only interpolates six numbers per frame instead of hundreds, and
+ *  the browser keeps the shape and only moves it. Only for plain M/L/Z paths
+ *  (what Plot draws for areas, lines and bars). */
+function affine(from: string, to: string): string | null {
+  if (/[^MLZmlz\d\s,.eE+-]/.test(to) || /[mlz]/.test(to)) return null;
+  const na = from.match(NUM)!.map(Number), nb = to.match(NUM)!.map(Number);
+  if (na.length !== nb.length || na.length % 2) return null;
+  const fit = (off: number): [number, number] | null => {
+    let i0 = -1, i1 = -1;
+    for (let i = off; i < na.length; i += 2) {
+      if (i0 < 0) i0 = i;
+      else if (Math.abs(na[i] - na[i0]) > 1e-6) { i1 = i; break; }
+    }
+    // All the same on this axis: only a shift (and b must be flat too).
+    const k = i1 < 0 ? 1 : (nb[i1] - nb[i0]) / (na[i1] - na[i0]);
+    const c = nb[i0] - k * na[i0];
+    if (Math.abs(k) < 1e-3) return null; // squashed flat: can't be undone
+    for (let i = off; i < na.length; i += 2) if (Math.abs(k * na[i] + c - nb[i]) > 0.05) return null;
+    return [k, c];
+  };
+  const x = fit(0), y = fit(1);
+  if (!x || !y) return null;
+  const [ax, bx] = x, [ay, by] = y;
+  const r = (v: number) => +v.toFixed(6);
+  return `matrix(${r(1 / ax)},0,0,${r(1 / ay)},${r(-bx / ax)},${r(-by / ay)})`;
+}
 
 /** What SVG uses for a paint attribute that isn't set. */
 const paintDefault = (attr: string) => (attr === 'stroke' ? 'none' : attr === 'fill' ? 'black' : '1');
@@ -74,7 +107,9 @@ function groupChanges(o: Element, n: Element): Change[] | null {
       const from = a.getAttribute(attr), to = b.getAttribute(attr);
       if (from === to) continue;
       if (from === null || to === null || !sameSkeleton(from, to)) return null;
-      out.push({ el: b, attr, from, to });
+      const m = attr === 'd' && !b.hasAttribute('transform') ? affine(from, to) : null;
+      if (m) out.push({ el: b, attr: 'transform', from: m, to: null, end: 'matrix(1,0,0,1,0,0)' });
+      else out.push({ el: b, attr, from, to });
     }
     for (const attr of PAINT) {
       const from = a.getAttribute(attr), to = b.getAttribute(attr);
@@ -145,7 +180,7 @@ function tweened(a: Element, b: Element, sa: Element, sb: Element, place: Place)
     tl = seekable();
     for (const c of changes) {
       // Colours go through rgba(); anything else that can't tween switches halfway.
-      const end = c.to ?? (PAINT.includes(c.attr) ? paintDefault(c.attr) : null);
+      const end = c.end ?? c.to ?? (PAINT.includes(c.attr) ? paintDefault(c.attr) : null);
       const isPaint = PAINT.includes(c.attr) && isNaN(+c.from);
       const from = isPaint ? rgba(c.from) : c.from;
       const to = end === null ? null : isPaint ? rgba(end) : end;
