@@ -353,6 +353,33 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       footer a:hover { color: var(--ink); text-decoration-color: currentColor; }
       footer .flinks { display: flex; gap: 1.2rem; flex-wrap: wrap; }
       footer .fmeta { display: flex; gap: .5rem 2rem; flex-wrap: wrap; }
+      /* Phones: one three-column grid for the whole footer, on the page's own
+         lines. Column 1 is the 5.5rem date column of the lists above, so
+         column 2 starts where their text does; column 3 is shared by the
+         theme switch and the last link of each row. A hairline (::after)
+         separates the © line from the links. */
+      @media (max-width: 600px) {
+        footer .row {
+          display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 6.5rem; gap: .7rem 1rem;
+        }
+        footer .fmeta, footer .flinks { display: contents; }
+        footer .flinks a, footer .fmeta > :first-child { white-space: nowrap; }
+        footer .flinks .full { display: none; }
+        footer .fmeta > :first-child { grid-column: 1 / 3; }
+        footer .theme-switch { grid-column: 3; width: 6.5rem; justify-content: space-between; gap: 0; }
+        footer .row::after {
+          content: ""; grid-row: 2; grid-column: 1 / -1; height: 1px; margin: .3rem 0; background: var(--line);
+        }
+      }
+      /* Too narrow for © and the switch side by side: the switch drops to
+         its own line, still in column 3. */
+      @media (max-width: 349px) {
+        footer .fmeta > :first-child { grid-column: 1 / -1; }
+        footer .theme-switch { grid-row: 2; grid-column: 1 / -1; justify-self: end; }
+        footer .row::after { grid-row: 3; }
+      }
+      footer .flinks .short { display: none; }
+      @media (max-width: 600px) { footer .flinks .short { display: inline; } }
       /* Colour scheme switch: three plain words, the active one in ink. */
       .theme-switch { display: inline-flex; gap: .7rem; }
       .theme-switch[hidden] { display: none; }
@@ -400,7 +427,11 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
             </span>
           </span>
           <span class="flinks">
-            {site.socials.map((s) => <a href={s.url}>{s.name}</a>)}
+            {site.socials.map((s) => (
+              <a href={s.url}>
+                {'short' in s ? <><span class="full">{s.name}</span><span class="short">{s.short}</span></> : s.name}
+              </a>
+            ))}
           </span>
         </div>
       </div>
