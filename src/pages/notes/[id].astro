@@ -89,5 +89,9 @@ const description = note.data.dek ?? clip(opening || note.data.title);
     .note-meta .back { margin-top: 0; }
     /* In the row with the date, not a line lower (its margin is for the wide layout). */
     .note-meta :global(.dd-ctl) { margin-top: 0; }
+    /* Button and legend become row items of their own, so the open legend
+       takes a full line below instead of dragging the button down with it. */
+    .note-meta :global(.dd-ctl) { display: contents; }
+    .note-meta :global(.dd-legend) { flex: 1 0 100%; }
   }
 </style>
