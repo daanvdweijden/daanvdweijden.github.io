@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patricia Kahr</title>
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap" rel="stylesheet">
+<!-- from her font card: Sentient Extra Light (headline) + DM Sans Bold (subheads & buttons) -->
+<link href="https://api.fontshare.com/v2/css?f[]=sentient@200,201,300,301,400,401&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F1EEE7;
+    --ink:   #2C2B57;
+    --ink-2: color-mix(in srgb, var(--ink) 66%, var(--paper));
+    --sans:  'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --serif: 'Sentient', Georgia, serif;
+    --margin: clamp(18px, 4vw, 64px);
+    --big: clamp(1.6rem, 4.2vw, 3.6rem);
+    --top: clamp(96px, 16vh, 150px);
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;            /* the landing never scrolls */
+    transition: background-color .5s ease, color .5s ease;
+  }
+  ::selection { background: var(--ink); color: var(--paper); }
+  a { color: inherit; text-decoration: none; }
+  em { font-family: var(--serif); font-style: italic; font-weight: 300; }
+  p, h2, ul { margin: 0; }
+  ul { list-style: none; padding: 0; }
+
+  /* ---------- bar ---------- */
+  .bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 28px var(--margin);
+    font-weight: 600;
+  }
+  .who { position: relative; }
+  .ltr { display: inline-block; position: relative; }
+  .tittle {
+    position: absolute; left: 50%; top: .1em;
+    width: .2em; height: .2em; margin-left: -.1em;
+    background: var(--ink); transform: rotate(7deg);
+  }
+  .bar .right { position: relative; }
+  .bar .back { position: absolute; right: 0; top: 0; white-space: nowrap; visibility: hidden; }
+
+  /* ---------- landing: one sentence is the whole site ---------- */
+  .landing {
+    position: fixed; inset: 0;
+    display: flex; align-items: center;
+    padding: var(--top) var(--margin) var(--margin);
+    overflow: hidden;
+  }
+  /* the sentence fills the frame: JS finds the largest size that fits */
+  .hello {
+    font-family: var(--serif); font-weight: 200;
+    font-size: var(--big); line-height: 1.08; letter-spacing: -.025em;
+    width: 100%;
+  }
+  .hello em { font-weight: 200; }
+  .nb { white-space: nowrap; }  /* keeps a link and its comma/full stop together */
+  .hello .w { display: inline-block; }
+  .go, .ptitle {
+    font-family: var(--sans); font-weight: 650; letter-spacing: -.022em;
+    display: inline-block;
+  }
+  .ext {
+    display: inline-block;
+    background-image: linear-gradient(var(--ink), var(--ink));
+    background-size: 100% .03em; background-repeat: no-repeat; background-position: 0 92%;
+  }
+  .ext:hover { background-size: 100% .09em; }
+  .go {
+    background-image: linear-gradient(var(--ink), var(--ink));
+    background-size: 100% .045em; background-repeat: no-repeat; background-position: 0 96%;
+    transition: background-size .3s ease;
+  }
+  .go:hover { background-size: 100% .12em; }
+
+  /* ---------- pages ---------- */
+  .page {
+    position: fixed; inset: 0; z-index: 5;
+    overflow-y: auto; display: none;
+    padding: var(--top) var(--margin) 100px;
+  }
+  .page.open { display: block; }
+  .ptitle { font-size: var(--big); line-height: 1.08; visibility: hidden; max-width: 18.5em; }
+  .body { max-width: 34rem; margin-top: 44px; }
+  .body > * + * { margin-top: 1.4em; }
+  .body h3 { font-size: 1em; font-weight: 600; margin: 0 0 .15em; }
+  .muted { color: var(--ink-2); }
+  .tiny { font-size: 12px; color: var(--ink-2); }
+  .body a.u { border-bottom: 1.5px solid currentColor; }
+
+  .table { display: grid; grid-template-columns: 3.6em minmax(0, 1fr) auto; column-gap: 20px; row-gap: .55em; }
+  .table .h { font-weight: 600; }
+  .table .v { color: var(--ink-2); text-align: right; }
+
+  /* thesis: each square is a chapter */
+  .chapters { display: flex; gap: 10px; align-items: center; height: 40px; }
+  .chapters button {
+    all: unset; cursor: pointer; width: 22px; height: 22px; background: var(--ink);
+    transition: background .2s;
+  }
+  .chapters button.on { background: transparent; box-shadow: inset 0 0 0 2px var(--ink); }
+  .chapter-name { min-height: 1.4em; }
+
+  /* ---------- review tool: try the moodboard colours (not part of the design) ---------- */
+  .swatches {
+    position: fixed; right: 12px; bottom: 12px; z-index: 20;
+    max-width: calc(100vw - 24px);
+    padding: 10px 12px; border-radius: 14px;
+    background: rgba(255,255,255,.88); backdrop-filter: blur(6px);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    font: 600 11px/1 var(--sans); color: #333;
+  }
+  .swatches .row { display: flex; align-items: center; gap: 6px; }
+  .swatches .row + .row { margin-top: 8px; }
+  .swatches .lbl { width: 72px; flex: none; }
+  .swatches .dot {
+    all: unset; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; flex: none;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.2);
+    transition: transform .15s;
+  }
+  .swatches .dot:hover { transform: scale(1.15); }
+  .swatches button:focus-visible { outline: 2px solid #333; outline-offset: 2px; }
+  .swatches .dot[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #333; }
+  .swatches .swap {
+    all: unset; cursor: pointer; margin-top: 10px; padding: 5px 9px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+  }
+  .swatches .swap:hover { background: rgba(0,0,0,.06); }
+  .swatches .fold {
+    all: unset; cursor: pointer; display: none; width: 22px; height: 22px; border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+  }
+  /* folded: one dot showing the current pair, so it never covers the sentence */
+  .swatches:not(.open) { padding: 6px; border-radius: 999px; }
+  .swatches:not(.open) > :not(.fold) { display: none; }
+  .swatches:not(.open) .fold { display: block; }
+
+  @media (max-width: 600px) {
+    .bar { padding-top: 20px; }
+    .swatches { padding: 8px 9px; }
+    .swatches .row { gap: 5px; }
+    .swatches .lbl { width: 66px; }
+    .swatches .dot { width: 18px; height: 18px; }
+    .table { grid-template-columns: 3em minmax(0, 1fr); }
+    .table .v { grid-column: 2; text-align: left; margin-top: -.45em; }
+    .table .h.v { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="who" href="#" aria-label="Patricia Kahr, home"><span class="name">Patricia Kahr</span></a>
+  <span class="right">
+    <a class="cv" href="#">CV</a>
+    <a class="back" href="#">← Back</a>
+  </span>
+</header>
+
+<main class="landing">
+  <p class="hello" id="hello">I'm a postdoctoral researcher at <span class="nb"><a class="ext" href="https://www.uzh.ch" target="_blank" rel="noopener">University of Zurich</a>,</span> studying how people come to <span class="nb"><a class="go" href="#research" data-flip-id="research">trust and rely on AI</a>,</span> <em>and what happens to our own skills when we lean on it a little too much.</em> I did my <a class="go" href="#thesis" data-flip-id="thesis">PhD</a> on exactly that, I keep writing <a class="go" href="#papers" data-flip-id="papers">papers</a> about it, and I'm always happy to <span class="nb"><a class="go" href="#contact" data-flip-id="contact">talk</a>.</span></p>
+</main>
+
+<section class="page" id="p-research" aria-label="Research">
+  <h2 class="ptitle" data-flip-id="research">trust and rely on AI</h2>
+  <div class="body">
+    <p>[Intro in Patricia's words.] AI systems give advice all day long. I study when people follow it, when they shouldn't, and what that does to them over time.</p>
+    <div><h3>Overreliance</h3><p>When people go along with AI advice even when it's wrong, and what helps them notice.</p></div>
+    <div><h3>Trust over time</h3><p>How trust in an AI system builds up, breaks, and recovers across repeated interactions.</p></div>
+    <div><h3>Deskilling</h3><p>What happens to people's own skills when an AI takes over the work, and how to design systems that keep them in practice.</p></div>
+    <p class="tiny">Placeholder text, for Patricia to rewrite.</p>
+  </div>
+</section>
+
+<section class="page" id="p-thesis" aria-label="Thesis">
+  <h2 class="ptitle" data-flip-id="thesis">PhD</h2>
+  <div class="body">
+    <p><em>the</em> Dynamics <em>of</em> <b>Trust</b> <em>and</em> <b>Reliance</b> <em>in</em> Human–AI Interactions</p>
+    <p class="muted">[University], [year]. Supervised by [names].</p>
+    <p>[A few sentences on what the thesis argues.]</p>
+    <div>
+      <div class="chapters" role="group" aria-label="Chapters"></div>
+      <p class="chapter-name muted">Each square is a chapter.</p>
+    </div>
+    <p><a class="u" href="#">Read the thesis ↗</a></p>
+  </div>
+</section>
+
+<section class="page" id="p-papers" aria-label="Papers">
+  <h2 class="ptitle" data-flip-id="papers">papers</h2>
+  <div class="body">
+    <div class="table">
+      <span class="h">Year</span><span class="h">Title</span><span class="h v">Venue</span>
+      <span>[2026]</span><a href="#">[Paper on overreliance and calibrated trust]</a><span class="v">[Venue]</span>
+      <span>[2025]</span><a href="#">[Paper on deskilling when AI does the work]</a><span class="v">[Venue]</span>
+      <span>[2024]</span><a href="#">[Paper title]</a><span class="v">[Venue]</span>
+      <span>[2023]</span><a href="#">[Paper title]</a><span class="v">[Venue]</span>
+    </div>
+    <p class="muted">The full list is on <a class="u" href="#">Google Scholar ↗</a></p>
+  </div>
+</section>
+
+<section class="page" id="p-contact" aria-label="Contact">
+  <h2 class="ptitle" data-flip-id="contact">talk</h2>
+  <div class="body">
+    <p>About research, collaborations, or a talk at your event.</p>
+    <p><a class="u" href="#">[email]</a></p>
+    <p class="muted">Google Scholar ↗<br>LinkedIn ↗<br>Bluesky ↗</p>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+<script>
+gsap.registerPlugin(Flip);
+/* ?still = settled frame for process screenshots */
+const still = new URLSearchParams(location.search).has('still');
+const reduce = still || matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (still) document.body.style.transition = 'none';
+const T = reduce ? 0 : 1;   // time scale: 0 = instant
+const hello = document.getElementById('hello');
+
+/* ---------- split the sentence into words (links stay whole) ---------- */
+const walker = document.createTreeWalker(hello, NodeFilter.SHOW_TEXT);
+const texts = [];
+while (walker.nextNode()) if (!walker.currentNode.parentElement.closest('.go, .ext')) texts.push(walker.currentNode);
+texts.forEach(node => {
+  const frag = document.createDocumentFragment();
+  node.textContent.split(/(\s+)/).forEach(part => {
+    if (!part) return;
+    if (/^\s+$/.test(part)) frag.append(document.createTextNode(part));
+    else { const s = document.createElement('span'); s.className = 'w'; s.textContent = part; frag.append(s); }
+  });
+  node.replaceWith(frag);
+});
+const words = [...hello.querySelectorAll('.w, .ext')];
+
+/* ---------- fill the frame ----------
+   Binary-search the largest font size at which the whole sentence fits the
+   space under the bar, with no single word or link wider than the column. */
+const landing = document.querySelector('.landing');
+const units = [...hello.querySelectorAll('.w, .go, .ext')];
+function fit() {
+  const cs = getComputedStyle(landing);
+  const W = landing.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const H = landing.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  let lo = 14, hi = 320;
+  for (let n = 0; n < 16; n++) {
+    const mid = (lo + hi) / 2;
+    hello.style.fontSize = mid + 'px';
+    const ok = hello.offsetHeight <= H && units.every(u => u.offsetWidth <= W);
+    ok ? (lo = mid) : (hi = mid);
+  }
+  hello.style.fontSize = Math.floor(lo * 10) / 10 + 'px';
+}
+fit();
+document.fonts.ready.then(fit);
+let fitTimer;
+addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 80); });
+
+/* ---------- the name: square i-dots ---------- */
+const nameEl = document.querySelector('.name');
+nameEl.innerHTML = [...nameEl.textContent].map(ch => ch === 'i'
+  ? `<span class="ltr" aria-hidden="true">ı<span class="tittle"></span></span>`
+  : ch === ' ' ? ' ' : `<span class="ltr" aria-hidden="true">${ch}</span>`).join('');
+const dots = nameEl.querySelectorAll('.tittle');
+if (!reduce) {
+  gsap.from(dots, { y: -40, rotation: 180, duration: .9, ease: 'bounce.out', stagger: .2, delay: .9 });
+  document.querySelector('.who').addEventListener('pointerenter', () => gsap.timeline()
+    .to(dots, { y: '-=.6em', rotation: '+=90', duration: .25, ease: 'power2.out', stagger: .08 })
+    .to(dots, { y: 0, duration: .5, ease: 'bounce.out', stagger: .08 }, '-=.1'));
+}
+
+/* ---------- landing entrance: the sentence writes itself in ---------- */
+const entrance = gsap.from(units, {
+  opacity: 0, y: 14, duration: .6 * T, ease: 'power3.out', stagger: .018 * T, delay: .15 * T
+});
+
+/* ---------- link → page: the phrase travels and becomes the title ---------- */
+const PAGES = ['research', 'thesis', 'papers', 'contact'];
+let current = null, busy = null;
+const cv = document.querySelector('.cv'), back = document.querySelector('.back');
+
+function swapBar(toPage, k) {
+  const [out, inn] = toPage ? [cv, back] : [back, cv];
+  gsap.killTweensOf([cv, back]);
+  gsap.to(out, { autoAlpha: 0, y: -6, duration: .2 * k });
+  gsap.fromTo(inn, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: .3 * k, delay: .2 * k });
+}
+
+function open(id, instant) {
+  const link = hello.querySelector(`.go[data-flip-id="${id}"]`);
+  const page = document.getElementById('p-' + id);
+  const title = page.querySelector('.ptitle');
+  const content = page.querySelectorAll('.body > *');
+  const others = [...words, ...hello.querySelectorAll(`.go:not([data-flip-id="${id}"])`)];
+  const k = instant ? 0 : T;
+
+  entrance.progress(1);
+  gsap.killTweensOf(others);
+  const state = Flip.getState(link);
+  page.classList.add('open');
+  page.scrollTop = 0;
+  gsap.set(title, { visibility: 'visible' });
+  gsap.set(link, { visibility: 'hidden' });
+  current = id;
+  swapBar(true, k);
+
+  busy = gsap.timeline({ onComplete: () => { gsap.set('.landing', { visibility: 'hidden' }); busy = null; } })
+    .to(others, { opacity: 0, y: -12, duration: .35 * k, ease: 'power2.in', stagger: { each: .006 * k, from: 'random' } }, 0)
+    .add(Flip.from(state, { targets: title, scale: true, duration: .9 * k, ease: 'power3.inOut' }), .08 * k)
+    .fromTo(content, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: .6 * k, ease: 'power2.out', stagger: .07 * k }, .75 * k);
+}
+
+function close(instant) {
+  if (!current) return;
+  const id = current;
+  const link = hello.querySelector(`.go[data-flip-id="${id}"]`);
+  const page = document.getElementById('p-' + id);
+  const title = page.querySelector('.ptitle');
+  const content = page.querySelectorAll('.body > *');
+  const others = [...words, ...hello.querySelectorAll(`.go:not([data-flip-id="${id}"])`)];
+  const k = instant ? 0 : T;
+  current = null;
+  swapBar(false, k);
+  gsap.set('.landing', { visibility: 'visible' });
+
+  busy = gsap.timeline({ onComplete: () => { busy = null; } })
+    .to(content, { opacity: 0, y: 10, duration: .25 * k, ease: 'power2.in', stagger: { each: .03 * k, from: 'end' } })
+    .add(() => {
+      const state = Flip.getState(title);
+      gsap.set(link, { visibility: 'visible' });
+      gsap.set(title, { visibility: 'hidden' });
+      page.classList.remove('open');
+      Flip.from(state, { targets: link, scale: true, duration: .85 * k, ease: 'power3.inOut' });
+    })
+    .to(others, { opacity: 1, y: 0, duration: .45 * k, ease: 'power2.out', stagger: { each: .006 * k, from: 'random' } }, `+=${.45 * k}`);
+}
+
+function go(id, instant) {
+  if (busy) busy.progress(1);
+  if (PAGES.includes(id)) {
+    if (current && current !== id) close(true);
+    if (current !== id) open(id, instant);
+  } else close(instant);
+}
+/* links set the address too, so pages can be shared and Back works */
+function nav(id) {
+  try { history.pushState({ id }, '', id ? '#' + id : location.pathname + location.search); } catch (e) {}
+  go(id, false);
+}
+hello.querySelectorAll('.go').forEach(a => a.addEventListener('click', e => { e.preventDefault(); nav(a.dataset.flipId); }));
+document.querySelector('.who').addEventListener('click', e => { e.preventDefault(); if (current) nav(''); });
+back.addEventListener('click', e => { e.preventDefault(); nav(''); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && current) nav(''); });
+addEventListener('popstate', () => go(location.hash.slice(1), false));
+go(location.hash.slice(1), true);
+
+/* ---------- thesis: each square is a chapter ---------- */
+const CHAPTERS = ['Introduction', '[Chapter 2 title]', '[Chapter 3 title]', '[Chapter 4 title]', '[Chapter 5 title]', 'Conclusion'];
+const row = document.querySelector('.chapters'), chName = document.querySelector('.chapter-name');
+CHAPTERS.forEach((name, i) => {
+  const b = document.createElement('button');
+  b.setAttribute('aria-label', `Chapter ${i + 1}: ${name}`);
+  gsap.set(b, { y: gsap.utils.random(-5, 5) });
+  const show = () => {
+    row.querySelectorAll('button').forEach(o => o.classList.toggle('on', o === b));
+    chName.textContent = `Chapter ${i + 1} · ${name}`;
+    gsap.fromTo(b, { rotation: -20 }, { rotation: 0, duration: .5 * T, ease: 'back.out(3)' });
+  };
+  b.addEventListener('pointerenter', show);
+  b.addEventListener('focus', show);
+  b.addEventListener('click', show);
+  row.append(b);
+});
+
+/* ---------- review tool: moodboard colours (slide 4 of the brief) ----------
+   Pick any text colour and any background colour from the moodboard, or swap them.
+   ?text=2F52A0&bg=F3EBD3 opens a given pair. Remove before launch. */
+const COLOURS = [
+  ['Current paper', '#F1EEE7'], ['Current ink', '#2C2B57'],
+  ['Cream',    '#F3EBD3'], ['Pink',     '#F9C6C0'], ['Mint',  '#BFE1DB'],
+  ['Mustard',  '#D7B569'], ['Mauve',    '#B197B0'], ['Orange', '#EB5B29'],
+  ['Blue',     '#2F52A0'], ['Olive',    '#726F4E'], ['Brown', '#4E3934'],
+  ['Charcoal', '#333332'],
+];
+const rootStyle = document.documentElement.style;
+const pick = { text: '#2C2B57', bg: '#F1EEE7' };
+const picker = document.createElement('div');
+picker.className = 'swatches';
+picker.setAttribute('role', 'group');
+picker.setAttribute('aria-label', 'Try moodboard colours');
+const fold = document.createElement('button');
+fold.className = 'fold';
+fold.setAttribute('aria-label', 'Show colour picker');
+picker.append(fold);
+const rows = {};
+[['text', 'Text'], ['bg', 'Background']].forEach(([key, label]) => {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = `<span class="lbl">${label}</span>`;
+  COLOURS.forEach(([name, hex]) => {
+    const b = document.createElement('button');
+    b.className = 'dot'; b.dataset.hex = hex;
+    b.title = `${name} ${hex}`;
+    b.setAttribute('aria-label', `${label}: ${name}`);
+    b.style.background = hex;
+    b.addEventListener('click', () => { pick[key] = hex; apply(); });
+    row.append(b);
+  });
+  rows[key] = row; picker.append(row);
+});
+const swap = document.createElement('button');
+swap.className = 'swap'; swap.textContent = '⇄ Swap text and background';
+swap.addEventListener('click', () => { [pick.text, pick.bg] = [pick.bg, pick.text]; apply(); });
+picker.append(swap);
+function apply() {
+  rootStyle.setProperty('--ink', pick.text);
+  rootStyle.setProperty('--paper', pick.bg);
+  for (const key in rows) rows[key].querySelectorAll('.dot').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.hex === pick[key]));
+  fold.style.background = `linear-gradient(135deg, ${pick.bg} 50%, ${pick.text} 50%)`;
+  try { localStorage.setItem('colours', JSON.stringify(pick)); } catch (e) {}
+}
+fold.addEventListener('click', () => picker.classList.add('open'));
+picker.addEventListener('click', e => e.stopPropagation());
+addEventListener('click', () => picker.classList.remove('open'));
+document.body.append(picker);
+try { Object.assign(pick, JSON.parse(localStorage.getItem('colours')) || {}); } catch (e) {}
+const q = new URLSearchParams(location.search), hex = v => /^[0-9a-f]{6}$/i.test(v || '') ? '#' + v.toUpperCase() : null;
+if (hex(q.get('text'))) pick.text = hex(q.get('text'));
+if (hex(q.get('bg'))) pick.bg = hex(q.get('bg'));
+apply();
+</script>
+
+<!-- preview gate: a simple password box, not real security -->
+<style>
+  .gate { position: fixed; inset: 0; z-index: 100; background: var(--paper);
+    display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .gate form { display: flex; flex-direction: column; gap: 14px; width: min(320px, 100%); }
+  .gate h1 { font: 200 2.4rem/1.1 var(--serif); margin: 0 0 6px; letter-spacing: -.02em; }
+  .gate input { font: 500 16px var(--sans); color: var(--ink); background: transparent;
+    border: 0; border-bottom: 1.5px solid var(--ink); padding: 8px 0; outline: none; }
+  .gate button { all: unset; cursor: pointer; align-self: flex-start; font: 650 16px var(--sans);
+    border-bottom: 2px solid var(--ink); }
+  .gate .no { font-size: 13px; color: var(--ink-2); min-height: 1.2em; margin: 0; }
+</style>
+<div class="gate" id="gate">
+  <form id="gate-form">
+    <h1>Patricia Kahr</h1>
+    <input id="gate-pw" type="password" placeholder="Password" aria-label="Password" autocomplete="off">
+    <button type="submit">Open the preview →</button>
+    <p class="no" id="gate-no" aria-live="polite"></p>
+  </form>
+</div>
+<script>
+(() => {
+  const gate = document.getElementById('gate');
+  const ok = () => gate.remove();
+  try { if (localStorage.getItem('preview-ok') === '1') return ok(); } catch (e) {}
+  document.getElementById('gate-pw').focus();
+  document.getElementById('gate-form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (document.getElementById('gate-pw').value.trim().toLowerCase() === 'humantouch') {
+      try { localStorage.setItem('preview-ok', '1'); } catch (e) {}
+      location.reload();   // so the sentence writes itself in again
+    } else document.getElementById('gate-no').textContent = 'That is not it. Try again.';
+  });
+})();
+</script>
+</body>
+</html>
