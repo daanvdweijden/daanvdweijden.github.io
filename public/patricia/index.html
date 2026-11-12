@@ -479,9 +479,13 @@ apply();
   document.getElementById('gate-pw').focus();
   document.getElementById('gate-form').addEventListener('submit', e => {
     e.preventDefault();
-    if (document.getElementById('gate-pw').value.trim().toLowerCase() === 'humantouch') {
+    // ignore case and spaces (phones like to capitalise or split words)
+    if (document.getElementById('gate-pw').value.replace(/\s+/g, '').toLowerCase() === 'humantouch') {
       try { localStorage.setItem('preview-ok', '1'); } catch (e) {}
-      location.reload();   // so the sentence writes itself in again
+      // unlock in place: no reload, so it works even where the browser won't save anything
+      document.activeElement && document.activeElement.blur();
+      ok();
+      try { entrance.restart(true); } catch (e) {}   // the sentence writes itself in again
     } else document.getElementById('gate-no').textContent = 'That is not it. Try again.';
   });
 })();
