@@ -6,6 +6,7 @@
 <title>Patricia Kahr</title>
 <meta name="color-scheme" content="light only">
 <meta name="robots" content="noindex, nofollow">
+<script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&display=swap" rel="stylesheet">
@@ -451,9 +452,11 @@ if (hex(q.get('bg'))) pick.bg = hex(q.get('bg'));
 apply();
 </script>
 
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:10px 16px;background:#2C2B57;color:#F1EEE7;font:500 13px/1.4 'DM Sans',Arial,sans-serif">Scripts are blocked, so the animations, pages and colour picker don't work. In Brave, turn off Shields for this page to see everything.</p></noscript>
 <!-- preview gate: a simple password box, not real security -->
 <style>
-  .gate { position: fixed; inset: 0; z-index: 100; background: var(--paper);
+  .gate { display: none; }
+  html.js .gate { position: fixed; inset: 0; z-index: 100; background: var(--paper);
     display: flex; align-items: center; justify-content: center; padding: 24px; }
   .gate form { display: flex; flex-direction: column; gap: 14px; width: min(320px, 100%); }
   .gate h1 { font: 200 2.4rem/1.1 var(--serif); margin: 0 0 6px; letter-spacing: -.02em; }
