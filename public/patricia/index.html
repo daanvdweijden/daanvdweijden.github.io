@@ -283,11 +283,56 @@ nameEl.innerHTML = [...nameEl.textContent].map(ch => ch === 'i'
   ? `<span class="ltr" aria-hidden="true">ı<span class="tittle"></span></span>`
   : ch === ' ' ? ' ' : `<span class="ltr" aria-hidden="true">${ch}</span>`).join('');
 const dots = nameEl.querySelectorAll('.tittle');
+/* hover: the c between the two i's turns on its side into a mouth,
+   and the two dots slide over it as eyes: Patricia smiles back */
+const mouth = [...nameEl.querySelectorAll('.ltr')].find(l => l.textContent === 'c');
+/* where the c's ink sits inside its box, so it turns around its own middle */
+function inkCentre() {
+  const cs = getComputedStyle(nameEl), ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const t = ctx.measureText('c');
+  const probe = document.createElement('span');
+  probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+  mouth.append(probe);
+  const base = probe.offsetTop; probe.remove();
+  return { x: (t.actualBoundingBoxRight - t.actualBoundingBoxLeft) / 2,
+           y: base - (t.actualBoundingBoxAscent - t.actualBoundingBoxDescent) / 2 };
+}
+/* keep only a wedge of the c around its back (half-angle a, in degrees):
+   a = 180 is the whole letter, a = 62 is the bottom of a smile once turned */
+const arc = { a: 180 };
+function clipMouth() {
+  if (arc.a >= 179) { mouth.style.clipPath = ''; return; }
+  const { x, y } = arc.o, R = 3 * arc.em, pts = [`${x}px ${y}px`];
+  for (let k = 0; k <= 8; k++) {
+    const t = (180 - arc.a + (2 * arc.a) * k / 8) * Math.PI / 180;
+    pts.push(`${x + R * Math.cos(t)}px ${y - R * Math.sin(t)}px`);
+  }
+  mouth.style.clipPath = `polygon(${pts.join(',')})`;
+}
+function smile(on) {
+  const em = parseFloat(getComputedStyle(nameEl).fontSize);
+  const o = inkCentre();
+  arc.o = o; arc.em = em;
+  const m = mouth.getBoundingClientRect(), mx = m.left + o.x;
+  gsap.set(mouth, { transformOrigin: `${o.x}px ${o.y}px` });
+  gsap.to(mouth, { rotation: on ? -90 : 0, y: on ? .03 * em : 0, scale: on ? .85 : 1,
+    duration: on ? .5 : .4, ease: on ? 'back.out(1.8)' : 'power2.inOut', overwrite: 'auto' });
+  gsap.to(arc, { a: on ? 62 : 180, duration: on ? .4 : .3, ease: 'power2.inOut', onUpdate: clipMouth, overwrite: 'auto' });
+  dots.forEach((d, i) => {
+    const r = d.parentElement.getBoundingClientRect(), dx = r.left + r.width / 2;
+    gsap.to(d, on
+      ? { x: mx + (i ? .13 : -.13) * em - dx, y: .3 * em, rotation: 0, scale: .65, duration: .5, ease: 'back.out(1.6)', delay: .04 * i, overwrite: 'auto' }
+      : { x: 0, y: 0, rotation: 7, scale: 1, duration: .45, ease: 'power2.inOut', overwrite: 'auto' });
+  });
+}
 if (!reduce) {
   gsap.from(dots, { y: -40, rotation: 180, duration: .9, ease: 'bounce.out', stagger: .2, delay: .9 });
-  document.querySelector('.who').addEventListener('pointerenter', () => gsap.timeline()
-    .to(dots, { y: '-=.6em', rotation: '+=90', duration: .25, ease: 'power2.out', stagger: .08 })
-    .to(dots, { y: 0, duration: .5, ease: 'bounce.out', stagger: .08 }, '-=.1'));
+  const who = document.querySelector('.who');
+  who.addEventListener('pointerenter', () => smile(true));
+  who.addEventListener('pointerleave', () => smile(false));
+  /* no hover on a phone: smile once after the dots have landed */
+  if (matchMedia('(hover: none)').matches) gsap.delayedCall(2.4, () => { smile(true); gsap.delayedCall(1.6, () => smile(false)); });
 }
 
 /* ---------- landing entrance: the sentence writes itself in ---------- */
