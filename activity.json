@@ -53,6 +53,15 @@
   },
   "days": [
     {
+      "date": "2026-11-14",
+      "played": [
+        "briljant",
+        "crux",
+        "precies-vier",
+        "vorto"
+      ]
+    },
+    {
       "date": "2026-11-13",
       "played": [
         "mini",
