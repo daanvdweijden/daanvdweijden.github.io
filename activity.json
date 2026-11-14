@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-13",
+  "generated": "2026-11-14",
   "mini_streak": 399,
   "game_meta": {
     "crux": {
@@ -58,6 +58,7 @@
         "mini",
         "midi",
         "wordle",
+        "connections",
         "briljant",
         "crux"
       ]
