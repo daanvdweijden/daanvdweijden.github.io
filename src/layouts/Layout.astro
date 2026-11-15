@@ -60,7 +60,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Browser chrome in the page colour; the theme script below pins both
          to the footer choice when there is one. Keep in sync with --bg. -->
-    <meta name="theme-color" content="#ccd5dd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#c0d5ee" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#7d300e" media="(prefers-color-scheme: dark)" />
     <script is:inline>
       (function () {
@@ -92,7 +92,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
             var tc = document.querySelectorAll('meta[name="theme-color"]');
             for (var i = 0; i < tc.length; i++) {
               var m = tc[i], sys = m.dataset.sys || (m.dataset.sys = m.content);
-              m.content = v ? (v === 'dark' ? '#7d300e' : '#ccd5dd') : sys;
+              m.content = v ? (v === 'dark' ? '#7d300e' : '#c0d5ee') : sys;
             }
           },
         };
@@ -145,14 +145,14 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         /* Two colours, nothing else: burnt orange ink on grey-blue paper.
            The dark theme swaps them. The orange is the accent too, so
            emphasis comes from weight, not from a third colour. --muted is a
-           deep grey-blue (5.7:1, a bit quieter than the text), not a faded orange, so small text stays
+           deep blue (5.5:1, a bit quieter than the text), not a faded orange, so small text stays
            readable. --accent-2 is that grey-blue, for contrast in charts. */
-        --bg: #ccd5dd;          /* grey-blue paper */
+        --bg: #c0d5ee;          /* sky-blue paper */
         --ink: #7d300e;         /* burnt orange, 6.1:1 */
-        --muted: #3f4f5d;
+        --muted: #3d5068;
         --line: color-mix(in srgb, var(--ink) 25%, var(--bg));
         --accent: #7d300e;
-        --accent-2: #3f4f5d;
+        --accent-2: #3d5068;
         --font: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
 
         /* Legacy tokens still used by the inner pages (news, pubs, cv,
@@ -177,10 +177,10 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       html[data-theme='dark'] {
         color-scheme: dark;
         --bg: #7d300e;
-        --ink: #ccd5dd;
+        --ink: #c0d5ee;
         --muted: #e6c2ad;
         --line: color-mix(in srgb, var(--ink) 28%, var(--bg));
-        --accent: #ccd5dd;
+        --accent: #c0d5ee;
         --accent-2: #f0c9b2;
         --p-red-bg: #6f2a0c;  --p-red-fg: #f6d2bd;
         --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
@@ -191,10 +191,10 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         html:not([data-theme='light']) {
           color-scheme: dark;
           --bg: #7d300e;
-          --ink: #ccd5dd;
+          --ink: #c0d5ee;
           --muted: #e6c2ad;
           --line: color-mix(in srgb, var(--ink) 28%, var(--bg));
-          --accent: #ccd5dd;
+          --accent: #c0d5ee;
           --accent-2: #f0c9b2;
           --p-red-bg: #6f2a0c;  --p-red-fg: #f6d2bd;
           --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
