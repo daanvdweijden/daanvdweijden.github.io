@@ -5,8 +5,9 @@
 //
 // Footnote-style: <Aside n={1}> starts with the number 1, and <Ref n={1} />
 // puts the matching marker in the text. On wide screens a numbered note lines
-// up with its marker. Every margin note slides down, animated, when it would
-// overlap the "Show edits" legend or the margin note above it.
+// up with its marker; on phones it moves to just below the paragraph with the
+// marker, like a footnote. Every margin note slides down, animated, when it
+// would overlap the "Show edits" legend or the margin note above it.
 interface Props {
   /** Footnote number, matching a <Ref n> in the text. */
   n?: number;
@@ -32,7 +33,28 @@ const { n } = Astro.props;
     return t && t !== 'none' ? new DOMMatrix(t).m42 : 0;
   };
 
+  // Phones: a numbered note goes right after the block (paragraph) holding
+  // its marker; wide screens: back where the author put it, which a comment
+  // node keeps track of. Only moves when it isn't there yet, so the
+  // ResizeObserver below can't loop.
+  const homes = new Map<HTMLElement, Comment>();
+  function arrange() {
+    for (const aside of document.querySelectorAll<HTMLElement>('.margin-note.numbered')) {
+      if (!homes.has(aside)) {
+        const home = document.createComment('sidenote');
+        aside.before(home);
+        homes.set(aside, home);
+      }
+      const num = aside.querySelector('.sn-num');
+      const ref = num && document.getElementById(num.getAttribute('href')!.slice(1));
+      const block = ref?.closest<HTMLElement>('.prose > *');
+      const anchor: ChildNode | null | undefined = WIDE.matches ? homes.get(aside) : block;
+      if (anchor && anchor.nextSibling !== aside) anchor.after(aside);
+    }
+  }
+
   function place() {
+    arrange();
     // We move the inner .mn-body: the <aside> itself belongs to the page's
     // reveal animation (GSAP), which owns its transform.
     const notes = [...document.querySelectorAll<HTMLElement>('.margin-note > .mn-body')];
