@@ -147,6 +147,20 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
     background: var(--accent);
     transition: transform .7s cubic-bezier(.22, .61, .36, 1);
   }
+  /* Dark theme: on the orange paper a filled grey-blue block is too loud,
+     so the block becomes a thin grey-blue outline drawn over the photo,
+     like a crop mark. With nothing under it to multiply onto, the photo
+     shows as plain gray. */
+  :global(html[data-theme='dark']) .portrait .block {
+    z-index: 1; pointer-events: none;
+    background: transparent; box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(html:not([data-theme='light'])) .portrait .block {
+      z-index: 1; pointer-events: none;
+      background: transparent; box-shadow: inset 0 0 0 2px var(--accent);
+    }
+  }
   /* Opening, driven by GSAP tweening --p from 1 to 0 (script above). It
      uses the separate `translate`/`scale` properties, so it never fights the
      hover `transform`. Until it's done (.settled), GSAP also plays the hover

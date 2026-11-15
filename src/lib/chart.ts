@@ -11,7 +11,7 @@
 // chart is just "data + context → SVG".
 //
 // The house style: everything grey, the one thing the sentence is about in
-// --accent; --accent-2 (sage) when a chart needs a contrast. Axes are muted, so they recede.
+// --accent; --accent-2 (grey-blue) when a chart needs a contrast. Axes are muted, so they recede.
 // ---------------------------------------------------------------------------
 import type { PlotOptions } from '@observablehq/plot';
 
@@ -21,7 +21,7 @@ export interface ChartColors {
   line: string;
   bg: string;
   accent: string;
-  /** Second colour, for a contrast with the accent (sage; --accent-2). */
+  /** Second colour, for a contrast with the accent (grey-blue; --accent-2). */
   accent2: string;
   /** Extra hues for charts that need more than two categories (blue, yellow, green). */
   extra: string[];

@@ -17,10 +17,10 @@ interface Props {
 }
 const { title, subtitle, caption, source, sourceUrl, width = 'wide' } = Astro.props;
 const hasCaption = caption || source || Astro.slots.has('caption');
-// Colour words ("terracotta", "sage") in the subtitle or caption are shown in that colour (see Hue.astro).
-import { HUE_RE, hueClass } from '../../lib/hue';
+// Colour words ("orange", "blue") in the subtitle or caption are shown in that colour and named for the theme (see lib/hue.ts).
+import { HUE_RE, hueHtml } from '../../lib/hue';
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const colourWords = (t: string) => esc(t).replace(HUE_RE, (w) => `<span class="hue ${hueClass(w)}">${w}</span>`);
+const colourWords = (t: string) => esc(t).replace(HUE_RE, (w) => hueHtml(w));
 ---
 
 <figure class:list={['note-figure', { wide: width === 'wide' }]} data-reveal>

@@ -1,17 +1,20 @@
 ---
-// <Hue>terracotta</Hue> / <Hue>sage</Hue>: a colour word in the colour it
-// names, so "terracotta marks…" in the text matches the chart. Figure
-// subtitles and captions do this by themselves. The .hue styles live in
-// Layout.astro, shared by both. "teal" and "rust" are the old names for the
-// same two colours and still work.
-import { hueClass } from '../../lib/hue';
+// <Hue>orange</Hue> / <Hue>blue</Hue>: a colour word in the colour it
+// names, so "orange marks…" in the text matches the chart. The word is
+// shown as the colour's name in the current theme (the palette swaps in
+// dark mode, see lib/hue.ts). Figure subtitles and captions do this by
+// themselves. Older names (terracotta, sage, teal, rust) still work.
+// Any other text (or text with `c`) is shown as is, in that colour.
+import { HUE_WORDS, hueClass, hueHtml } from '../../lib/hue';
 
 interface Props {
-  /** Which colour; defaults to the word itself. */
-  c?: 'terracotta' | 'sage' | 'teal' | 'rust';
+  /** Which colour, for text that isn't itself a colour word. */
+  c?: 'orange' | 'blue' | 'terracotta' | 'sage' | 'teal' | 'rust';
 }
 const text = (await Astro.slots.render('default')).trim();
-const c = hueClass(Astro.props.c ?? text);
+const html = !Astro.props.c && HUE_WORDS[text.toLowerCase()]
+  ? hueHtml(text)
+  : `<span class="hue ${hueClass(Astro.props.c ?? text)}">${text}</span>`;
 ---
 
-<span class:list={['hue', c]}><Fragment set:html={text} /></span>
+<Fragment set:html={html} />

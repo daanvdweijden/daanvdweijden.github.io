@@ -1,17 +1,43 @@
-// Colour words in notes. Each word names one of the two chart colours:
-// --accent (terracotta) or --accent-2 (sage). "teal" and "rust" are the
-// names from the old palette, kept so older text still colours correctly.
-export const HUE_WORDS: Record<string, 'accent' | 'accent-2'> = {
+// Colour words in notes. Each word names one of the two chart colours,
+// --accent or --accent-2. The palette swaps in the dark theme (orange ink
+// on grey-blue becomes grey-blue on orange), so the colours have no single
+// name: a colour word is written once in the text and shown as the name of
+// the colour it has in the current theme ("orange" or "blue").
+//
+// The words in the source are only keys. "orange" and "blue" name the light
+// theme; "terracotta"/"teal" and "sage"/"rust" are names from older
+// palettes, kept so older text still works.
+export type Hue = 'accent' | 'accent-2';
+
+export const HUE_WORDS: Record<string, Hue> = {
+  orange: 'accent',
   terracotta: 'accent',
   teal: 'accent',
+  blue: 'accent-2',
   sage: 'accent-2',
   rust: 'accent-2',
 };
 
+/** What each colour is called in each theme. */
+export const HUE_NAMES: Record<Hue, { light: string; dark: string }> = {
+  accent: { light: 'orange', dark: 'blue' },
+  'accent-2': { light: 'blue', dark: 'orange' },
+};
+
 /** CSS class for a colour word (or text starting with one); accent by default. */
-export function hueClass(text: string): 'accent' | 'accent-2' {
+export function hueClass(text: string): Hue {
   const first = text.trim().toLowerCase().split(/\W/)[0];
   return HUE_WORDS[first] ?? 'accent';
+}
+
+const cap = (s: string, like: string) => (/^[A-Z]/.test(like) ? s[0].toUpperCase() + s.slice(1) : s);
+
+/** A colour word as HTML: in its colour, named for the current theme
+ *  (both names are rendered; CSS in Layout.astro shows one). Keeps the
+ *  capital of the word it replaces. */
+export function hueHtml(word: string, c: Hue = hueClass(word)): string {
+  const n = HUE_NAMES[c];
+  return `<span class="hue ${c}"><span class="hue-l">${cap(n.light, word)}</span><span class="hue-d">${cap(n.dark, word)}</span></span>`;
 }
 
 /** Matches any colour word, for wrapping them in captions. */

@@ -58,6 +58,10 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Browser chrome in the page colour; the theme script below pins both
+         to the footer choice when there is one. Keep in sync with --bg. -->
+    <meta name="theme-color" content="#ccd5dd" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#7d300e" media="(prefers-color-scheme: dark)" />
     <script is:inline>
       (function () {
         // Colour scheme: the system setting by default (pure CSS, below). A
@@ -85,6 +89,11 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
             var v = store.get();
             if (v) document.documentElement.setAttribute('data-theme', v);
             else document.documentElement.removeAttribute('data-theme');
+            var tc = document.querySelectorAll('meta[name="theme-color"]');
+            for (var i = 0; i < tc.length; i++) {
+              var m = tc[i], sys = m.dataset.sys || (m.dataset.sys = m.content);
+              m.content = v ? (v === 'dark' ? '#7d300e' : '#ccd5dd') : sys;
+            }
           },
         };
         window.__theme = store;
@@ -133,15 +142,17 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <style is:global>
       :root {
         color-scheme: light;
-        --bg: #efeee9;          /* paper */
-        --ink: #161616;
-        --muted: #6e6d68;
-        --line: #d6d4cd;
-        /* The one colour: terracotta. Dark enough to read as text on the
-           paper (5.2:1); the dark theme uses a lighter shade. --accent-2 is
-           sage, only for a contrast in charts and colour words in notes. */
-        --accent: #a3472b;
-        --accent-2: #4b6f5c;
+        /* Two colours, nothing else: burnt orange ink on grey-blue paper.
+           The dark theme swaps them. The orange is the accent too, so
+           emphasis comes from weight, not from a third colour. --muted is a
+           deep grey-blue (5.7:1, a bit quieter than the text), not a faded orange, so small text stays
+           readable. --accent-2 is that grey-blue, for contrast in charts. */
+        --bg: #ccd5dd;          /* grey-blue paper */
+        --ink: #7d300e;         /* burnt orange, 6.1:1 */
+        --muted: #3f4f5d;
+        --line: color-mix(in srgb, var(--ink) 25%, var(--bg));
+        --accent: #7d300e;
+        --accent-2: #3f4f5d;
         --font: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
 
         /* Legacy tokens still used by the inner pages (news, pubs, cv,
@@ -153,10 +164,10 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --mono: var(--font);
         --tone: var(--ink);
         --tone-soft: var(--muted);
-        --p-red-bg: #f3dcd6;  --p-red-fg: #a23a28;
-        --p-blue-bg: #dce6ee; --p-blue-fg: #2d5a7b;
-        --p-green-bg: #e1e8dc;--p-green-fg: #3f6436;
-        --p-yellow-bg:#f6ecc0;--p-yellow-fg:#7d6200;
+        --p-red-bg: #d6c3bd;  --p-red-fg: #7a2c0c;
+        --p-blue-bg: #a9b7c4; --p-blue-fg: #2f4a63;
+        --p-green-bg: #b9c5b8;--p-green-fg: #3d5530;
+        --p-yellow-bg:#cdc6b4;--p-yellow-fg:#6b4e0e;
         --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
       /* Dark palette. Applied when the visitor picked Dark in the footer
@@ -165,30 +176,30 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
          The two blocks must stay identical. */
       html[data-theme='dark'] {
         color-scheme: dark;
-        --bg: #141413;
-        --ink: #ecebe6;
-        --muted: #8f8e88;
-        --line: #2e2d2a;
-        --accent: #e38d6f;
-        --accent-2: #93bda4;
-        --p-red-bg: #3a2420;  --p-red-fg: #eea596;
-        --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
-        --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
-        --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+        --bg: #7d300e;
+        --ink: #ccd5dd;
+        --muted: #e6c2ad;
+        --line: color-mix(in srgb, var(--ink) 28%, var(--bg));
+        --accent: #ccd5dd;
+        --accent-2: #f0c9b2;
+        --p-red-bg: #6f2a0c;  --p-red-fg: #f6d2bd;
+        --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
+        --p-green-bg:#6b4a22; --p-green-fg:#d6e4c0;
+        --p-yellow-bg:#7a4a12;--p-yellow-fg:#f3d79c;
       }
       @media (prefers-color-scheme: dark) {
         html:not([data-theme='light']) {
           color-scheme: dark;
-          --bg: #141413;
-          --ink: #ecebe6;
-          --muted: #8f8e88;
-          --line: #2e2d2a;
-          --accent: #e38d6f;
-          --accent-2: #93bda4;
-          --p-red-bg: #3a2420;  --p-red-fg: #eea596;
-          --p-blue-bg: #1d2b36; --p-blue-fg: #9cc0dc;
-          --p-green-bg:#1f2a1c; --p-green-fg:#a5c99a;
-          --p-yellow-bg:#332b0e;--p-yellow-fg:#e9c21a;
+          --bg: #7d300e;
+          --ink: #ccd5dd;
+          --muted: #e6c2ad;
+          --line: color-mix(in srgb, var(--ink) 28%, var(--bg));
+          --accent: #ccd5dd;
+          --accent-2: #f0c9b2;
+          --p-red-bg: #6f2a0c;  --p-red-fg: #f6d2bd;
+          --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
+          --p-green-bg:#6b4a22; --p-green-fg:#d6e4c0;
+          --p-yellow-bg:#7a4a12;--p-yellow-fg:#f3d79c;
         }
       }
 
@@ -215,7 +226,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         a, button, .feature-title, .rank-title { transition: none; }
       }
       img { max-width: 100%; height: auto; display: block; }
-      ::selection { background: var(--accent); color: #fff; }
+      ::selection { background: var(--ink); color: var(--bg); }
       :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
       .wrap { max-width: 78rem; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.25rem); }
@@ -293,11 +304,19 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         letter-spacing: -.02em; margin: 0; max-width: 17em;
       }
       .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
-      /* Colour words in notes ("terracotta marks…"), see components/notes/Hue.astro.
+      /* Colour words in notes ("orange marks…"), see components/notes/Hue.astro.
          "teal" and "rust" are the old names, kept so older text still works. */
       .hue { font-weight: 600; }
       .hue.accent { color: var(--accent); }
       .hue.accent-2 { color: var(--accent-2); }
+      /* Colour words carry both names; show the one for the theme. */
+      .hue-d { display: none; }
+      html[data-theme='dark'] .hue-l { display: none; }
+      html[data-theme='dark'] .hue-d { display: inline; }
+      @media (prefers-color-scheme: dark) {
+        html:not([data-theme='light']) .hue-l { display: none; }
+        html:not([data-theme='light']) .hue-d { display: inline; }
+      }
 
       .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
       .body a, .prose a { text-decoration-color: var(--muted); }

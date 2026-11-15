@@ -46,7 +46,7 @@ Unfortunately, that means my handcrafted-playlist era is invisible here. I can s
 
 <Figure
   title="Seven in ten playlist plays are on something Spotify made for me"
-  caption="Playlist plays since April 2024; made by Spotify in sage."
+  caption="Playlist plays since April 2024; made by Spotify in blue."
   source="stats.fm, Spotify"
 >
   <Chart name="playlists" data={playlists} height={300} alt="Horizontal bars: song and artist radios 1,331 plays, other Spotify playlists 1,274, named playlists 1,041, no name 572, daily mixes 564, daylist 323, my yearly top tracks 120." />
@@ -102,17 +102,17 @@ My all-time favourite artists don't follow the same trend, though. In the overal
 
 <Figure
   title="Of my top 50 artists of all time, five are not men"
-  caption="Plays since October 2015; women and mixed groups in terracotta. Faded bars are classical performers credited separately: #19 is the pianist on Chopin's Nocturnes, #30 to #37 mostly one Verdi opera."
+  caption="Plays since October 2015; women and mixed groups in orange. Faded bars are classical performers credited separately: #19 is the pianist on Chopin's Nocturnes, #30 to #37 mostly one Verdi opera."
   source="stats.fm, MusicBrainz"
 >
-  <Chart name="topArtists" data={top} height={880} alt="Bar chart of the top 50 artists by plays, led by Future with 3,731. The first bars in terracotta are Crumb at #38 and Khruangbin at #39." />
+  <Chart name="topArtists" data={top} height={880} alt="Bar chart of the top 50 artists by plays, led by Future with 3,731. The first highlighted bars are Crumb at #38 and Khruangbin at #39." />
 </Figure>
 
 What I couldn't see was how long these artists stayed with me through the years. I know <Pic id="future">Future</Pic> keeps popping up in Wrapped every year, but lots of artists seem to come and go. How many actually reappear, and who simply fades away, never to be listened to again?
 
 <Scrolly>
   <Chart slot="graphic" name="favourites" data={{ lifelines, favourites }} height={600} alt="First: monthly plays for all 66 artists that were ever in a yearly top 10. Then the six that dropped out, then the 19 that made the top 10 more than once, first highlighted and then on their own, and finally a simple grid of those 19 by year." />
-  <Step>These are all 66 artists that ever made one of my yearly top 10s, in the order they first got there. The grey is how much I played them each month; <Hue>terracotta</Hue> marks the years they were in my top 10.</Step>
+  <Step>These are all 66 artists that ever made one of my yearly top 10s, in the order they first got there. The grey is how much I played them each month; <Hue>orange</Hue> marks the years they were in my top 10.</Step>
   <Step>Almost all of them are still around: 60 of the 66 got played in the last year. These six didn't: <Pic id="bryson-tiller">Bryson Tiller</Pic>, <Pic id="a-day-to-remember">A Day To Remember</Pic>, <Pic id="shlohmo">Shlohmo</Pic>, <Pic id="burial">Burial</Pic>, <Pic id="pop-smoke">Pop Smoke</Pic> and <Pic id="mild-high-club">Mild High Club</Pic>. Three of them were 2020 favourites.</Step>
   <Step>Most artists have one big year and then fade into the background. Only 19 made it back into a top 10 at least once more.</Step>
   <Step>These are the ones that keep popping up. Some after years away: <Pic id="spinvis">Spinvis</Pic> was a favourite in 2017 and then again in 2025, <Pic id="kendrick-lamar">Kendrick Lamar</Pic> in 2017 and then again in 2022 and 2024.</Step>
@@ -128,7 +128,7 @@ I've been listening to more Dutch music recently, and wanted to know if my geogr
 <Scrolly>
   <Chart slot="graphic" name="worldMap" data={{ years: countryYears, countries }} height={360} alt="Dot map of the world in four steps: countries I had heard music from by 2015 (11), 2017 (30), 2020 (64) and 2026 (85), with new ones highlighted each step." />
   <Step>End of 2015: 11 countries. 60% of it American, with Dutch hip-hop (<Pic id="ronnie-flex">Ronnie Flex</Pic>) and a Canadian (<Pic id="drake">Drake</Pic>) as runners-up.</Step>
-  <Step>By 2017, 30 countries. <Hue>Sage</Hue> marks the ones that are new since the last step.</Step>
+  <Step>By 2017, 30 countries. <Hue>Blue</Hue> marks the ones that are new since the last step.</Step>
   <Step>2018 to 2020 is when it really opened up: 64 countries. The UK took over from the Netherlands as number two (<Pic id="arctic-monkeys">Arctic Monkeys</Pic>, <Pic id="mount-kimbie">Mount Kimbie</Pic>, <Pic id="bring-me-the-horizon">Bring Me The Horizon</Pic>).</Step>
   <Step>Now: 85 countries all together. Most of Central Asia and a big part of Africa are still grey.</Step>
 </Scrolly>
