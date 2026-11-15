@@ -29,7 +29,7 @@ const groups = groupByYear(await getPublications());
               <li>
                 <a class="thumb" href={pubHref(p)} aria-hidden="true" tabindex="-1">
                   {thumb && <span class="block" />}
-                  {thumb && <img src={thumb} alt="" loading="lazy" />}
+                  {thumb && <img src={thumb} alt="" loading="lazy" onload="this.parentNode.classList.add('loaded')" />}
                 </a>
                 <div>
                   <a class="title" href={pubHref(p)}>{p.data.title}</a>
@@ -85,7 +85,11 @@ const groups = groupByYear(await getPublications());
     position: absolute; right: 0; bottom: 0; width: 60%; aspect-ratio: 1 / 1;
     background: var(--accent);
     transition: transform .7s cubic-bezier(.22, .61, .36, 1);
+    /* Hidden until the lazy image has loaded, so the square never shows
+       on its own before the page covers it. */
+    visibility: hidden;
   }
+  .thumb.loaded .block { visibility: visible; }
   @media (hover: hover) {
     .pubs > li:hover .thumb img { transform: translate(-3%, -2%) scale(1.04); }
     .pubs > li:hover .thumb .block { transform: translate(26%, 22%); }
