@@ -312,8 +312,13 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
         hunks = r.hunks;
         const pct = Math.round((r.kept / r.draftWords) * 100);
         const count = (t: Hunk['type']) => r.hunks.filter((h) => h.type === t && h.els.length > 0).length;
-        ctl.querySelector('.dd-stat')!.textContent =
-          `From my first draft to this note, ${pct}% of my words stayed exactly as I wrote them. AI edits: ${count('reworded')} rewordings, ${count('typo')} spelling fixes, ${count('added')} additions and ${count('cut')} cuts.`;
+        // Two lines: how much stayed mine, then the AI edits.
+        const stat = ctl.querySelector('.dd-stat')!;
+        stat.replaceChildren(
+          `From my first draft to this note, ${pct}% of my words stayed exactly as I wrote them.`,
+          document.createElement('br'),
+          `AI edits: ${count('reworded')} rewordings, ${count('typo')} spelling fixes, ${count('added')} additions and ${count('cut')} cuts.`,
+        );
       }
       const on = document.documentElement.classList.toggle('dd-on');
       btn.setAttribute('aria-pressed', String(on));

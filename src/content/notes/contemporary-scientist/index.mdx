@@ -1,0 +1,82 @@
+---
+title: "The Contemporary Scientist"
+dek: "Scientists are the new Artists"
+date: 2026-11-15
+tags: [science, art, ai]
+draft: false
+---
+
+import Aside from '../../../components/notes/Aside.astro';
+import Own from '../../../components/notes/Own.astro';
+import Ref from '../../../components/notes/Ref.astro';
+import Figure from '../../../components/notes/Figure.astro';
+import { Image } from 'astro:assets';
+import artOrKitsch from './img/art-or-kitsch.gif';
+import shirt from './img/shirt.jpg';
+
+{/* Every img/ai-*.jpg shows up in the Ai Weiwei figure, in file-name order. */}
+export const aiPhotos = Object.entries(import.meta.glob('./img/ai-*.jpg', { eager: true, import: 'default' })).sort(([a], [b]) => a.localeCompare(b)).map(([, img]) => img);
+
+<Aside n={1}>
+How much of this is really true is of course the big question, as the goalposts of what these models should be capable of are moving as quickly as (for some even quicker than) the technology itself.
+</Aside>
+
+The scientific community is in limbo. As technology keeps improving at rates that are ungraspable, our expertise seems to become a commodity, purchasable at $4.00 per million tokens. This is especially the case in the computer science community, as coding (and nowadays even programming and system design) seems close to solved.<Ref n={1} /> That leaves us with a question: what makes you a scientist? I would argue a good scientist's most important feat is coming up with novel ideas, and being able to execute and communicate these ideas well. Now that more and more of the execution part is being outsourced, is all we have left being an idea machine?
+
+## Contemporary Artists
+
+This new shift reminded me a lot of the process most contemporary artists now follow. Some 'outsource' their work explicitly, like Marina Abramović with her performance art, which is often performed by hired actors once she has done the premiere. Walking through the entrance of a gallery between Marina and her (then) husband Ulay must be different from my experience walking between two strangers in the Kunsthaus.
+
+Others are not as explicit in their work, though. This does not mean that they try to hide it, but it is not as apparent as seeing the performance artists themselves replaced by a stranger. On a trip to Manchester I saw one of the largest exhibitions of Ai Weiwei's work: a giant rubber boat with refugees filling the gigantic hall. This was not the only huge work on display, and while he is the ideator, he did not create any of the pieces exhibited.
+
+<Figure width="wide" caption="Some of the huge works in Ai Weiwei's exhibition in Manchester." source="Photos: me">
+  <div class="photo-row">
+    {aiPhotos.map((img) => <Image src={img} alt="A huge installation from Ai Weiwei's exhibition in Manchester, in a dark industrial hall." widths={[600, 1200]} sizes="(max-width: 760px) 100vw, 33vw" />)}
+  </div>
+</Figure>
+
+<style>{`.sn-img { width: 100%; max-width: 150px; height: auto; display: block; margin: .6rem 0 .3rem; border-radius: 4px; } .sn-cap { font-size: .8rem; } .photo-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: .5rem; } .photo-row img { width: 100%; height: auto; aspect-ratio: 9 / 16; object-fit: cover; display: block; } @media (max-width: 760px) { .photo-row { grid-template-columns: 1fr; } }`}</style>
+
+This is how most contemporary artists operate now: within huge studios that help with, or sometimes completely take over, the execution part of creating a piece of art. From Yayoi Kusama (love), to Jeff Koons (hate), to Damien Hirst (???), they all have their own labs filled with students working on their creations. Although I learned today that this is not necessarily a modern tradition, and that artists like Rembrandt (hup Holland hup) had their students [paint in their name](https://www.nga.gov/research/publications/dutch-paintings-seventeenth-century/issues-attribution-rembrandt-workshop) too. Every day is a school day!
+
+## Contemporary Scientists
+
+"Outsourcing" the work used to be the professor's job: they would tackle the big problems while having their PhD students work on the smaller parts that make up the solution. My professor used to have this [story of the rabbit and the lion](https://mfleck.cs.illinois.edu/parable.html) up on his website, which explained this system perfectly. The professor thinks of the clockwork, while the students figure out the intricacies of the specific gears required to make the movement work just a tad more efficiently. In present times we PhD students take on this part of the professor role as well, as execution does not seem to be our primary goal anymore.
+
+But this still pertained to just execution, and left the ideas to us. Some might argue that even ideation can be executed better by a sophisticated probability calculator. At the start of this year, my professor sent around [an article](https://www.behind-the-enemy-lines.com/2026/02/everybody-is-ceo-now-and-what-exactly.html) by Panos Ipeirotis, a business professor who seemed to be an AI devotee, and was convinced that Claude was the best student he had supervised in the last 20 years:
+
+> "I have never worked with a PhD student this organized and this diligent."
+
+<Aside n={2}>
+Learned today that English has this idiom as well, in the exact translation of the Dutch version.
+</Aside>
+
+This idea is becoming more and more true, though, and I see a lot of people (on LinkedIn, so take it with a huge block of salt) automate huge parts of their workflow. This is also what is argued in ["When Ideas Became Cheap"](https://jacktan.bearblog.dev/when-ideas-became-cheap/), which claims the researcher's job is not even ideation, but that the only part left is judgement. With execution solved and ideation getting better by the day, being able to separate the wheat from the chaff<Ref n={2} /> is where your value is at. That is what the contemporary scientist should focus on.
+
+## What Separates the Art from the Kitsch
+
+<Aside n={3}>
+<Image src={shirt} alt="A navy T-shirt seen from the back with 'scientists are the new artists' printed in pink." widths={[150, 300]} sizes="150px" class="sn-img" />
+
+<span class="sn-cap">Mock-up, made with AI, after the [CATNA Tee](https://www.theneworiginals.eu/products/catna-tee-navy-blue-pink-1) ("Creatives Are The New Athletes") by The New Originals.</span>
+</Aside>
+
+How are scientists and artists similar? I would argue that both are at their core idea makers, and that modern times care less about your own capability to execute. This does not mean execution is becoming less important; I think the opposite is true. It just means that you don't have to be the best coder in the world anymore, you just have to be able to judge it correctly. When everyone is able to create 'art', or 'do research', you have to be able to separate the [Bored Apes](https://opensea.io/collection/boredapeyachtclub) from the Matthew Wongs. The same thing holds for research. We just have to figure out what the kitsch is, and what qualifies as art. <Own>Scientists are the new artists.</Own><Ref n={3} />
+
+<Figure width="text" caption="Art or kitsch?" source="Wikimedia Commons, public domain (Vermeer: National Gallery of Art, CC0; AI images: GPT Image and DALL-E)">
+  <img src={artOrKitsch.src} width="480" height="480" alt="A looping image that flips between three real paintings and AI imitations of them: a Rembrandt self-portrait and an AI Oktoberfest in his style, a Vermeer and AI birdwatchers at computers in his style, a Van Gogh self-portrait and an AI rhino in a business suit screaming in his style." style="width: 100%; height: auto; display: block;" />
+</Figure>
+
+<Aside n={4}>
+As I've learned in research: no idea is unique!
+</Aside>
+
+When looking into this idea a bit more, I stumbled on a post by Dan Cohen which asks the same question: "[Is science becoming conceptual art?](https://newsletter.dancohen.org/archive/humane-ingenuity-52-is-science-becoming-conceptual-art/)"<Ref n={4} /> It argues for the same future role of the scientist, although his work is related to a wet lab. A fully automated laboratory is still in the future (although I think Anthropic is working on something like this?), but this is already very much happening in CS labs.
+
+But when judgement should become our biggest strength, how do we train for this? Currently the system seems to run on the same assumptions as before: that a paper is worth sending in if it tests a couple of hypotheses in a seemingly sound manner. The recent [ICML](https://www.nature.com/articles/d41586-026-00893-2) and [CHI](https://chi2027.acm.org/2026/10/23/chi-2027-papers-desk-rejects-and-adr/) desk rejects show that a tsunami of automated papers and reviews is already here.
+
+## Are We Doomed?
+
+I am not so pessimistic in this regard. This technology provides the ability to iterate and experiment with your ideas quicker. Every thought that popped into your mind when you read a new paper, listened to a presentation or were just on a walk through the woods would be written down, often never to be looked at again. Nowadays I can take these notes, prototype the idea, and see whether it's worth diving deeper.
+
+In a time where execution and ideation are cheap, we shouldn't try to accelerate the rate of *publishing* all of our ideas, but rather the rate of *testing* all of our ideas. Figuring out which questions are even worth asking would not only allow us to focus on things that are interesting, but would also benefit the rest of the scientific community, who currently have to sift through thousands of shit papers, or 'Paper Diarrhea' as [coined by the head of ACM](https://www.youtube.com/watch?v=ddCQfDMmGVg) himself.

@@ -2,19 +2,127 @@
 // <Aside>A tangent.</Aside>: a margin note. Put it right BEFORE the paragraph
 // it belongs to; on wide screens it sits in the left column beside that
 // paragraph, on phones it falls inline as a small boxed note.
+//
+// Footnote-style: <Aside n={1}> starts with the number 1, and <Ref n={1} />
+// puts the matching marker in the text. On wide screens a numbered note lines
+// up with its marker. Every margin note slides down, animated, when it would
+// overlap the "Show edits" legend or the margin note above it.
+interface Props {
+  /** Footnote number, matching a <Ref n> in the text. */
+  n?: number;
+}
+const { n } = Astro.props;
 ---
 
-<aside class="margin-note"><slot /></aside>
+<aside class:list={['margin-note', { numbered: n !== undefined }]}>
+  <div class="mn-body">
+    {n !== undefined && <a class="sn-num" href={`#sn-ref-${n}`} id={`sn-${n}`} aria-label={`Back to note ${n} in the text`}>{n}</a>}
+    <slot />
+  </div>
+</aside>
+
+<script>
+  const WIDE = window.matchMedia('(min-width: 761px)');
+  const GAP = 16;
+
+  // An element's vertical transform as it is right now (mid-animation too).
+  const dy = (el: Element | null | undefined) => {
+    if (!el) return 0;
+    const t = getComputedStyle(el).transform;
+    return t && t !== 'none' ? new DOMMatrix(t).m42 : 0;
+  };
+
+  function place() {
+    // We move the inner .mn-body: the <aside> itself belongs to the page's
+    // reveal animation (GSAP), which owns its transform.
+    const notes = [...document.querySelectorAll<HTMLElement>('.margin-note > .mn-body')];
+    if (!WIDE.matches) {
+      notes.forEach((n) => (n.style.transform = ''));
+      return;
+    }
+    // What the first margin note must clear: the meta column, including the
+    // absolutely placed edits legend when it's open.
+    let floor = -Infinity;
+    const meta = document.querySelector<HTMLElement>('.note-meta');
+    if (meta) floor = meta.getBoundingClientRect().bottom + scrollY + GAP;
+    const legend = document.querySelector<HTMLElement>('.dd-legend');
+    if (legend && !legend.hidden) floor = Math.max(floor, legend.getBoundingClientRect().bottom + scrollY + GAP);
+
+    for (const note of notes) {
+      const shift = dy(note) + dy(note.parentElement!);
+      const box = note.getBoundingClientRect();
+      const natural = box.top + scrollY - shift;
+      let top = natural;
+
+      // Line the note's number up with its marker in the text.
+      const num = note.querySelector<HTMLElement>('.sn-num');
+      const ref = num && document.getElementById(num.getAttribute('href')!.slice(1));
+      if (num && ref) {
+        const prev = ref.closest('sup')?.previousSibling;
+        let line = ref.getBoundingClientRect();
+        if (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent) {
+          const r = document.createRange();
+          r.setStart(prev, prev.textContent.length - 1);
+          r.setEnd(prev, prev.textContent.length);
+          line = r.getBoundingClientRect();
+        }
+        // The marker's paragraph may still be waiting for its reveal (12px low).
+        const block = ref.closest('.prose > *') ?? ref.closest('p');
+        const lineBottom = line.bottom - dy(block);
+        const n = num.getBoundingClientRect();
+        // Bottoms of the two lines level (baselines, near enough).
+        top = natural + (lineBottom - (n.bottom - shift));
+      }
+
+      top = Math.max(top, floor);
+      const next = Math.round(top - natural);
+      note.style.transform = next ? `translateY(${next}px)` : '';
+      floor = top + box.height + GAP;
+    }
+  }
+
+  // A timer, not requestAnimationFrame: that one never fires in a background tab.
+  let timer = 0;
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = window.setTimeout(place, 16);
+  };
+  schedule();
+  document.fonts?.ready.then(schedule);
+  window.addEventListener('load', schedule);
+  window.addEventListener('resize', schedule);
+  WIDE.addEventListener('change', schedule);
+  // The edits toggle flips html.dd-on and the legend's `hidden`.
+  new MutationObserver(schedule).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  const legend = document.querySelector('.dd-legend');
+  if (legend) new MutationObserver(schedule).observe(legend, { attributes: true, attributeFilter: ['hidden'] });
+  const note = document.querySelector('.note');
+  if (note) new ResizeObserver(schedule).observe(note);
+</script>
 
 <style>
   .margin-note {
     font-size: .88rem; line-height: 1.5; color: var(--muted);
-    padding-top: .55rem; margin: .2rem 0 1rem; max-width: 22em; justify-self: end;
-    border-top: 2px solid var(--accent);
+    margin: .2rem 0 1rem; max-width: 22em; justify-self: end;
   }
+  .mn-body {
+    padding-top: .55rem; border-top: 2px solid var(--accent);
+    transition: transform .45s cubic-bezier(.2, .7, .2, 1);
+  }
+  .sn-num { float: left; margin-right: .4em; color: var(--accent); font-weight: 600; text-decoration: none; font-variant-numeric: tabular-nums; }
   .margin-note :global(p) { margin: 0 0 .5rem; }
   .margin-note :global(p:last-child) { margin-bottom: 0; }
+  /* A numbered note floats: it takes no height in the grid (so two notes
+     before one paragraph don't push it down) and the script above lines it up
+     with its marker. */
+  @media (min-width: 761px) {
+    .margin-note.numbered { height: 0; margin: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mn-body { transition: none; }
+  }
   @media (max-width: 760px) {
-    .margin-note { justify-self: stretch; max-width: none; padding: .6rem 0 0; margin: .4rem 0 1.4rem; }
+    .margin-note { justify-self: stretch; max-width: none; margin: .4rem 0 1.4rem; }
+    .mn-body { padding-top: .6rem; }
   }
 </style>

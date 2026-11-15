@@ -1,0 +1,16 @@
+---
+// <Ref n={1} />: footnote marker in the text, right after the word or
+// sentence it belongs to. Its note is <Aside n={1}>…</Aside>, placed before
+// the paragraph; on wide screens that note lines up with this marker.
+interface Props {
+  n: number;
+}
+const { n } = Astro.props;
+---
+
+<sup class="sn-ref"><a href={`#sn-${n}`} id={`sn-ref-${n}`} aria-label={`Note ${n}`}>{n}</a></sup>
+
+<style>
+  .sn-ref { font-size: .7em; line-height: 0; margin-left: .1em; }
+  .sn-ref a { color: var(--accent); text-decoration: none; font-variant-numeric: tabular-nums; }
+</style>
