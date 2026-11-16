@@ -4,8 +4,10 @@
 // take on their colour on hover, an echo of the homepage portrait.
 import Layout from '../../layouts/Layout.astro';
 import { getReadBooks, type Book } from '../../lib/books';
+import { withLocalCovers } from '../../lib/covers';
 
-const books = await getReadBooks();
+// Covers served from this site, at most 320 px wide (see lib/covers.ts).
+const books = await withLocalCovers(await getReadBooks(), 320);
 const total = books.length;
 
 // calculate some stats

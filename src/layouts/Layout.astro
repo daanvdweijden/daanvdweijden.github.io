@@ -42,15 +42,28 @@ const base = import.meta.env.BASE_URL;
 
 // "Notes" joins the nav by itself once the first note is published.
 const showNotes = await hasPublishedNotes();
-const nav = [
+const notesItem = showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : [];
+// The work side's door: "Personal", landing on the notes (or, before the
+// first note, the puzzles).
+const personalDoor = { name: 'Personal', href: showNotes ? `${base}notes/` : `${base}puzzles/`, key: 'personal' };
+// Each side has its own nav, with one door to the other side as its last
+// item: Personal from the work pages, Work from the personal ones.
+const workNav = [
   { name: 'Home', href: base, key: 'home' },
   { name: 'News', href: `${base}news/`, key: 'news' },
   { name: 'Publications', href: `${base}pubs/`, key: 'publications' },
   { name: 'CV', href: `${base}cv/`, key: 'cv' },
-  // Last: the personal side, after the work pages.
-  ...(showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : []),
+  personalDoor,
 ];
-const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
+const personalNav = [
+  ...notesItem,
+  { name: 'Puzzles', href: `${base}puzzles/`, key: 'puzzles' },
+  { name: 'Books', href: `${base}books/`, key: 'books' },
+  { name: 'Music', href: `${base}music/`, key: 'music' },
+  { name: 'Work', href: base, key: 'work' },
+];
+const section = Astro.url.pathname.slice(base.length).split('/')[0];
+const current = active ?? (Astro.url.pathname === base ? 'home' : ['puzzles', 'books', 'music'].includes(section) ? section : undefined);
 
 // Work pages (home, news, publications, CV) are on the light palette; the
 // personal side (notes and the footer pages) on the swapped one. That's the
@@ -58,6 +71,9 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
 // every page. The subtitle under the name changes with it.
 const personal = new RegExp(`^${base}(notes|puzzles|books|music)(/|$)`).test(Astro.url.pathname);
 const defaultTheme = personal ? 'dark' : 'light';
+const nav = personal ? personalNav : workNav;
+// The other side's labels, for the scramble on arrival (see the script).
+const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
 ---
 
 <!doctype html>
@@ -110,6 +126,42 @@ const defaultTheme = personal ? 'dark' : 'light';
           var ink = JSON.parse(sessionStorage.getItem('ink') || 'null');
           sessionStorage.removeItem('ink');
           if (ink && Date.now() - ink.t < 5000) document.documentElement.classList.add('ink-in');
+        } catch (e) {}
+        // Ink spill where the browser has cross-page view transitions (Chrome,
+        // Safari 18.2+): no flat colour in between, this page itself grows out
+        // of the bubble or the click, over the page we came from. The old page
+        // left the circle to start from and opted both pages in; every other
+        // navigation has no view transition at all.
+        try {
+          var grow = JSON.parse(sessionStorage.getItem('ink-grow') || 'null');
+          sessionStorage.removeItem('ink-grow');
+          if (!grow || Date.now() - grow.t > 5000) grow = null;
+          if (grow && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            var opt = document.createElement('style');
+            opt.textContent = '@view-transition { navigation: auto; }';
+            document.head.appendChild(opt);
+          } else grow = null;
+          window.addEventListener('pagereveal', function (e) {
+            var vt = e.viewTransition;
+            if (!vt) return;
+            var g = grow;
+            grow = null;
+            if (!g) {
+              // (Catches: Safari reports a skipped transition as an error otherwise.)
+              vt.ready.catch(function () {}); vt.finished.catch(function () {}); vt.updateCallbackDone.catch(function () {});
+              vt.skipTransition();
+              return;
+            }
+            var r = Math.hypot(Math.max(g.x, innerWidth - g.x), Math.max(g.y, innerHeight - g.y)) + 2;
+            var at = 'px at ' + g.x + 'px ' + g.y + 'px)';
+            vt.ready.then(function () {
+              document.documentElement.animate(
+                { clipPath: ['circle(' + g.r0 + at, 'circle(' + r + at] },
+                // power2.inOut (MOVE in lib/motion.ts)
+                { duration: g.r0 ? 480 : 560, easing: 'cubic-bezier(.45, 0, .55, 1)', pseudoElement: '::view-transition-new(root)' }
+              );
+            }).catch(function () {});
+          });
         } catch (e) {}
         // A page restored from the back/forward cache keeps the theme it had
         // when it was left; re-read the stored choice.
@@ -195,6 +247,10 @@ const defaultTheme = personal ? 'dark' : 'light';
       .ink-lens { -webkit-background-clip: text; background-clip: text; color: transparent !important; }
       .mark { position: relative; }
       .mark-sub-lens { position: absolute; white-space: nowrap; pointer-events: none; }
+      /* Cross-page view transition for the ink spill (head script): only
+         switched on for a click to the other side (a <style> with
+         @view-transition on both pages), so every other link loads as usual. */
+      ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
       html.ink-in::before {
         content: ''; position: fixed; inset: 0; z-index: 2147483646; pointer-events: none;
         background: var(--bg); animation: ink-lift .4s cubic-bezier(.4, 0, .2, 1) .08s forwards;
@@ -431,7 +487,7 @@ const defaultTheme = personal ? 'dark' : 'light';
               <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18" /></svg>
               <svg class="i-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
             </summary>
-            <nav class="links" aria-label="Main">
+            <nav class="links" aria-label="Main" data-other={JSON.stringify(otherNav)}>
               {nav.map((l) => (
                 <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.name}</a>
               ))}
@@ -506,6 +562,24 @@ const defaultTheme = personal ? 'dark' : 'light';
         gsap.fromTo(el,
           { clipPath: `circle(${r0}px at ${x}px ${y}px)` },
           { clipPath: `circle(${r}px at ${x}px ${y}px)`, duration: r0 ? 0.42 : 0.5, ease: MOVE, onComplete: finish });
+      };
+
+      // Cross-page view transitions (the page grows in, see the head script).
+      const crossPage = 'onpagereveal' in window && CSS.supports('selector(::view-transition)');
+      // Fetch a cross-side page while its bubble shows, so the click has it
+      // ready. Safari has no <link rel=prefetch>: a low-priority fetch fills
+      // the HTTP cache instead.
+      const fetched = new Set<string>();
+      const prefetch = (href: string) => {
+        if (fetched.has(href)) return;
+        fetched.add(href);
+        const link = document.createElement('link');
+        if (link.relList.supports?.('prefetch')) {
+          Object.assign(link, { rel: 'prefetch', href });
+          document.head.append(link);
+        } else {
+          fetch(href, { priority: 'low' } as RequestInit).catch(() => {});
+        }
       };
 
       /** The palette a link would take us to, or null when it doesn't change it. */
@@ -616,6 +690,7 @@ const defaultTheme = personal ? 'dark' : 'light';
           if (!a) return;
           if (a === bubble?.a) { clearTimeout(bubble.drop); return; }
           const next = nextPaper(a);
+          if (next) prefetch(a.href);
           const f = next && fit(a);
           if (!next || !f) return;
           if (bubble && bubble.next === next) {
@@ -682,19 +757,31 @@ const defaultTheme = personal ? 'dark' : 'light';
         try { sessionStorage.setItem('side-from', here); } catch {}
         const next = nextPaper(a);
         if (!next) return; // same paper (a Light/Dark choice): only the scramble
+        // Grow out of the hover bubble when there is one, else from the click.
+        let x: number, y: number, r0 = 0;
+        if (bubble?.a === a) {
+          const b = bubble.el.getBoundingClientRect();
+          [x, y, r0] = [b.left + b.width / 2, b.top + b.height / 2, Math.min(b.width, b.height) / 2];
+        } else {
+          [x, y] = origin(e, a);
+        }
+        // With view transitions the next page itself grows out of that
+        // circle (head script): let the link just navigate.
+        if (crossPage) {
+          try {
+            sessionStorage.setItem('ink-grow', JSON.stringify({ x, y, r0, t: Date.now() }));
+            const opt = document.createElement('style');
+            opt.textContent = '@view-transition { navigation: auto; }';
+            document.head.append(opt);
+            return;
+          } catch {}
+        }
         e.preventDefault();
         const go = () => {
           try { sessionStorage.setItem('ink', JSON.stringify({ t: Date.now() })); } catch {}
           location.href = url.href;
         };
-        // Grow out of the hover bubble when there is one, else from the click.
-        if (bubble?.a === a) {
-          const b = bubble.el.getBoundingClientRect();
-          spill(b.left + b.width / 2, b.top + b.height / 2, PAPER[next], go, Math.min(b.width, b.height) / 2);
-        } else {
-          const [x, y] = origin(e, a);
-          spill(x, y, PAPER[next], go);
-        }
+        spill(x, y, PAPER[next], go, r0);
       });
       // Back/forward cache: the page we left is still flooded; clear it.
       addEventListener('pageshow', (e) => {
@@ -715,6 +802,18 @@ const defaultTheme = personal ? 'dark' : 'light';
         sub.textContent = (from === 'personal' ? sub.dataset.personal : sub.dataset.work) ?? target;
         gsap.to(sub, { duration: 1.1, delay: 0.35, scrambleText: { text: target, chars: 'lowerCase', speed: 0.4, revealDelay: 0.25 } });
         setTimeout(() => { if (sub.textContent !== target) { gsap.killTweensOf(sub); sub.textContent = target; } }, 2500);
+      }
+      // The nav words scramble from the other side's set into this one's.
+      const navEl = document.querySelector<HTMLElement>('nav.links');
+      if (navEl && from && from !== here && !calm) {
+        let before: string[] = [];
+        try { before = JSON.parse(navEl.dataset.other ?? '[]'); } catch {}
+        navEl.querySelectorAll<HTMLElement>('a').forEach((a, i) => {
+          const target = a.textContent ?? '';
+          a.textContent = before[i] ?? '';
+          gsap.to(a, { duration: 0.9, delay: 0.3 + i * 0.05, scrambleText: { text: target, chars: 'lowerCase', speed: 0.5, revealDelay: 0.2 } });
+          setTimeout(() => { if (a.textContent !== target) { gsap.killTweensOf(a); a.textContent = target; } }, 2500);
+        });
       }
 
       // Soft landing: reveal [data-reveal] blocks as they scroll into view, with

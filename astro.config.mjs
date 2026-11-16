@@ -59,6 +59,15 @@ export default defineConfig({
   // Served at the apex custom domain from the daanvdweijden.github.io user-site repo.
   site: 'https://daanvdweijden.com',
   base: BASE,
+  // Covers on /music and /books, fetched and shrunk at build (src/lib/covers.ts).
+  image: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.mzstatic.com' },
+      { protocol: 'https', hostname: 'i.scdn.co' },
+      { protocol: 'https', hostname: '**.gr-assets.com' },
+      { protocol: 'https', hostname: '**.goodreads.com' },
+    ],
+  },
   integrations: [
     prefixRootLinks,
     mdx(),

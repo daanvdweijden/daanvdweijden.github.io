@@ -4,8 +4,18 @@
 // grayscale and take on their colour on hover, an echo of the homepage portrait.
 import Layout from '../../layouts/Layout.astro';
 import { getMusicData } from '../../lib/music';
+import { withLocalCovers } from '../../lib/covers';
 
-const { albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d, stats, stats30d } = await getMusicData();
+const data = await getMusicData();
+const { stats, stats30d } = data;
+// Covers served from this site, at most 480 px wide (see lib/covers.ts).
+const [albums, recentAlbums, topAlbums30d, topArtists30d, topTracks30d] = await Promise.all([
+  withLocalCovers(data.albums, 480),
+  withLocalCovers(data.recentAlbums, 480),
+  withLocalCovers(data.topAlbums30d, 480),
+  withLocalCovers(data.topArtists30d, 480),
+  withLocalCovers(data.topTracks30d, 480),
+]);
 
 // format helpers
 const fmt = (n: number) => n.toLocaleString('en-US');
