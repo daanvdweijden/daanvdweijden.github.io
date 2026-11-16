@@ -11,6 +11,9 @@ export const site = {
     url: 'https://ifi.uzh.ch/ddis',
   },
   university: 'University of Zurich',
+  // Under the name on the personal pages (notes, puzzles, books, music),
+  // instead of "role, university".
+  personalLine: 'In my own time',
   email: 'weijden@ifi.uzh.ch',
   location: 'Zurich, Switzerland',
   // Lives in /public; prefix with import.meta.env.BASE_URL wherever it's used.

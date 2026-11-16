@@ -1,20 +1,30 @@
 ---
-// <Hue>orange</Hue> / <Hue>blue</Hue>: a colour word in the colour it
-// names, so "orange marks…" in the text matches the chart. The word is
-// shown as the colour's name in the current theme (the palette swaps in
-// dark mode, see lib/hue.ts). Figure subtitles and captions do this by
-// themselves. Older names (terracotta, sage, teal, rust) still work.
-// Any other text (or text with `c`) is shown as is, in that colour.
-import { HUE_WORDS, hueClass, hueHtml } from '../../lib/hue';
+// Colour words, by role so they survive a palette change:
+//   <Hue />                 the main colour's name, in that colour ("orange")
+//   <Hue second />          the second colour's name ("blue")
+//   <Hue>some text</Hue>    any text in the main colour
+//   <Hue second>text</Hue>  any text in the second colour
+// The name shown is the colour's name on the current page (the palette is
+// swapped on personal pages and in the Dark choice, see lib/hue.ts). In
+// Figure subtitles and captions, write "hue" / "hue2" and they become the
+// name, coloured. Old colour words (<Hue>orange</Hue>, terracotta, sage…)
+// still work.
+import { HUE_WORDS, hueClass, hueHtml, type Hue } from '../../lib/hue';
 
 interface Props {
-  /** Which colour, for text that isn't itself a colour word. */
+  /** The second colour (--accent-2) instead of the main one. */
+  second?: boolean;
+  /** Old way to pick the colour for text that isn't itself a colour word. */
   c?: 'orange' | 'blue' | 'terracotta' | 'sage' | 'teal' | 'rust';
 }
+const { second, c } = Astro.props;
 const text = (await Astro.slots.render('default')).trim();
-const html = !Astro.props.c && HUE_WORDS[text.toLowerCase()]
-  ? hueHtml(text)
-  : `<span class="hue ${hueClass(Astro.props.c ?? text)}">${text}</span>`;
+const role: Hue | undefined = second ? 'accent-2' : c ? hueClass(c) : undefined;
+const html = !text
+  ? hueHtml(second ? 'hue2' : 'hue', role)
+  : !role && HUE_WORDS[text.toLowerCase()]
+    ? hueHtml(text)
+    : `<span class="hue ${role ?? hueClass(text)}">${text}</span>`;
 ---
 
 <Fragment set:html={html} />

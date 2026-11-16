@@ -51,22 +51,29 @@ const nav = [
   ...(showNotes ? [{ name: 'Notes', href: `${base}notes/`, key: 'notes' }] : []),
 ];
 const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
+
+// Work pages (home, news, publications, CV) are on the light palette; the
+// personal side (notes and the footer pages) on the swapped one. That's the
+// "Auto" of the footer switch; picking Light or Dark there overrides it on
+// every page. The subtitle under the name changes with it.
+const personal = new RegExp(`^${base}(notes|puzzles|books|music)(/|$)`).test(Astro.url.pathname);
+const defaultTheme = personal ? 'dark' : 'light';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={defaultTheme} data-default-theme={defaultTheme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Browser chrome in the page colour; the theme script below pins both
-         to the footer choice when there is one. Keep in sync with --bg. -->
-    <meta name="theme-color" content="#c0d5ee" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#7d300e" media="(prefers-color-scheme: dark)" />
+    <!-- Browser chrome in the page colour; the theme script below switches it
+         with the footer choice. Keep in sync with --bg. -->
+    <meta name="theme-color" content={personal ? '#7d300e' : '#c0d5ee'} />
     <script is:inline>
       (function () {
-        // Colour scheme: the system setting by default (pure CSS, below). A
-        // choice made in the footer switch is stored and applied before first
-        // paint so there's no flash of the other palette.
+        // Colour scheme: by default the page's own palette (light for work
+        // pages, swapped for personal ones; set on <html> by the server, so it
+        // also holds without JS). A choice made in the footer switch is stored
+        // and applied before first paint so there's no flash of the other one.
         //
         // The choice is kept in localStorage, a cookie and window.name. Mobile
         // Safari with "Block All Cookies" (and some in-app browsers) throws
@@ -86,18 +93,24 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
             if (!window.name || /^theme=/.test(window.name)) window.name = v ? 'theme=' + v : '';
           },
           apply: function () {
-            var v = store.get();
-            if (v) document.documentElement.setAttribute('data-theme', v);
-            else document.documentElement.removeAttribute('data-theme');
+            var root = document.documentElement;
+            var v = store.get() || root.getAttribute('data-default-theme') || 'light';
+            root.setAttribute('data-theme', v);
             var tc = document.querySelectorAll('meta[name="theme-color"]');
-            for (var i = 0; i < tc.length; i++) {
-              var m = tc[i], sys = m.dataset.sys || (m.dataset.sys = m.content);
-              m.content = v ? (v === 'dark' ? '#7d300e' : '#c0d5ee') : sys;
-            }
+            for (var i = 0; i < tc.length; i++) tc[i].content = v === 'dark' ? '#7d300e' : '#c0d5ee';
           },
         };
         window.__theme = store;
         store.apply();
+        // Ink spill, second half: the page we came from flooded the screen
+        // with this page's paper colour (script at the end of the page). Start
+        // covered by it and let it lift (pure CSS, so it lifts even if the
+        // page's scripts fail).
+        try {
+          var ink = JSON.parse(sessionStorage.getItem('ink') || 'null');
+          sessionStorage.removeItem('ink');
+          if (ink && Date.now() - ink.t < 5000) document.documentElement.classList.add('ink-in');
+        } catch (e) {}
         // A page restored from the back/forward cache keeps the theme it had
         // when it was left; re-read the stored choice.
         window.addEventListener('pageshow', function (e) { if (e.persisted) store.apply(); });
@@ -170,10 +183,25 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-yellow-bg:#cdc6b4;--p-yellow-fg:#6b4e0e;
         --heat-1: color-mix(in srgb, var(--accent) 28%, var(--bg)); --heat-2: color-mix(in srgb, var(--accent) 52%, var(--bg)); --heat-3: color-mix(in srgb, var(--accent) 76%, var(--bg));
       }
-      /* Dark palette. Applied when the visitor picked Dark in the footer
-         switch, or (with no choice stored) when the system asks for dark.
-         Anything that reports no preference gets the light palette above.
-         The two blocks must stay identical. */
+      /* Ink spill between work and personal (script at the end of the page):
+         the new paper colour floods out from the click (.ink-spill), and the
+         next page starts under that same colour, which lifts (.ink-in). */
+      .ink-spill { position: fixed; inset: 0; z-index: 2147483646; pointer-events: none; }
+      /* Behind everything but the paper itself: it colours the page around
+         the link, and the link takes the other side's ink on top of it. */
+      .ink-bubble { position: fixed; left: 0; top: 0; z-index: -1; pointer-events: none; }
+      .ink-blob { width: 100%; height: 100%; border-radius: 50%; }
+      /* The text over the bubble: coloured by a gradient that follows it. */
+      .ink-lens { -webkit-background-clip: text; background-clip: text; color: transparent !important; }
+      .mark { position: relative; }
+      .mark-sub-lens { position: absolute; white-space: nowrap; pointer-events: none; }
+      html.ink-in::before {
+        content: ''; position: fixed; inset: 0; z-index: 2147483646; pointer-events: none;
+        background: var(--bg); animation: ink-lift .4s cubic-bezier(.4, 0, .2, 1) .08s forwards;
+      }
+      @keyframes ink-lift { to { opacity: 0; visibility: hidden; } }
+      /* Swapped ("dark") palette: the personal pages by default, or every
+         page when the visitor picked Dark in the footer switch. */
       html[data-theme='dark'] {
         color-scheme: dark;
         --bg: #7d300e;
@@ -186,21 +214,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
         --p-green-bg:#6b4a22; --p-green-fg:#d6e4c0;
         --p-yellow-bg:#7a4a12;--p-yellow-fg:#f3d79c;
-      }
-      @media (prefers-color-scheme: dark) {
-        html:not([data-theme='light']) {
-          color-scheme: dark;
-          --bg: #7d300e;
-          --ink: #c0d5ee;
-          --muted: #e6c2ad;
-          --line: color-mix(in srgb, var(--ink) 28%, var(--bg));
-          --accent: #c0d5ee;
-          --accent-2: #f0c9b2;
-          --p-red-bg: #6f2a0c;  --p-red-fg: #f6d2bd;
-          --p-blue-bg: #6e4a3f; --p-blue-fg: #dbe6ef;
-          --p-green-bg:#6b4a22; --p-green-fg:#d6e4c0;
-          --p-yellow-bg:#7a4a12;--p-yellow-fg:#f3d79c;
-        }
       }
 
       * { box-sizing: border-box; }
@@ -239,7 +252,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         gap: 1rem 2rem; padding: 1.5rem 0; font-size: .9rem; line-height: 1.35;
       }
       .mark { text-decoration: none; }
-      .mark span { display: block; color: var(--muted); }
+      .mark-sub { display: block; color: var(--muted); }
       nav.links { display: flex; gap: .2rem 1.4rem; flex-wrap: wrap; justify-content: flex-end; }
       nav.links a { text-decoration: none; color: var(--muted); }
       nav.links a:hover { color: var(--ink); }
@@ -313,10 +326,6 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
       .hue-d { display: none; }
       html[data-theme='dark'] .hue-l { display: none; }
       html[data-theme='dark'] .hue-d { display: inline; }
-      @media (prefers-color-scheme: dark) {
-        html:not([data-theme='light']) .hue-l { display: none; }
-        html:not([data-theme='light']) .hue-d { display: inline; }
-      }
 
       .body { margin: 0; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.5; max-width: 38em; }
       .body a, .prose a { text-decoration-color: var(--muted); }
@@ -416,7 +425,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     <header class="top">
       <div class="wrap">
         <div class="inner">
-          <a class="mark" href={base}>{site.name}<span>{site.role}, {site.university}</span></a>
+          <a class="mark" href={base}><span class="mark-name">{site.name}</span><span class="mark-sub" data-work={`${site.role}, ${site.university}`} data-personal={site.personalLine}>{personal ? site.personalLine : `${site.role}, ${site.university}`}</span></a>
           <details class="menu">
             <summary aria-label="Menu">
               <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18" /></svg>
@@ -458,7 +467,255 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
     </div></div>
 
     <script>
-      import { gsap, ScrollTrigger } from '../lib/motion';
+      import { gsap, ScrollTrigger, MOVE, LEAVE } from '../lib/motion';
+      import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
+      import { InertiaPlugin } from 'gsap/InertiaPlugin';
+      gsap.registerPlugin(ScrambleTextPlugin, InertiaPlugin);
+
+      // ---- Work <-> personal: ink bubble, spill + scrambled subtitle --------
+      // A link to the other side (work: home, news, pubs, CV; personal: notes,
+      // puzzles, books, music) gets, on hover, a bubble of the other side's
+      // paper behind it, with the link in that side's ink: a preview. On click
+      // the bubble spills over the screen; the next page starts under that
+      // colour (see .ink-in) and the line under the name scrambles from the
+      // old side's text into the new one. Without hover (touch) the spill
+      // starts from the tap. Within one side, or with reduced motion, links
+      // just work as links.
+      const root = document.documentElement;
+      const theme = (window as any).__theme;
+      const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const PAPER: Record<string, string> = { light: '#c0d5ee', dark: '#7d300e' };
+      const INK: Record<string, string> = { light: '#7d300e', dark: '#c0d5ee' };
+      const PERSONAL = new RegExp(`^${import.meta.env.BASE_URL}(notes|puzzles|books|music)(/|$)`);
+      const sideOf = (path: string) => (PERSONAL.test(path) ? 'personal' : 'work');
+      const here = sideOf(location.pathname);
+      const themeFor = (side: string) => theme.get() ?? (side === 'personal' ? 'dark' : 'light');
+
+      /** Flood the screen with `color` from a circle of radius r0 at (x, y);
+       *  `full` runs once covered. Quicker when it grows out of a bubble. */
+      const spill = (x: number, y: number, color: string, full: (el: HTMLElement) => void, r0 = 0) => {
+        const el = document.createElement('div');
+        el.className = 'ink-spill';
+        el.style.background = color;
+        document.body.append(el);
+        const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 2;
+        // Safety net: if the animation stalls (a throttled tab), go on anyway.
+        let done = false;
+        const finish = () => { if (!done) { done = true; full(el); } };
+        setTimeout(finish, 1100);
+        gsap.fromTo(el,
+          { clipPath: `circle(${r0}px at ${x}px ${y}px)` },
+          { clipPath: `circle(${r}px at ${x}px ${y}px)`, duration: r0 ? 0.42 : 0.5, ease: MOVE, onComplete: finish });
+      };
+
+      /** The palette a link would take us to, or null when it doesn't change it. */
+      const nextPaper = (a: HTMLAnchorElement) => {
+        if ((a.target && a.target !== '_self') || a.hasAttribute('download')) return null;
+        const url = new URL(a.href, location.href);
+        if (url.origin !== location.origin || url.pathname === location.pathname) return null;
+        if (sideOf(url.pathname) === here) return null;
+        const next = themeFor(sideOf(url.pathname));
+        return next === root.getAttribute('data-theme') ? null : next;
+      };
+
+      // The hover bubble: behind the page's text (z-index -1, see .ink-bubble),
+      // big enough to hold the whole link, pulled towards the pointer, and
+      // stretched in the direction it moves (InertiaPlugin tracks its speed).
+      // Links that lead to the same side share one bubble: moving along the
+      // menu, it flows from one to the next instead of popping. Only on short
+      // links (menu items and the like) and the name, with a real hover.
+      // Text takes the other side's colours only where the bubble is (a
+      // colour mask that follows it, see paintText), like a lens. Over the
+      // name, the lens also shows the other side's line under it: a copy of
+      // the subtitle with that text lies on top of it, visible only inside
+      // the bubble (scrambling in), while the real one shows only outside.
+      const sub = document.querySelector<HTMLElement>('.mark-sub');
+      const MUTED: Record<string, string> = { light: '#3d5068', dark: '#e6c2ad' };
+      const subFor = (side: string) => (side === 'personal' ? sub?.dataset.personal : sub?.dataset.work) ?? '';
+      const hover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+      type Bubble = {
+        el: HTMLElement; blob: HTMLElement; a: HTMLAnchorElement; next: string;
+        cx: number; cy: number; x: Function; y: Function; drop?: number;
+      };
+      let bubble: Bubble | null = null;
+      const PULL = 0.5; // how far the bubble follows the pointer off the link's centre
+      const STRETCH = 0.45; // most it stretches at full speed
+      const fit = (a: HTMLAnchorElement) => {
+        const box = a.getBoundingClientRect();
+        if (!a.classList.contains('mark') && (box.width > 170 || box.height > 48)) return null;
+        return { r: Math.max(26, Math.hypot(box.width, box.height) / 2 + 10), cx: box.left + box.width / 2, cy: box.top + box.height / 2 };
+      };
+      // The text under the bubble: each element with its own colour, the
+      // one it has on the other side inside the bubble, its normal one outside.
+      let painted: { el: HTMLElement; inside: string; outside: string }[] = [];
+      let lensSub: HTMLElement | null = null;
+      const enter = (a: HTMLAnchorElement, next: string) => {
+        // Mask the link's own text. For the name that's .mark-name, not the
+        // whole link: a mask on the link would also paint the subtitles in it.
+        const own = a.querySelector<HTMLElement>('.mark-name') ?? a;
+        painted = [{ el: own, inside: INK[next], outside: getComputedStyle(own).color }];
+        if (a.classList.contains('mark') && sub) {
+          const muted = getComputedStyle(sub).color;
+          lensSub = document.createElement('span');
+          lensSub.className = 'mark-sub-lens';
+          lensSub.setAttribute('aria-hidden', 'true');
+          lensSub.textContent = sub.textContent;
+          lensSub.style.left = `${sub.offsetLeft}px`;
+          lensSub.style.top = `${sub.offsetTop}px`;
+          a.append(lensSub);
+          painted.push({ el: sub, inside: 'transparent', outside: muted }, { el: lensSub, inside: MUTED[next], outside: 'transparent' });
+          gsap.to(lensSub, { duration: 0.6, scrambleText: { text: subFor(sideOf(new URL(a.href).pathname)), chars: 'lowerCase', speed: 0.6 } });
+        }
+        for (const p of painted) p.el.classList.add('ink-lens');
+      };
+      const leave = (a: HTMLAnchorElement) => {
+        for (const p of painted) { p.el.classList.remove('ink-lens'); p.el.style.backgroundImage = ''; }
+        painted = [];
+        if (lensSub) { gsap.killTweensOf(lensSub); lensSub.remove(); lensSub = null; }
+      };
+      // Every frame: a circle the size of the bubble (its area, so the
+      // stretch roughly matches), at the bubble's centre, in each element's
+      // own coordinates (fixed backgrounds don't work under the smooth
+      // scroller's transform).
+      const paintText = () => {
+        if (!bubble || !painted.length) return;
+        const b = bubble.el.getBoundingClientRect();
+        const bx = b.left + b.width / 2, by = b.top + b.height / 2;
+        const sx = +gsap.getProperty(bubble.el, 'scaleX'), sy = +gsap.getProperty(bubble.el, 'scaleY');
+        const r = (bubble.el.offsetWidth / 2) * +gsap.getProperty(bubble.blob, 'scale') * Math.sqrt(sx * sy);
+        for (const p of painted) {
+          const e = p.el.getBoundingClientRect();
+          p.el.style.backgroundImage = `radial-gradient(circle ${r}px at ${bx - e.left}px ${by - e.top}px, ${p.inside} ${r}px, ${p.outside} ${r}px)`;
+        }
+      };
+      const dropBubble = () => {
+        if (!bubble) return;
+        const { el, blob, a } = bubble;
+        clearTimeout(bubble.drop);
+        bubble = null;
+        leave(a);
+        gsap.to(blob, { scale: 0, duration: 0.25, ease: LEAVE, onComplete: () => { InertiaPlugin.untrack(el); el.remove(); } });
+      };
+      if (hover && !calm) {
+        // Stretch: every frame, point the bubble along its velocity and pull
+        // it long in proportion to the speed; round again when it slows.
+        const stretch = { sx: 0 as any, sy: 0 as any };
+        gsap.ticker.add(() => {
+          if (!bubble) return;
+          const { el } = bubble;
+          const vx = InertiaPlugin.getVelocity(el, 'x'), vy = InertiaPlugin.getVelocity(el, 'y');
+          const speed = Math.hypot(vx, vy);
+          const k = Math.min(speed / 1800, 1) * STRETCH;
+          if (speed > 30) gsap.set(el, { rotation: (Math.atan2(vy, vx) * 180) / Math.PI });
+          stretch.sx(1 + k);
+          stretch.sy(1 - k * 0.55);
+          paintText();
+        });
+        document.addEventListener('pointerover', (e) => {
+          const a = (e.target as Element).closest?.('a[href]') as HTMLAnchorElement | null;
+          if (!a) return;
+          if (a === bubble?.a) { clearTimeout(bubble.drop); return; }
+          const next = nextPaper(a);
+          const f = next && fit(a);
+          if (!next || !f) return;
+          if (bubble && bubble.next === next) {
+            // Same destination side: flow over to this link and resize.
+            clearTimeout(bubble.drop);
+            leave(bubble.a);
+            Object.assign(bubble, { a, cx: f.cx, cy: f.cy });
+            gsap.to(bubble.el, { width: f.r * 2, height: f.r * 2, duration: 0.45 });
+            bubble.x(f.cx + (e.clientX - f.cx) * PULL);
+            bubble.y(f.cy + (e.clientY - f.cy) * PULL);
+            enter(a, next);
+            paintText(); // at once, so the text is never transparent for a frame
+            return;
+          }
+          dropBubble();
+          const el = document.createElement('div');
+          el.className = 'ink-bubble';
+          el.style.cssText = `width:${f.r * 2}px;height:${f.r * 2}px`;
+          const blob = document.createElement('div');
+          blob.className = 'ink-blob';
+          blob.style.background = PAPER[next];
+          el.append(blob);
+          document.body.append(el);
+          gsap.set(el, { xPercent: -50, yPercent: -50, x: f.cx, y: f.cy, rotation: 0, scaleX: 1, scaleY: 1 });
+          gsap.fromTo(blob, { scale: 0 }, { scale: 1, duration: 0.35 });
+          InertiaPlugin.track(el, 'x,y');
+          stretch.sx = gsap.quickTo(el, 'scaleX', { duration: 0.25 });
+          stretch.sy = gsap.quickTo(el, 'scaleY', { duration: 0.25 });
+          bubble = { el, blob, a, next, cx: f.cx, cy: f.cy, x: gsap.quickTo(el, 'x', { duration: 0.45 }), y: gsap.quickTo(el, 'y', { duration: 0.45 }) };
+          enter(a, next);
+          paintText(); // at once, so the text is never transparent for a frame
+        });
+        document.addEventListener('pointermove', (e) => {
+          if (!bubble) return;
+          const { cx, cy } = bubble;
+          bubble.x(cx + (e.clientX - cx) * PULL);
+          bubble.y(cy + (e.clientY - cy) * PULL);
+        });
+        // Leaving a link: wait a moment, so crossing the gap to the next menu
+        // item keeps the same bubble.
+        document.addEventListener('pointerout', (e) => {
+          if (!bubble || bubble.a.contains(e.relatedTarget as Node)) return;
+          if ((e.target as Element).closest?.('a[href]') !== bubble.a) return;
+          clearTimeout(bubble.drop);
+          bubble.drop = window.setTimeout(dropBubble, 160);
+        });
+        addEventListener('scroll', dropBubble, { passive: true });
+      }
+      // Where a click "lands": the pointer, or the middle of the element when
+      // it came from the keyboard.
+      const origin = (e: MouseEvent, el: Element) => {
+        if (e.detail > 0) return [e.clientX, e.clientY];
+        const b = el.getBoundingClientRect();
+        return [b.left + b.width / 2, b.top + b.height / 2];
+      };
+
+      document.addEventListener('click', (e) => {
+        if (calm || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const a = (e.target as Element).closest?.('a[href]') as HTMLAnchorElement | null;
+        if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+        const url = new URL(a.href, location.href);
+        if (url.origin !== location.origin || url.pathname === location.pathname) return;
+        if (sideOf(url.pathname) === here) return;
+        try { sessionStorage.setItem('side-from', here); } catch {}
+        const next = nextPaper(a);
+        if (!next) return; // same paper (a Light/Dark choice): only the scramble
+        e.preventDefault();
+        const go = () => {
+          try { sessionStorage.setItem('ink', JSON.stringify({ t: Date.now() })); } catch {}
+          location.href = url.href;
+        };
+        // Grow out of the hover bubble when there is one, else from the click.
+        if (bubble?.a === a) {
+          const b = bubble.el.getBoundingClientRect();
+          spill(b.left + b.width / 2, b.top + b.height / 2, PAPER[next], go, Math.min(b.width, b.height) / 2);
+        } else {
+          const [x, y] = origin(e, a);
+          spill(x, y, PAPER[next], go);
+        }
+      });
+      // Back/forward cache: the page we left is still flooded; clear it.
+      addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        document.querySelectorAll('.ink-spill, .ink-bubble').forEach((el) => el.remove());
+        document.querySelectorAll<HTMLElement>('.ink-lens').forEach((el) => { el.classList.remove('ink-lens'); el.style.backgroundImage = ''; });
+        document.querySelectorAll('.mark-sub-lens').forEach((el) => el.remove());
+        painted = [];
+        lensSub = null;
+        bubble = null;
+        root.classList.remove('ink-in');
+      });
+
+      let from: string | null = null;
+      try { from = sessionStorage.getItem('side-from'); sessionStorage.removeItem('side-from'); } catch {}
+      if (sub && from && from !== here && !calm) {
+        const target = sub.textContent ?? '';
+        sub.textContent = (from === 'personal' ? sub.dataset.personal : sub.dataset.work) ?? target;
+        gsap.to(sub, { duration: 1.1, delay: 0.35, scrambleText: { text: target, chars: 'lowerCase', speed: 0.4, revealDelay: 0.25 } });
+        setTimeout(() => { if (sub.textContent !== target) { gsap.killTweensOf(sub); sub.textContent = target; } }, 2500);
+      }
 
       // Soft landing: reveal [data-reveal] blocks as they scroll into view, with
       // GSAP's ScrollTrigger.batch. Blocks that come due together (first view,
@@ -478,7 +735,7 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
           const visible = els.filter((el) => !above.includes(el));
           for (const el of els) el.classList.add('is-in');
           gsap.fromTo(visible, { opacity: 0, y: 12 }, {
-            opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.09, overwrite: true,
+            opacity: 1, y: 0, duration: 0.9, stagger: 0.09, overwrite: true,
             // No transform left behind once landed (it would trap sticky and
             // fixed children, like a scrolly's graphic).
             clearProps: 'transform',
@@ -487,22 +744,30 @@ const current = active ?? (Astro.url.pathname === base ? 'home' : undefined);
         ScrollTrigger.batch(items, { start: 'top 92%', once: true, onEnter: settle });
       }
 
-      // Colour scheme switch (footer). Auto clears the stored choice so the
-      // site follows the system again; Light/Dark are remembered per device.
+      // Colour scheme switch (footer). Auto clears the stored choice so each
+      // page shows its own palette again; Light/Dark are remembered per device.
       // Hidden without JS, where it couldn't work anyway.
       const themeSwitch = document.querySelector<HTMLElement>('.theme-switch');
       if (themeSwitch) {
         const buttons = [...themeSwitch.querySelectorAll<HTMLButtonElement>('button')];
         const sync = () => {
-          const current = document.documentElement.getAttribute('data-theme') ?? 'auto';
+          const current = (window as any).__theme.get() ?? 'auto';
           for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.themeChoice === current));
         };
         for (const b of buttons) {
-          b.addEventListener('click', () => {
-            const theme = (window as any).__theme;
-            theme.set(b.dataset.themeChoice);
-            theme.apply();
-            sync();
+          b.addEventListener('click', (e) => {
+            const choice = b.dataset.themeChoice!;
+            const next = choice === 'auto' ? root.getAttribute('data-default-theme') ?? 'light' : choice;
+            const switchTo = () => { theme.set(choice); theme.apply(); sync(); };
+            if (calm || next === root.getAttribute('data-theme')) return switchTo();
+            // The same ink spill, from the button: switch once it covers the
+            // screen, then let the ink fade off the new palette.
+            const [x, y] = origin(e, b);
+            spill(x, y, PAPER[next], (el) => {
+              switchTo();
+              gsap.to(el, { opacity: 0, duration: 0.45, delay: 0.05, onComplete: () => el.remove() });
+              setTimeout(() => el.remove(), 1500);
+            });
           });
         }
         sync();

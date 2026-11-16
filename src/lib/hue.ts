@@ -4,12 +4,16 @@
 // name: a colour word is written once in the text and shown as the name of
 // the colour it has in the current theme ("orange" or "blue").
 //
-// The words in the source are only keys. "orange" and "blue" name the light
-// theme; "terracotta"/"teal" and "sage"/"rust" are names from older
-// palettes, kept so older text still works.
+// The words in the source are only keys. Write them by role: "hue" is the
+// main colour (--accent, the story), "hue2" the second (--accent-2, the
+// contrast), so text keeps working whatever the palette becomes. "orange" and
+// "blue" (the light theme's names) and "terracotta"/"teal", "sage"/"rust"
+// (older palettes) still work.
 export type Hue = 'accent' | 'accent-2';
 
 export const HUE_WORDS: Record<string, Hue> = {
+  hue: 'accent',
+  hue2: 'accent-2',
   orange: 'accent',
   terracotta: 'accent',
   teal: 'accent',

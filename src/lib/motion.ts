@@ -10,6 +10,17 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
+// House easing, three kinds and no others:
+// - landing (default, write nothing): things that appear or settle,
+//   decelerating into place. GSAP's own default, power1.out, is flatter.
+// - MOVE: things going from one state to another (the ink spill, a photo
+//   flying to its spot, a section resizing): speed up, then slow down.
+// - LEAVE: things on their way out, accelerating away.
+// Scrubbed motion that follows the scroll (morph.ts) stays linear ('none').
+gsap.defaults({ ease: 'power3.out' });
+export const MOVE = 'power2.inOut';
+export const LEAVE = 'power2.in';
+
 // Smooth scroll: the page glides to where the wheel sends it. Only where the
 // head script (Layout.astro) set html.smooth: motion allowed and a mouse or
 // trackpad; touch screens keep native scrolling. Created here, the first

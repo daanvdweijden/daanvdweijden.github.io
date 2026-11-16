@@ -205,7 +205,7 @@ let coverIndex = 0;
 
 <script>
   import { ScrollSmoother } from 'gsap/ScrollSmoother';
-  import { gsap, reduceMotion } from '../../lib/motion';
+  import { gsap, reduceMotion, MOVE, LEAVE } from '../../lib/motion';
 
   // Clicking a cover swaps the review row from "latest review" to that book's.
   // Everything it needs already rides along on the card's data attributes, so
@@ -339,12 +339,12 @@ let coverIndex = 0;
 
       // Scroll and flight share one tween and one ease.
       tl.to(fly, {
-        t: 1, y: to, duration: dur, ease: 'power3.inOut',
+        t: 1, y: to, duration: dur, ease: MOVE,
         onUpdate: () => { scroll.set(fly.y); place(fly.t); },
       }, 0);
 
       // Old review out.
-      tl.to(parts(), { opacity: 0, y: -6, duration: 0.22, ease: 'power2.in', stagger: 0.03 }, 0);
+      tl.to(parts(), { opacity: 0, y: -6, duration: 0.22, ease: LEAVE, stagger: 0.03 }, 0);
       tl.to(cover, { opacity: 0.25, duration: 0.22 }, 0);
 
       // Swap while it's invisible, then ease the row to its new height.
@@ -355,14 +355,14 @@ let coverIndex = 0;
         gsap.set(parts(), { opacity: 0, y: 10 });
         const end = section.offsetHeight;
         resizing = gsap.fromTo(section, { height: startHeight, overflow: 'hidden' }, {
-          height: end, duration: 0.5, ease: 'power2.inOut',
+          height: end, duration: 0.5, ease: MOVE,
           onComplete: () => { gsap.set(section, { clearProps: 'height,overflow' }); resizing = null; },
         });
       }, [], 0.28);
 
       // New review in, as the scroll lands.
       tl.to(parts(), {
-        opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', stagger: 0.06,
+        opacity: 1, y: 0, duration: 0.6, stagger: 0.06,
       }, Math.max(0.32, dur - 0.35));
 
       // The ghost hands over to the real cover where it landed.

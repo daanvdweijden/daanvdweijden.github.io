@@ -9,7 +9,7 @@
 // Labels drawn next to the marks fade in as their bar or the wipe reaches them.
 // A redraw (resize, theme switch) after the cascade shows the chart at once.
 // ---------------------------------------------------------------------------
-import { gsap, ScrollTrigger } from './motion';
+import { gsap, ScrollTrigger, MOVE } from './motion';
 
 const NS = 'http://www.w3.org/2000/svg';
 const FAR = 1e4;
@@ -101,13 +101,13 @@ function bars(tl: gsap.core.Timeline, rects: SVGGraphicsElement[], texts: SVGGra
     const at = i * each;
     if (horizontal) {
       gsap.set(g, { scaleX: 0, transformOrigin: '0% 50%' });
-      tl.to(g, { scaleX: 1, duration: GROW, ease: 'power3.out' }, at);
+      tl.to(g, { scaleX: 1, duration: GROW }, at);
     } else {
       // The whole column grows from the axis, so a stack rises as one bar.
       const base = Math.max(...g.map((r) => box(r).y + box(r).height));
       const cx = box(g[0]).x + box(g[0]).width / 2;
       gsap.set(g, { scaleY: 0, svgOrigin: `${cx} ${base}` });
-      tl.to(g, { scaleY: 1, duration: GROW, ease: 'power3.out' }, at);
+      tl.to(g, { scaleY: 1, duration: GROW }, at);
     }
     if (labels[i].length) tl.to(labels[i], { autoAlpha: 1, duration: 0.4 }, at + GROW / 2);
   });
@@ -140,7 +140,7 @@ function wipe(tl: gsap.core.Timeline, svg: SVGSVGElement, marks: SVGGElement[]) 
     g.replaceWith(wrap);
     wrap.append(g);
   }
-  tl.to(edge, { attr: { width: x1 + 4 + FAR }, duration: SPREAD + GROW / 2, ease: 'power2.inOut' })
+  tl.to(edge, { attr: { width: x1 + 4 + FAR }, duration: SPREAD + GROW / 2, ease: MOVE })
     // Fully in: open the clip all the way, so nothing is ever cut off.
     .set(edge, { attr: { width: 3 * FAR } });
 }

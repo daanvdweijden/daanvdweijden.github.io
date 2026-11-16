@@ -25,8 +25,9 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   </button>
   <p class="dd-legend" hidden>
     <span class="dd-stat"></span><br />
-    <span class="dd dd-reworded">reworded</span> · <span class="dd dd-typo">spelling</span> ·
-    <span class="dd dd-added">added</span> · <span class="dd-cut-key">‸</span>&nbsp;cut<br />
+    <!-- One line for the counts and the key: each count is shown in the mark
+         it stands for. Filled in when the toggle is first switched on. -->
+    AI edits: <span class="dd dd-reworded" data-count="reworded" data-one="rewording" data-many="rewordings"></span>{' · '}<span class="dd dd-typo" data-count="typo" data-one="spelling fix" data-many="spelling fixes"></span>{' · '}<span class="dd dd-added" data-count="added" data-one="addition" data-many="additions"></span>{' · '}<span class="dd-cut-key">‸</span>&nbsp;<span data-count="cut" data-one="cut" data-many="cuts"></span><br />
     Hover a mark to see my first draft.
   </p>
   <script type="application/json" class="dd-draft" set:html={JSON.stringify(draft)} />
@@ -312,13 +313,12 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
         hunks = r.hunks;
         const pct = Math.round((r.kept / r.draftWords) * 100);
         const count = (t: Hunk['type']) => r.hunks.filter((h) => h.type === t && h.els.length > 0).length;
-        // Two lines: how much stayed mine, then the AI edits.
-        const stat = ctl.querySelector('.dd-stat')!;
-        stat.replaceChildren(
-          `From my first draft to this note, ${pct}% of my words stayed exactly as I wrote them.`,
-          document.createElement('br'),
-          `AI edits: ${count('reworded')} rewordings, ${count('typo')} spelling fixes, ${count('added')} additions and ${count('cut')} cuts.`,
-        );
+        ctl.querySelector('.dd-stat')!.textContent =
+          `From my first draft to this note, ${pct}% of my words stayed exactly as I wrote them.`;
+        for (const el of ctl.querySelectorAll<HTMLElement>('[data-count]')) {
+          const n = count(el.dataset.count as Hunk['type']);
+          el.textContent = `${n} ${n === 1 ? el.dataset.one : el.dataset.many}`;
+        }
       }
       const on = document.documentElement.classList.toggle('dd-on');
       btn.setAttribute('aria-pressed', String(on));

@@ -107,13 +107,13 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   if (portrait && document.documentElement.classList.contains('motion')) {
     const settle = () => portrait.classList.add('settled');
     const home = (delay = 0) => gsap.to(portrait, {
-      '--p': 0, delay, duration: 1.4, ease: 'power3.out', overwrite: true, onComplete: settle,
+      '--p': 0, delay, duration: 1.4, overwrite: true, onComplete: settle,
     });
     gsap.set(portrait, { '--p': 1 });
     home(0.8);
     portrait.addEventListener('pointerenter', () => {
       if (portrait.classList.contains('settled')) return;
-      gsap.to(portrait, { '--p': 1, duration: 0.7, ease: 'power3.out', overwrite: true });
+      gsap.to(portrait, { '--p': 1, duration: 0.7, overwrite: true });
     });
     portrait.addEventListener('pointerleave', () => {
       if (!portrait.classList.contains('settled')) home();
@@ -154,12 +154,6 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   :global(html[data-theme='dark']) .portrait .block {
     z-index: 1; pointer-events: none;
     background: transparent; box-shadow: inset 0 0 0 2px var(--accent);
-  }
-  @media (prefers-color-scheme: dark) {
-    :global(html:not([data-theme='light'])) .portrait .block {
-      z-index: 1; pointer-events: none;
-      background: transparent; box-shadow: inset 0 0 0 2px var(--accent);
-    }
   }
   /* Opening, driven by GSAP tweening --p from 1 to 0 (script above). It
      uses the separate `translate`/`scale` properties, so it never fights the

@@ -42,7 +42,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 </Layout>
 
 <script>
-  import { gsap } from '../../lib/motion';
+  import { gsap, MOVE } from '../../lib/motion';
   import { Flip } from 'gsap/Flip';
 
   gsap.registerPlugin(Flip);
@@ -81,8 +81,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
     img.style.visibility = 'hidden';
 
     const onPhoto = () => Flip.fit(big, img, { scale: true, getVars: true }) as gsap.TweenVars;
-    gsap.from(backdrop, { opacity: 0, duration: DUR, ease: 'power2.out' });
-    gsap.from(big, { ...onPhoto(), duration: DUR, ease: 'power3.out' });
+    gsap.from(backdrop, { opacity: 0, duration: DUR });
+    gsap.from(big, { ...onPhoto(), duration: DUR });
 
     let closing = false;
     const close = () => {
@@ -91,9 +91,9 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       removeEventListener('keydown', onKey);
       removeEventListener('scroll', close);
       removeEventListener('resize', close);
-      gsap.to(backdrop, { opacity: 0, duration: DUR * 0.85, ease: 'power2.inOut' });
+      gsap.to(backdrop, { opacity: 0, duration: DUR * 0.85, ease: MOVE });
       gsap.to(big, {
-        ...onPhoto(), duration: DUR * 0.85, ease: 'power3.inOut', overwrite: true,
+        ...onPhoto(), duration: DUR * 0.85, ease: MOVE, overwrite: true,
         onComplete: () => {
           img.style.visibility = '';
           backdrop.remove(); big.remove();
