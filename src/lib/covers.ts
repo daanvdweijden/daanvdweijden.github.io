@@ -3,12 +3,17 @@
 // each one, shrink it to the size the page shows and serve it from this site,
 // so a visit makes no requests to those hosts. If a cover can't be fetched,
 // the page keeps its remote URL rather than failing the build.
-import { getImage } from 'astro:assets';
+import { getImage, inferRemoteSize } from 'astro:assets';
 
 export async function localCover(url: string, width: number): Promise<string> {
   if (!url) return url;
   try {
-    const img = await getImage({ src: url, inferSize: true, width, format: 'webp', quality: 78 });
+    // Both sides explicitly: with only a width, getImage keeps the original
+    // height and squashes the cover. Never larger than the original.
+    const size = await inferRemoteSize(url);
+    const w = Math.min(width, size.width);
+    const h = Math.round((w * size.height) / size.width);
+    const img = await getImage({ src: url, width: w, height: h, format: 'webp', quality: 78 });
     return img.src;
   } catch (e) {
     console.warn(`[covers] kept remote ${url}: ${e}`);
