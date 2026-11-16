@@ -4,9 +4,14 @@
 // and an accent square slides out from behind it (the same move as the
 // homepage portrait), then title, authors, venue and links.
 import Layout from '../../layouts/Layout.astro';
-import { getPublications, groupByYear, isOwner, actionLinks, pubHref, thumbSrc } from '../../lib/pubs';
+import Feature from '../../components/Feature.astro';
+import { getPublications, groupByYear, isOwner, actionLinks, leadPub, plainAbstract, pubHref, thumbSrc } from '../../lib/pubs';
+import { clip as cut } from '../../lib/text';
 
-const groups = groupByYear(await getPublications());
+// One paper leads the page: the one marked `featured: true`, else the newest.
+const all = await getPublications();
+const lead = leadPub(all);
+const groups = groupByYear(all.filter((p) => p !== lead));
 ---
 
 <Layout title="Publications" active="publications">
@@ -18,6 +23,25 @@ const groups = groupByYear(await getPublications());
         <p class="page-intro">Peer-reviewed work.</p>
       </div>
     </section>
+
+    {lead && (
+      <Feature href={pubHref(lead)} img={thumbSrc(lead)} label={lead.data.featured ? 'Featured' : 'Latest'} page>
+        <span class="f-meta">{lead.data.venueShort ?? lead.data.venue}{lead.data.note ? ` · ${lead.data.note}` : ''}</span>
+        <a class="f-title" href={pubHref(lead)}>{lead.data.title}</a>
+        <span class="sub authors lead-authors">
+          {lead.data.authors.map((a, i) => (
+            <>{i > 0 ? ', ' : ''}<span class:list={['author', { me: isOwner(a) }]}>{a}</span></>
+          ))}
+        </span>
+        {lead.data.award && <span class="sub award">{lead.data.award}</span>}
+        <p class="f-text">{cut(lead.data.summary ?? plainAbstract(lead), 320)}</p>
+        {actionLinks(lead).length > 0 && (
+          <span class="actions">
+            {actionLinks(lead).map((l) => <a href={l.href}>{l.label}</a>)}
+          </span>
+        )}
+      </Feature>
+    )}
 
     {groups.map((g) => (
       <section class="row" data-reveal>
@@ -64,9 +88,12 @@ const groups = groupByYear(await getPublications());
      so the two never run together. */
   .list .authors { color: var(--muted); margin-top: .3rem; }
   .author.me { color: var(--ink); font-weight: 650; }
+  .lead-authors { display: block; color: var(--muted); font-size: .9rem; margin-top: .5rem; }
+  .actions a { text-decoration: underline; text-decoration-color: var(--line); }
+  .actions a:hover { text-decoration-color: var(--accent); }
   .list .venue { color: var(--ink); font-style: italic; margin-top: .25rem; }
   .award { color: var(--accent); }
-  .actions { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .5rem; font-size: .9rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .7rem; font-size: .9rem; }
   .list .actions a { text-decoration: underline; text-decoration-color: var(--line); }
   .list .actions a:hover { text-decoration-color: var(--accent); }
 

@@ -3,9 +3,16 @@
 // tag in the meta column and a short preview under the title. Data comes from
 // the `news` collection.
 import Layout from '../../layouts/Layout.astro';
-import { excerpt, getNews, groupByYear, newsHref, titleParts } from '../../lib/news';
+import Feature from '../../components/Feature.astro';
+import { excerpt, firstImage, getNews, groupByYear, LEAD_DAYS, newsHref, titleParts } from '../../lib/news';
 
-const groups = groupByYear(await getNews());
+// The newest item leads the page while it is fresh (LEAD_DAYS at build time);
+// after that everything is just the list.
+const all = await getNews();
+const lead = all[0] && Date.now() - all[0].data.date.valueOf() < LEAD_DAYS * 864e5 ? all[0] : undefined;
+const groups = groupByYear(all.filter((n) => n !== lead));
+const leadParts = lead && titleParts(lead);
+const leadImg = lead && firstImage(lead);
 const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
@@ -19,6 +26,17 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
         <p class="page-intro">Talks, awards, and other announcements.</p>
       </div>
     </section>
+
+    {lead && leadParts && (
+      <Feature href={newsHref(lead)} img={leadImg?.src} alt={leadImg?.alt}>
+        <span class="f-meta">
+          <time datetime={iso(lead.data.date)}>{fmtDate(lead.data.date)}</time>{lead.data.tag && <> · <span class="tag-inline">{lead.data.tag}</span></>}
+        </span>
+        <a class="f-title" href={newsHref(lead)}>{leadParts.before}{leadParts.emphasis && <em class="hl">{leadParts.emphasis}</em>}{leadParts.after}</a>
+        <p class="f-text">{excerpt(lead, 340)}</p>
+        <a class="f-more" href={newsHref(lead)}>Read more</a>
+      </Feature>
+    )}
 
     {groups.map((g) => (
       <section class="row" data-reveal>
@@ -50,7 +68,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .news > li { padding-bottom: 1.4rem; }
   .title { font-size: 1.08rem; }
   .tag { display: block; }
-  .tag::first-letter { text-transform: uppercase; }
+  .tag::first-letter, .tag-inline::first-letter { text-transform: uppercase; }
+  .tag-inline { display: inline-block; }
   /* Previews always take exactly two lines, so items stack evenly. */
   .sub {
     line-height: 1.5; margin-top: .3rem; max-width: 36em;

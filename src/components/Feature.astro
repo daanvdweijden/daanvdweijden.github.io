@@ -1,0 +1,105 @@
+---
+// The lead entry at the top of the News, Notes and Publications pages: the
+// newest (or chosen) item, larger than the rest, with its picture on an accent
+// square. Same move as the homepage portrait: the square peeks out from
+// behind the picture, and on hover the two pull apart.
+//
+// Two layouts:
+//   default   label + picture in the left column, text on the right
+//   overlay   picture on the right with the title set on it (slot "on")
+interface Props {
+  href: string;
+  img?: string | null; // URL of the picture; none → just the label and text
+  alt?: string;
+  label?: string;
+  page?: boolean; // paper thumbnail: narrower, keeps its outline
+  overlay?: boolean;
+}
+const { href, img, alt = '', label = 'Latest', page = false, overlay = false } = Astro.props;
+---
+
+<section class:list={['row', 'feature', { overlay }]} data-reveal>
+  <div class="side">
+    <h2 class="label">{label}</h2>
+    {img && !overlay && (
+      <a class:list={['pic', { page }]} href={href} tabindex="-1" aria-hidden="true">
+        <span class="block"></span>
+        <img src={img} alt={alt} />
+      </a>
+    )}
+  </div>
+  <div class="body">
+    {img && overlay && (
+      <a class:list={['pic', 'big']} href={href}>
+        <span class="block"></span>
+        <img src={img} alt={alt} />
+        <span class="on"><slot name="on" /></span>
+      </a>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .feature { padding: 2rem 0 2.6rem; }
+  .side { display: flex; flex-direction: column; gap: 1.2rem; }
+  .body { max-width: 38em; }
+
+  /* Picture on its square. The padding leaves room bottom-right for the
+     square to show; the square sits under the lower-right of the picture. */
+  .pic {
+    position: relative; isolation: isolate; display: block; align-self: start;
+    width: min(100%, 19rem); padding: 0 11% 11% 0;
+  }
+  .pic.page { width: min(100%, 14rem); }
+  .pic.big { width: min(100%, 27rem); margin-bottom: 1.2rem; }
+  .pic img {
+    position: relative; display: block; width: 100%; height: auto;
+    transition: transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  /* Photos are cropped square, like the portrait; paper pages keep their shape. */
+  .pic:not(.page) img { aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%; }
+  .pic.page img { outline: 1px solid var(--line); }
+  .pic .block {
+    position: absolute; right: 0; bottom: 0; width: 58%; aspect-ratio: 1 / 1;
+    background: var(--accent);
+    transition: transform .7s cubic-bezier(.22, .61, .36, 1);
+  }
+  /* Dark theme: the square becomes an outline drawn over the picture. */
+  :global(html[data-theme='dark']) .pic .block {
+    z-index: 1; pointer-events: none;
+    background: transparent; box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  @media (hover: hover) {
+    .feature:hover .pic img { transform: translate(-3%, -3%) scale(1.04); }
+    .feature:hover .pic .block { transform: translate(6%, 12%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pic img, .pic .block { transition: none; }
+  }
+
+  /* Title set on the picture: a paper-coloured label at the bottom left. */
+  .on {
+    position: absolute; z-index: 2; left: 0; bottom: 11%; max-width: 80%;
+    background: var(--bg); color: var(--ink); padding: .55rem .9rem .6rem 0;
+  }
+  .pic.big { text-decoration: none; }
+
+  /* Text, shared by the three pages (they pass it in the slot). */
+  .body :global(.f-meta) { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .body :global(.f-title) {
+    display: block; margin-top: .35rem;
+    font-size: clamp(1.4rem, 2.4vw, 1.85rem); line-height: 1.2; letter-spacing: -.015em;
+    text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: .06em;
+  }
+  .on :global(.f-title) { margin-top: 0; }
+  .body :global(a.f-title:hover) { text-decoration-color: var(--accent); }
+  .body :global(.f-text) { color: var(--muted); line-height: 1.55; margin: .7rem 0 0; }
+  .body :global(.f-more) { display: inline-block; margin-top: .8rem; font-size: .9rem; }
+
+  @media (max-width: 760px) {
+    .side { flex-direction: column; }
+    .pic { width: min(100%, 15rem); margin-bottom: 1rem; }
+    .pic.page { width: min(100%, 10rem); }
+  }
+</style>

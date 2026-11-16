@@ -105,7 +105,7 @@ const notes = defineCollection({
     // "music-diversity/index.mdx" → "music-diversity"
     generateId: ({ entry }) => entry.split('/')[0],
   }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     title: z.string(),
     // One-sentence subtitle under the title: the hook, or the question.
     dek: z.string().optional(),
@@ -117,6 +117,11 @@ const notes = defineCollection({
     // Unlisted: built and live at its URL, but not in the nav, the notes
     // list or the sitemap, and marked noindex. For sharing before launch.
     unlisted: z.boolean().default(false),
+    // Picture for when this note leads the /notes/ page (newest note only),
+    // relative to the note, e.g. "./img/art-or-kitsch.gif". Not shown on the
+    // note itself. Gifs stay animated.
+    picture: image().optional(),
+    pictureAlt: z.string().optional(),
   }),
 });
 

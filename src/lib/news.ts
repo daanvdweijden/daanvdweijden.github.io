@@ -61,3 +61,18 @@ export function excerpt(n: NewsItem, max = 220): string {
   const cut = text.slice(0, max);
   return cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:.—–-]+$/, '') + '…';
 }
+
+/** The first picture in a news item's body (HTML <img> or Markdown), or null. */
+export function firstImage(n: NewsItem): { src: string; alt: string } | null {
+  const body = n.body ?? '';
+  const html = body.match(/<img\b[^>]*>/i)?.[0];
+  if (html) {
+    const src = html.match(/\bsrc="([^"]+)"/)?.[1];
+    if (src) return { src, alt: html.match(/\balt="([^"]*)"/)?.[1] ?? '' };
+  }
+  const md = body.match(/!\[([^\]]*)\]\(([^)\s]+)/);
+  return md ? { src: md[2], alt: md[1] } : null;
+}
+
+/** Days a news item stays the lead on /news/ before it drops back into the list. */
+export const LEAD_DAYS = 60;

@@ -123,3 +123,6 @@ export function bibtexFor(p: Pub): string {
   lines.push('}');
   return lines.join('\n');
 }
+
+/** The paper that leads /pubs/: the one marked `featured`, else the newest. */
+export const leadPub = (pubs: Pub[]): Pub | undefined => pubs.find((p) => p.data.featured) ?? pubs[0];

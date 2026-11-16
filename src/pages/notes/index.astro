@@ -2,11 +2,16 @@
 // Notes: one row per year, each note with its date and dek. In `npm run dev`
 // drafts are listed too, marked as such.
 import Layout from '../../layouts/Layout.astro';
-import { getNotes, noteHref, type Note } from '../../lib/notes';
+import Feature from '../../components/Feature.astro';
+import { getNotes, noteExcerpt, noteHref, type Note } from '../../lib/notes';
 
+// The newest note leads the page, with its `picture` if it has one.
+// LEAD_STYLE: 'side' = picture left, text right; 'over' = title on the picture.
+const LEAD_STYLE: 'side' | 'over' = 'side';
 const notes = await getNotes();
+const lead = notes.find((n) => !n.data.draft) ?? notes[0];
 const groups = new Map<number, Note[]>();
-for (const n of notes) {
+for (const n of notes.filter((x) => x !== lead)) {
   const y = n.data.date.getFullYear();
   if (!groups.has(y)) groups.set(y, []);
   groups.get(y)!.push(n);
@@ -25,6 +30,17 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
         <p class="page-intro more"><a href={`${import.meta.env.BASE_URL}notes/rss.xml`}>Follow via RSS</a></p>
       </div>
     </section>
+
+    {lead && (
+      <Feature href={noteHref(lead)} img={lead.data.picture?.src} alt={lead.data.pictureAlt} overlay={LEAD_STYLE === 'over'}>
+        {LEAD_STYLE === 'over' && <span slot="on" class="f-title">{lead.data.title}</span>}
+        <span class="f-meta"><time datetime={iso(lead.data.date)}>{fmtDate(lead.data.date)}</time></span>
+        {LEAD_STYLE !== 'over' && <a class="f-title" href={noteHref(lead)}>{lead.data.title}</a>}
+        {lead.data.dek && <p class="f-dek">{lead.data.dek}</p>}
+        <p class="f-text">{noteExcerpt(lead)}</p>
+        <a class="f-more" href={noteHref(lead)}>Read the note</a>
+      </Feature>
+    )}
 
     {[...groups].map(([year, items]) => (
       <section class="row" data-reveal>
@@ -54,4 +70,5 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   .sub { line-height: 1.5; margin-top: .3rem; max-width: 36em; }
   .draft { display: block; color: var(--accent); }
   .page-intro.more { margin-top: .8rem; }
+  .f-dek { font-size: 1.08rem; line-height: 1.45; margin: .5rem 0 0; }
 </style>
