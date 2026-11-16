@@ -34,7 +34,6 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
         </span>
         <a class="f-title" href={newsHref(lead)}>{leadParts.before}{leadParts.emphasis && <em class="hl">{leadParts.emphasis}</em>}{leadParts.after}</a>
         <p class="f-text">{excerpt(lead, 340)}</p>
-        <a class="f-more" href={newsHref(lead)}>Read more</a>
       </Feature>
     )}
 

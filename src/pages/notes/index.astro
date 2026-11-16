@@ -41,7 +41,6 @@ const mins = (n: Note) => `${readMinutes(n.body ?? '')} min read`;
         {LEAD_STYLE !== 'over' && <a class="f-title" href={noteHref(lead)}>{lead.data.title}</a>}
         {lead.data.dek && <p class="f-dek">{lead.data.dek}</p>}
         <p class="f-text">{noteExcerpt(lead)}</p>
-        <a class="f-more" href={noteHref(lead)}>Read the note</a>
       </Feature>
     )}
 
