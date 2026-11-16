@@ -2,6 +2,8 @@
 // A single note. Same two-column grid as the rest of the site: meta and
 // margin notes (<Aside>) in the narrow left column, text in the right one,
 // and <Figure>s free to span both.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { getNotes, type Note } from '../../lib/notes';
@@ -31,9 +33,13 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 // Search snippet: the dek, else the opening prose (skipping MDX imports/tags).
 const opening = plainText((note.body ?? '').replace(/^import .*$/gm, '').replace(/<[^>]+>/g, ' '));
 const description = note.data.dek ?? clip(opening || note.data.title);
+// Square link-preview tile (title + dek), made by scripts/build_note_cards.py;
+// the site-wide image until it has been generated.
+const card = `notes/og/${note.id}.png`;
+const hasCard = existsSync(join(process.cwd(), 'public', card));
 ---
 
-<Layout title={note.data.title} description={description} active="notes" ogType="article" noindex={note.data.unlisted}>
+<Layout title={note.data.title} description={description} active="notes" ogType="article" noindex={note.data.unlisted} image={hasCard ? card : undefined}>
   <main class="wrap">
     <article class="note">
       <aside class="note-meta" data-reveal>
