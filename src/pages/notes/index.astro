@@ -3,6 +3,7 @@
 // drafts are listed too, marked as such.
 import Layout from '../../layouts/Layout.astro';
 import Feature from '../../components/Feature.astro';
+import Subscribe from '../../components/Subscribe.astro';
 import { getNotes, noteExcerpt, noteHref, type Note } from '../../lib/notes';
 import { readMinutes } from '../../lib/text';
 
@@ -29,7 +30,7 @@ const mins = (n: Note) => `${readMinutes(n.body ?? '')} min read`;
       <div>
         <h1 class="page-title">Notes</h1>
         <p class="page-intro">Interesting things I find along the way, personal research or an interesting read.</p>
-        <p class="page-intro more"><a href={`${import.meta.env.BASE_URL}notes/rss.xml`}>Follow via RSS</a></p>
+        <div class="page-intro more"><Subscribe /></div>
       </div>
     </section>
 
@@ -73,6 +74,6 @@ const mins = (n: Note) => `${readMinutes(n.body ?? '')} min read`;
   .sub { line-height: 1.5; margin-top: .3rem; max-width: 36em; }
   .mins { display: block; }
   .draft { display: block; color: var(--accent); }
-  .page-intro.more { margin-top: .8rem; }
+  .page-intro.more { margin-top: 1.4rem; }
   .f-dek { font-size: 1.08rem; line-height: 1.45; margin: .5rem 0 0; }
 </style>
