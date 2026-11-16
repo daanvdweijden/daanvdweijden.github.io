@@ -1,6 +1,7 @@
 ---
 // Listening log. Same row grid as the rest of the site: two stat rows, three
-// ranked lists for the last 30 days, then the cover grids, in full colour.
+// ranked lists for the last 30 days, then the cover grids. The 30-day #1s are
+// in colour; grid covers sit in grayscale and take on their colour on hover.
 import Layout from '../../layouts/Layout.astro';
 import { getMusicData } from '../../lib/music';
 import { withLocalCovers } from '../../lib/covers';
@@ -250,6 +251,10 @@ const grids = [
   .feature-cover img, .cover img {
     width: 100%; height: 100%; object-fit: cover;
   }
+  /* The grids (most played) sit in grayscale and take on their colour on
+     hover, like the books; the 30-day #1s stay in colour. */
+  .cover img { filter: grayscale(1) contrast(1.05); transition: filter .4s ease; }
+  .album-card:hover img, .album-card:focus-visible img { filter: none; }
 
   .no-cover {
     width: 100%; height: 100%;
