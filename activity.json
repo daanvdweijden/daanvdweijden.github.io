@@ -56,7 +56,9 @@
       "date": "2026-11-16",
       "played": [
         "mini",
-        "briljant"
+        "briljant",
+        "crux",
+        "vorto"
       ]
     },
     {
@@ -520,7 +522,6 @@
         "mini",
         "midi",
         "connections",
-        "crux",
         "precies-vier"
       ]
     },
@@ -529,8 +530,7 @@
       "played": [
         "mini",
         "midi",
-        "connections",
-        "crux"
+        "connections"
       ]
     },
     {
