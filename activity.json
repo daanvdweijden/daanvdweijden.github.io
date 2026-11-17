@@ -57,8 +57,11 @@
       "played": [
         "mini",
         "midi",
+        "wordle",
+        "connections",
         "briljant",
-        "crux"
+        "crux",
+        "vorto"
       ]
     },
     {
@@ -520,7 +523,6 @@
       "played": [
         "mini",
         "connections",
-        "crux",
         "precies-vier",
         "sudoku"
       ]
