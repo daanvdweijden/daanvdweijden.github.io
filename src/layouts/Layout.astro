@@ -283,6 +283,16 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
       }
+      /* Noise texture (Resource Boy 005) over the paper. It sits inside
+         #smooth-content, so ScrollSmoother's transform carries it along with
+         the page instead of leaving it on the native scroll position. The transform
+         isolates blending, so the tile is baked as black/white with alpha
+         (dark pixels black, light pixels white) rather than a blend mode. */
+      #smooth-content { position: relative; }
+      #smooth-content::before {
+        content: ""; position: absolute; inset: 0; z-index: 9999; pointer-events: none;
+        background: url(/noise.png) 0 0 / 256px 256px; opacity: .35;
+      }
       a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: .2em; }
       a:hover { text-decoration-thickness: 2px; }
       /* Hover states appear at once and ease back when the pointer leaves:
