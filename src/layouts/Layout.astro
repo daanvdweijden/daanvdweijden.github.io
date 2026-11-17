@@ -288,7 +288,10 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
          the page instead of leaving it on the native scroll position. The transform
          isolates blending, so the tile is baked as black/white with alpha
          (dark pixels black, light pixels white) rather than a blend mode. */
-      #smooth-content { position: relative; }
+      #smooth-content { position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+      /* Short pages (notes on tall, narrow screens): the footer stays at the
+         bottom of the viewport; the space goes above it. */
+      #smooth-content > footer { margin-top: auto; padding-top: clamp(4rem, 10vw, 8rem); }
       #smooth-content::before {
         content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
         background: url(/noise.png) 0 0 / 256px 256px; opacity: .35;
@@ -315,7 +318,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
       ::selection { background: var(--ink); color: var(--bg); }
       :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-      .wrap { max-width: 78rem; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.25rem); }
+      .wrap { width: 100%; max-width: 78rem; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.25rem); }
 
       /* ---- header ----
          Two small corner blocks, like the credits on a poster: who on the
