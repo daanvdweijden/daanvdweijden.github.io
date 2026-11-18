@@ -9,6 +9,7 @@ import TodayCard from '../../components/TodayCard.astro';
 import TrendChart from '../../components/TrendChart.astro';
 import TimeOfDay from '../../components/TimeOfDay.astro';
 import WeekdayBars from '../../components/WeekdayBars.astro';
+import ParBars from '../../components/ParBars.astro';
 import {
   getActivity,
   buildCells,
@@ -26,6 +27,7 @@ import {
   solveTimesByDate,
   formatSeconds,
   formatDay,
+  minuteCrypticPar,
 } from '../../lib/puzzles';
 
 const a = getActivity();
@@ -42,6 +44,7 @@ const miniSplit = hintBreakdown('mini_scores.csv');
 const midiSplit = hintBreakdown('midi_scores.csv');
 const solveTimes = solveTimesByDate();
 const todayDay = today(a);
+const mcPar = minuteCrypticPar();
 
 // % of solves in a given bucket, rounded — used for the "% clean" headline.
 const share = (slices: HintSlice[], key: string) => {
@@ -112,6 +115,19 @@ const share = (slices: HintSlice[], key: string) => {
       <div class="chart"><WeekdayBars data={weekday} /></div>
     </section>
 
+    {mcPar && (
+      <section class="row" data-reveal>
+        <h2 class="label">Minute Cryptic, hints against par</h2>
+        <div class="chart">
+          <ParBars buckets={mcPar.buckets} />
+          <p class="note">
+            {Math.abs(mcPar.total)} {mcPar.total <= 0 ? 'under' : 'over'} par in total across {mcPar.solved} clues.
+            Par is the community's typical number of hints for that clue.
+          </p>
+        </div>
+      </section>
+    )}
+
     <section class="row" data-reveal>
       <h2 class="label">Clean or assisted</h2>
       <div class="splits">
@@ -147,6 +163,15 @@ const share = (slices: HintSlice[], key: string) => {
   </main>
 </Layout>
 <script>
+  import { reveal } from '../../lib/reveal';
+
+  // Charts draw themselves in as they scroll into view, the same entrance as
+  // the charts in notes (lib/reveal.ts): bars grow up column by column, the
+  // trend line wipes in from the left.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (const svg of document.querySelectorAll('.chart > svg')) reveal(svg);
+  }
+
   const tip = document.getElementById('chart-tip');
   if (tip) {
     const show = (el: Element) => {

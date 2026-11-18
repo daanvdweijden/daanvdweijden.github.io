@@ -267,7 +267,7 @@ export const GAME_COLORS: Record<string, string> = {
 /** Games we ship a real inline icon for (see src/assets/puzzle-icons). */
 export const ICON_SLUGS = new Set([
   'mini', 'midi', 'wordle', 'connections', 'crux', 'cijferblok', 'vorto', 'precies-vier',
-  'briljant',
+  'briljant', 'minutecryptic',
 ]);
 
 /** Longest run of consecutive days ending at `generated` on which anything was solved. */
@@ -437,4 +437,50 @@ export function solveTimesByDate(): Record<string, Record<string, string>> {
   add('mini_scores.csv', 'mini');
   add('midi_scores.csv', 'midi');
   return out;
+}
+
+// --- Minute Cryptic par scores (data/minutecryptic_stats.json) ---------------
+
+export interface ParBucket {
+  score: number; // hints used relative to par; negative = under par
+  count: number;
+}
+
+export interface MinuteCrypticPar {
+  snapshot: string;
+  solved: number; // clues with a community par score
+  total: number; // summed score across those clues (negative = under)
+  buckets: ParBucket[]; // contiguous from the lowest to the highest score seen
+}
+
+/**
+ * The community par distribution from Minute Cryptic's own stats, zero-filled
+ * so the chart has a column for every score in range. null when the snapshot
+ * isn't there (e.g. a build before the fetcher has run).
+ */
+export function minuteCrypticPar(): MinuteCrypticPar | null {
+  let raw: {
+    snapshot_date: string;
+    totalCommunitySolved: number;
+    communityTotalScore: number;
+    communityScoreDistribution: Record<string, number>;
+  };
+  try {
+    raw = JSON.parse(readFileSync(join(process.cwd(), 'data', 'minutecryptic_stats.json'), 'utf-8'));
+  } catch {
+    return null;
+  }
+  const dist = raw.communityScoreDistribution ?? {};
+  const scores = Object.keys(dist).map(Number);
+  if (scores.length === 0) return null;
+  const buckets: ParBucket[] = [];
+  for (let s = Math.min(...scores); s <= Math.max(...scores); s++) {
+    buckets.push({ score: s, count: dist[String(s)] ?? 0 });
+  }
+  return {
+    snapshot: raw.snapshot_date,
+    solved: raw.totalCommunitySolved,
+    total: raw.communityTotalScore,
+    buckets,
+  };
 }

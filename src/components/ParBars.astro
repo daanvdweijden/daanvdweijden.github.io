@@ -1,0 +1,60 @@
+---
+// Minute Cryptic community par score distribution: one column per score,
+// under par (negative) in full ink, par a mid tone, over par faint, so the
+// shade tracks how well it went. (Not the accent: in dark mode it equals --ink.)
+// Same visual language as WeekdayBars. Inline SVG, scales to its container.
+import type { ParBucket } from '../lib/puzzles';
+
+interface Props {
+  buckets: ParBucket[];
+}
+const { buckets } = Astro.props;
+const W = 320, H = 140;
+const padTop = 18, padBot = 20, padX = 6;
+const max = Math.max(...buckets.map((b) => b.count), 1);
+const slot = (W - 2 * padX) / buckets.length;
+const barW = slot * 0.62;
+const barH = (v: number) => (v / max) * (H - padTop - padBot);
+const axis = (s: number) => (s === 0 ? 'par' : s < 0 ? `−${-s}` : `+${s}`);
+const tip = (b: ParBucket) => {
+  const what = b.score === 0 ? 'at par' : `${Math.abs(b.score)} ${b.score < 0 ? 'under' : 'over'} par`;
+  return `${b.count} ${b.count === 1 ? 'clue' : 'clues'} ${what}`;
+};
+---
+
+<svg viewBox={`0 0 ${W} ${H}`} class="par" role="img"
+     aria-label={`Minute Cryptic par score distribution: ${buckets.map(tip).join(', ')}`}>
+  <!-- Marks and axis in separate groups for lib/reveal.ts (see WeekdayBars). -->
+  <g>
+    {buckets.map((b, i) => {
+      const cx = padX + i * slot + slot / 2;
+      const h = barH(b.count);
+      return (
+        <>
+          <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h}
+                class:list={['bar', b.score < 0 ? 'under' : b.score === 0 ? 'at' : 'over']}
+                data-tip={tip(b)} tabindex="0" />
+          {b.count > 0 && (
+            <text x={cx} y={H - padBot - h - 5} class="val" text-anchor="middle">{b.count}</text>
+          )}
+        </>
+      );
+    })}
+  </g>
+  <g aria-label="axis">
+    {buckets.map((b, i) => (
+      <text x={padX + i * slot + slot / 2} y={H - 6} class:list={['axis', { zero: b.score === 0 }]} text-anchor="middle">{axis(b.score)}</text>
+    ))}
+  </g>
+</svg>
+
+<style>
+  .par { display: block; width: 100%; height: auto; }
+  .bar { transition: opacity .12s ease; cursor: default; outline: none; }
+  rect.bar.under { fill: var(--ink); }
+  rect.bar.at { fill: color-mix(in srgb, var(--ink) 55%, var(--bg)); }
+  rect.bar.over { fill: color-mix(in srgb, var(--ink) 25%, var(--bg)); }
+  rect.bar:hover, rect.bar:focus-visible { opacity: .7; }
+  .val, .axis { font-family: var(--font); font-size: 7.5px; fill: var(--muted); }
+  .axis.zero { fill: var(--ink); }
+</style>

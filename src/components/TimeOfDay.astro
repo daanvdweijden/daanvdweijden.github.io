@@ -23,18 +23,23 @@ const hourLabel = (h: number) => (h === 0 ? '12am' : h < 12 ? `${h}am` : h === 1
 ---
 
 <svg viewBox={`0 0 ${W} ${H}`} class="tod" role="img" aria-label="Solves by hour of day, busiest hours highlighted">
-  {hist.map((v, h) => (
-    <rect
-      x={h * bw + 1} y={H - padBot - barH(v)}
-      width={bw - 2} height={barH(v)}
-      class:list={['bar', { peak: isPeak(v) }]}
-      data-tip={`${v} solves at ${hourLabel(h)}`}
-      tabindex="0"
-    />
-  ))}
-  {TICKS.map(([h, label]) => (
-    <text x={h * bw + bw / 2} y={H - 6} class="axis" text-anchor="middle">{label}</text>
-  ))}
+  <!-- Marks and axis in separate groups for lib/reveal.ts (see WeekdayBars). -->
+  <g>
+    {hist.map((v, h) => (
+      <rect
+        x={h * bw + 1} y={H - padBot - barH(v)}
+        width={bw - 2} height={barH(v)}
+        class:list={['bar', { peak: isPeak(v) }]}
+        data-tip={`${v} solves at ${hourLabel(h)}`}
+        tabindex="0"
+      />
+    ))}
+  </g>
+  <g aria-label="axis">
+    {TICKS.map(([h, label]) => (
+      <text x={h * bw + bw / 2} y={H - 6} class="axis" text-anchor="middle">{label}</text>
+    ))}
+  </g>
 </svg>
 
 <style>

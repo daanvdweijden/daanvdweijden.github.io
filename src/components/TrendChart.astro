@@ -26,25 +26,29 @@ const last = points[points.length - 1]?.avg ?? 0;
 
 <svg viewBox={`0 0 ${W} ${H}`} class="trend" role="img"
      aria-label={`Monthly average Mini solve time, from ${formatSeconds(first)} to ${formatSeconds(last)}`}>
-  <!-- personal-best baseline -->
-  <line x1={padX} x2={W - padX} y1={y(pb)} y2={y(pb)} class="pb" />
-  <text x={W - padX} y={y(pb) - 4} class="pb-label" text-anchor="end">best {formatSeconds(pb)}</text>
+  <!-- Fixed parts (personal-best baseline, month labels) are grouped as the
+       axis, the line and its labels as marks, so lib/reveal.ts wipes the line
+       in from the left on scroll and leaves the rest put. -->
+  <g aria-label="axis">
+    <line x1={padX} x2={W - padX} y1={y(pb)} y2={y(pb)} class="pb" />
+    <text x={W - padX} y={y(pb) - 4} class="pb-label" text-anchor="end">best {formatSeconds(pb)}</text>
+    {points.map((p, i) => (
+      <text x={x(i)} y={H - 8} class="axis" text-anchor="middle">{MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}</text>
+    ))}
+  </g>
 
-  <polyline points={line} class="curve" />
-  {points.map((p, i) => (
-    <g class="hover-target" tabindex="0" data-tip={`${formatSeconds(p.avg)} avg in ${MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}`}>
-      <circle cx={x(i)} cy={y(p.avg)} r="12" fill="transparent" class="touch-target" />
-      <circle cx={x(i)} cy={y(p.avg)} r="2.4" class="dot" />
-    </g>
-  ))}
-
-  <!-- endpoint value labels -->
-  <text x={x(0)} y={y(first) - 7} class="val" text-anchor="start">{formatSeconds(first)}</text>
-  <text x={x(points.length - 1)} y={y(last) - 7} class="val" text-anchor="end">{formatSeconds(last)}</text>
-
-  {points.map((p, i) => (
-    <text x={x(i)} y={H - 8} class="axis" text-anchor="middle">{MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}</text>
-  ))}
+  <g>
+    <polyline points={line} class="curve" />
+    {points.map((p, i) => (
+      <g class="hover-target" tabindex="0" data-tip={`${formatSeconds(p.avg)} avg in ${MONTH_ABBR[Number(p.month.slice(5, 7)) - 1]}`}>
+        <circle cx={x(i)} cy={y(p.avg)} r="12" fill="transparent" class="touch-target" />
+        <circle cx={x(i)} cy={y(p.avg)} r="2.4" class="dot" />
+      </g>
+    ))}
+    <!-- endpoint value labels -->
+    <text x={x(0)} y={y(first) - 7} class="val" text-anchor="start">{formatSeconds(first)}</text>
+    <text x={x(points.length - 1)} y={y(last) - 7} class="val" text-anchor="end">{formatSeconds(last)}</text>
+  </g>
 </svg>
 
 <style>

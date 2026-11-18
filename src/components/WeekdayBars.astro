@@ -16,21 +16,28 @@ const barH = (v: number) => (v / max) * (H - padTop - padBot);
 ---
 
 <svg viewBox={`0 0 ${W} ${H}`} class="wd" role="img" aria-label="Average Mini solve time by weekday, highest on Saturday">
-  {data.map((d, i) => {
-    const cx = padX + i * slot + slot / 2;
-    const h = barH(d.avg);
-    const isSat = d.day === 'Sat';
-    return (
-      <g>
-        <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h}
-              class:list={['bar', { sat: isSat }]}
-              data-tip={`${formatSeconds(d.avg)} avg on ${d.day}`}
-              tabindex="0" />
-        <text x={cx} y={H - padBot - h - 5} class="val" text-anchor="middle">{formatSeconds(d.avg)}</text>
-        <text x={cx} y={H - 6} class="axis" text-anchor="middle">{d.day}</text>
-      </g>
-    );
-  })}
+  <!-- Marks (bars + their values) in one group, axis labels in another, so
+       lib/reveal.ts can grow the bars in on scroll and leave the axis put. -->
+  <g>
+    {data.map((d, i) => {
+      const cx = padX + i * slot + slot / 2;
+      const h = barH(d.avg);
+      return (
+        <>
+          <rect x={cx - barW / 2} y={H - padBot - h} width={barW} height={h}
+                class:list={['bar', { sat: d.day === 'Sat' }]}
+                data-tip={`${formatSeconds(d.avg)} avg on ${d.day}`}
+                tabindex="0" />
+          <text x={cx} y={H - padBot - h - 5} class="val" text-anchor="middle">{formatSeconds(d.avg)}</text>
+        </>
+      );
+    })}
+  </g>
+  <g aria-label="axis">
+    {data.map((d, i) => (
+      <text x={padX + i * slot + slot / 2} y={H - 6} class="axis" text-anchor="middle">{d.day}</text>
+    ))}
+  </g>
 </svg>
 
 <style>
