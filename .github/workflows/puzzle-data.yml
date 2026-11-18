@@ -2,9 +2,11 @@ name: Puzzle data
 
 on:
   schedule:
-    # 6×/day (every 4h) at :45. Shifted to include 03:45 UTC (11:45 PM NY time)
-    # so we don't miss late-evening NYT solves right before the puzzle expires.
-    - cron: "45 3,7,11,15,19,23 * * *"
+    # Hourly at :45 (includes 03:45 UTC = 11:45 PM NY time, so late-evening NYT
+    # solves land before the puzzle expires). Public repo, so Actions minutes
+    # are free; GitHub still drops some scheduled runs when it's busy, and
+    # hourly means a dropped run costs an hour, not four.
+    - cron: "45 * * * *"
   workflow_dispatch: {}      # manual "Run workflow" button
 
 permissions:
@@ -92,6 +94,32 @@ jobs:
           NRC_USER_ID: ${{ secrets.NRC_USER_ID }}
         run: python .fetchers/nrc/scripts/fetch_nrc_games.py --output data/nrc_games.csv
 
+      # ---- Minute Cryptic (Supabase refresh token; rotates on every use) ----
+      # Each run spends MC_REFRESH_TOKEN and gets a new one, which the next step
+      # writes back into the secret. The concurrency group above keeps two runs
+      # from spending the same token.
+      - name: Minute Cryptic
+        id: mc
+        continue-on-error: true
+        env:
+          MC_REFRESH_TOKEN: ${{ secrets.MC_REFRESH_TOKEN }}
+        run: python scripts/fetch_minutecryptic.py --output data/minutecryptic.csv --stats-output data/minutecryptic_stats.json --token-out "$RUNNER_TEMP/mc_token"
+
+      # Runs even if the fetch failed after the refresh (the old token is dead by
+      # then). MC_SECRETS_PAT: fine-grained PAT, this repo only, "Secrets: read
+      # and write" — GITHUB_TOKEN can't write secrets.
+      - name: Save rotated Minute Cryptic token
+        id: mcsave
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.MC_SECRETS_PAT }}
+        run: |
+          # Nothing to save when the refresh itself failed (old token unspent).
+          [ -s "$RUNNER_TEMP/mc_token" ] || { echo "No rotated token to save."; exit 0; }
+          gh secret set MC_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/mc_token"
+          rm -f "$RUNNER_TEMP/mc_token"
+
       - name: Build combined activity feed
         run: python scripts/build_feed.py
 
@@ -146,3 +174,17 @@ jobs:
             exit 1   # fail loudly -> GitHub emails you (once-daily, or on a manual run)
           fi
           echo "Tokens look rotated; staying green this run to avoid repeat emails (daily alert fires at ~08:00 UTC)."
+
+      # Minute Cryptic: a failed fetch is usually a dead session (re-seed
+      # MC_REFRESH_TOKEN, see README). A failed save is urgent — the token that
+      # was just issued is lost, so the next run will fail too.
+      - name: Flag Minute Cryptic session failure
+        # always(): still report when an earlier alert step already failed the job
+        if: always() && (steps.mc.outcome == 'failure' || steps.mcsave.outcome == 'failure')
+        run: |
+          echo "::warning::Minute Cryptic fetch or token save failed — the session has most likely expired or been revoked. Re-seed the MC_REFRESH_TOKEN secret (README → Minute Cryptic)."
+          hour=$(date -u +%H)
+          if [ "$hour" = "08" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            exit 1
+          fi
+          echo "Staying green this run to avoid repeat emails (daily alert fires at ~08:00 UTC)."

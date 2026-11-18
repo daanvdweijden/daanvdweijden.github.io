@@ -10,6 +10,7 @@ read from the CSVs the fetchers already maintain (no live API calls here):
            Koprol, Aan Zet, Scrypto, In het midden, Woordzoeker, Briljant)
   * NYT  — Mini + Midi (data/*_scores.csv) and Wordle / Connections / Strands
            (data/nyt_games.csv)
+  * Minute Cryptic — daily clue (data/minutecryptic.csv)
 
 Output: data/activity.json
   {
@@ -135,9 +136,21 @@ def main():
     except FileNotFoundError:
         pass
 
-    # order slugs within a day: NYT first (fixed order), then NRC alphabetically
+    # Minute Cryptic daily clue (scripts/fetch_minutecryptic.py): one row per solved day
+    try:
+        with open(os.path.join(DATA_DIR, "minutecryptic.csv"), newline="") as f:
+            for r in csv.DictReader(f):
+                if r.get("date") and r.get("solved") == "True":
+                    by_date.setdefault(r["date"], set()).add("minutecryptic")
+                    meta["minutecryptic"] = {"label": "Minute Cryptic", "source": "mc"}
+    except FileNotFoundError:
+        pass
+
+    # order slugs within a day: NYT first (fixed order), then Minute Cryptic,
+    # then NRC alphabetically
     nyt_order = ["mini", "midi", "wordle", "connections", "strands"]
     order = ([s for s in nyt_order if s in meta]
+             + [s for s in meta if meta[s]["source"] == "mc"]
              + sorted(s for s in meta if meta[s]["source"] == "nrc"))
     days = [
         {"date": d, "played": [s for s in order if s in by_date[d]]}

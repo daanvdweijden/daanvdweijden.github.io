@@ -34,7 +34,7 @@ item any time without touching code.
 `data/activity.json` (plus the per-source CSVs alongside it) feeds a daily
 puzzle-solving activity wall.
 
-**It does not live on `main`.** The fetchers run 6×/day, so keeping their
+**It does not live on `main`.** The fetchers run hourly, so keeping their
 output in `main` buried the real history under "Update puzzle data" commits.
 Instead the files sit at the root of a dedicated **`puzzle-data` orphan
 branch**, and `main` gitignores `data/`. Both workflows check that branch out
@@ -46,20 +46,48 @@ Locally, `npm run data:pull` sets `data/` up as a git worktree on that branch
 (and fast-forwards it on later runs). Without it the `/puzzles` page can't
 build.
 
-`.github/workflows/puzzle-data.yml` runs 6×/day and:
+`.github/workflows/puzzle-data.yml` runs hourly (at :45) and:
 
 1. Checks out the fetcher code fresh from two public repos (no vendoring,
    nothing from them gets committed anywhere — just their output):
    [nyt-games-tracker](https://github.com/daanvdweijden/nyt-games-tracker)
    and [nrc-puzzel-tracker](https://github.com/daanvdweijden/nrc-puzzel-tracker).
+   The Minute Cryptic fetcher lives here, in `scripts/fetch_minutecryptic.py`.
 2. Runs each fetcher with `--output` pointed at `data/`.
 3. Runs `scripts/build_feed.py` to merge everything into `data/activity.json`.
 4. Commits the result to the `puzzle-data` branch.
 5. Explicitly dispatches `deploy.yml` to rebuild the site with the new data.
 
-Requires three repo secrets (Settings → Secrets and variables → Actions):
+Requires these repo secrets (Settings → Secrets and variables → Actions):
 `NYT_S_COOKIE`, `NRC_PLAYER_ID`, `NRC_USER_ID` — see the two repos above for
-how to get them.
+how to get them — plus `MC_REFRESH_TOKEN` and `MC_SECRETS_PAT` for Minute
+Cryptic (below).
+
+### Minute Cryptic
+
+Minute Cryptic signs in through Supabase (Google / magic link), so there's no
+fixed cookie: each run trades `MC_REFRESH_TOKEN` for a fresh session and a
+**new** refresh token, then writes that new token back into the secret. Writing
+secrets needs `MC_SECRETS_PAT` — a fine-grained personal access token
+(github.com/settings/personal-access-tokens/new) scoped to this repo only, with
+the repository permission **Secrets: Read and write**.
+
+To seed (or re-seed after the alert email) `MC_REFRESH_TOKEN`:
+
+1. Open minutecryptic.com in a **private window** and sign in. That makes a
+   separate session for CI, so your normal browser doesn't fight it over the
+   token.
+2. In that window's DevTools console, copy the refresh token to the clipboard:
+   ```js
+   copy(JSON.parse(atob(document.cookie.split('; ').filter(c => c.startsWith('sb-pubnjtzifbxpdxwnmvhm-auth-token')).sort().map(c => c.split('=')[1]).join('').slice(7).replace(/-/g, '+').replace(/_/g, '/'))).refresh_token)
+   ```
+3. Run `gh secret set MC_REFRESH_TOKEN` and paste it at the prompt.
+4. Close the private window. **Don't click "sign out"** there (or anywhere —
+   Supabase's default sign-out ends every session, CI's included).
+5. Actions → Puzzle data → Run workflow, to check it.
+
+Running `scripts/fetch_minutecryptic.py` locally spends the token CI holds, so
+either re-seed afterwards or use a different session for local runs.
 
 To run the fetchers locally: `pip install -r requirements.txt`, copy
 `.env.example` to `.env` and fill it in, then run whichever fetcher script

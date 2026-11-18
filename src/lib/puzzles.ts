@@ -11,7 +11,7 @@ import cruxStatsData from '../../data/crux_stats.json';
 
 export interface GameMeta {
   label: string;
-  source: 'nyt' | 'nrc';
+  source: 'nyt' | 'nrc' | 'mc';
 }
 
 export interface ActivityDay {
@@ -254,6 +254,7 @@ export const GAME_COLORS: Record<string, string> = {
   crux: '#31d3ff',
   wordle: '#6aaa64',
   connections: '#bc70c4',
+  minutecryptic: '#c25fae',
   vorto: '#9fd727',
   cijferblok: '#dd246f',
   'precies-vier': '#dc246f',
