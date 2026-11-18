@@ -1,12 +1,11 @@
 ---
 // Shared shell for every page: <head> + design tokens + header + footer.
-// Deliberately plain: paper background, one grotesk (Archivo), small corner
+// Deliberately plain: paper background, one grotesk (Allo), small corner
 // header. The one loud element lives on
 // the homepage (the colour block behind the portrait).
 import { site } from '../site.config';
 import { hasPublishedNotes } from '../lib/notes';
-import '@fontsource-variable/archivo/wght.css';
-import '@fontsource-variable/archivo/wght-italic.css';
+import 'allo-font/allo-friendly.css';
 
 interface Props {
   title?: string;
@@ -218,7 +217,14 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         --line: color-mix(in srgb, var(--ink) 25%, var(--bg));
         --accent: #7d300e;
         --accent-2: #3d5068;
-        --font: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
+        --font: 'Allo', 'Helvetica Neue', Arial, sans-serif;
+        /* Allo weights, as tokens: body text, big display lines (hero, page
+           titles), small headings, and emphasis. The "friendly" cut has
+           roundness fixed at 50; optical size follows the type size. */
+        --w-body: 350;
+        --w-display: 410;
+        --w-head: 570;
+        --w-strong: 620;
 
         /* Legacy tokens still used by the inner pages (news, pubs, cv,
            puzzles, books, music). Mapped onto the new palette so those pages
@@ -279,6 +285,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         background: var(--bg);
         color: var(--ink);
         font-family: var(--font);
+        font-weight: var(--w-body);
         font-size: 17px;
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
@@ -382,20 +389,20 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         padding: 1.6rem 0; border-top: 1px solid var(--line);
       }
       .row > * { min-width: 0; }
-      .label { font-size: .9rem; font-weight: 400; color: var(--muted); margin: .2rem 0 0; }
+      .label { font-size: .9rem; font-weight: var(--w-body); color: var(--muted); margin: .2rem 0 0; }
       .label a { margin-left: .6rem; color: var(--muted); }
       .label a:hover { color: var(--ink); }
 
       /* Page header on inner pages: big title in the right column. */
       .row.page-head { border-top: 0; padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3.5rem); }
       .page-title, .lede {
-        font-size: clamp(1.75rem, 3.4vw, 2.85rem); font-weight: 400; line-height: 1.15;
+        font-size: clamp(1.75rem, 3.4vw, 2.85rem); font-weight: var(--w-display); line-height: 1.15;
         letter-spacing: -.02em; margin: 0; max-width: 17em;
       }
       .page-intro { color: var(--muted); margin: 1rem 0 0; max-width: 34em; }
       /* Colour words in notes ("orange marks…"), see components/notes/Hue.astro.
          "teal" and "rust" are the old names, kept so older text still works. */
-      .hue { font-weight: 600; }
+      .hue { font-weight: var(--w-strong); }
       .hue.accent { color: var(--accent); }
       .hue.accent-2 { color: var(--accent-2); }
       /* Colour words carry both names; show the one for the theme. */
@@ -422,7 +429,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
       /* Long-form text (news posts, abstracts). */
       .prose { font-size: 1.08rem; line-height: 1.65; max-width: 38em; }
       .prose > :first-child { margin-top: 0; }
-      .prose h2, .prose h3 { font-size: 1.15rem; font-weight: 500; margin: 2rem 0 .5rem; }
+      .prose h2, .prose h3 { font-size: 1.15rem; font-weight: var(--w-head); margin: 2rem 0 .5rem; }
       .prose img { margin: 1.5rem 0; }
       .prose blockquote { margin: 1.2rem 0; padding-left: 1rem; border-left: 2px solid var(--accent); color: var(--muted); }
       .prose code { font-size: .9em; }

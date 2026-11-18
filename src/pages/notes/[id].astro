@@ -82,7 +82,7 @@ const hasCard = existsSync(join(process.cwd(), 'public', card));
   .prose { display: contents; }
   .prose > :global(*) { grid-column: 2; max-width: 38em; }
   .prose :global(p) { margin: 0 0 1.1rem; }
-  .prose :global(h2) { font-size: 1.35rem; font-weight: 500; letter-spacing: -.01em; margin: 2.5rem 0 .8rem; }
+  .prose :global(h2) { font-size: 1.35rem; font-weight: var(--w-head); letter-spacing: -.01em; margin: 2.5rem 0 .8rem; }
   .prose :global(ul), .prose :global(ol) { margin: 0 0 1.1rem; padding-left: 1.2rem; }
   .prose > :global(img) { margin: 1.5rem 0; }
   /* Placement of the note components (src/components/notes/). */

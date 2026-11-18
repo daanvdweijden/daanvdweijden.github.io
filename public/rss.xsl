@@ -17,7 +17,7 @@
         <style>
           :root {
             --bg: #efeee9; --ink: #161616; --muted: #6e6d68;             --accent: #a3472b;
-            --font: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
+            --font: 'Allo', 'Helvetica Neue', Arial, sans-serif;
             color-scheme: light dark;
           }
           @media (prefers-color-scheme: dark) {

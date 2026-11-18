@@ -352,7 +352,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   @media (min-width: 761px) {
     .dd-legend { position: absolute; top: 100%; left: 0; right: 0; }
   }
-  .dd-cut-key { color: var(--accent); font-weight: 600; }
+  .dd-cut-key { color: var(--accent); font-weight: var(--w-strong); }
 
   /* Marks: invisible until the toggle is on (the legend shows them always). */
   .dd-reworded, .dd-typo, .dd-added { transition: background-color .2s, text-decoration-color .2s; }
@@ -371,7 +371,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   html.dd-on .prose .dd-cut { display: inline-block; position: relative; width: 0; }
   html.dd-on .prose .dd-cut::before {
     content: '‸'; position: absolute; left: 0; bottom: -.15em; transform: translateX(-50%);
-    color: var(--accent); font-weight: 700; cursor: help;
+    color: var(--accent); font-weight: calc(var(--w-strong) + 100); cursor: help;
   }
   html.dd-on .prose .dd[data-h] { cursor: help; }
   html.dd-on .prose .dd.is-hot.dd-reworded { background: color-mix(in srgb, var(--accent) 36%, transparent); }

@@ -87,7 +87,7 @@ const groups = groupByYear(all.filter((p) => p !== lead));
   /* Co-authors muted, my name bold in ink; the venue below is ink italic,
      so the two never run together. */
   .list .authors { color: var(--muted); margin-top: .3rem; }
-  .author.me { color: var(--ink); font-weight: 650; }
+  .author.me { color: var(--ink); font-weight: calc(var(--w-strong) + 50); }
   .lead-authors { display: block; color: var(--muted); font-size: .9rem; margin-top: .5rem; }
   .actions a { text-decoration: underline; text-decoration-color: var(--line); }
   .actions a:hover { text-decoration-color: var(--accent); }
