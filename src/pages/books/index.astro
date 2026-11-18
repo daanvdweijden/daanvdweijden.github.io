@@ -134,6 +134,13 @@ let coverIndex = 0;
 </Layout>
 
 <script>
+  import { countUp, cascade } from '../../lib/cascade';
+
+  // Entrance, the reading log's version of the puzzle charts drawing in: the
+  // stats count up, each year's covers land one after another.
+  countUp(document.querySelectorAll<HTMLElement>('.stats dd'));
+  cascade([...document.querySelectorAll<HTMLElement>('.book-card')]);
+
   const tip = document.getElementById('book-tip');
   const tipTitle = document.getElementById('tip-title');
   const tipAuthor = document.getElementById('tip-author');
