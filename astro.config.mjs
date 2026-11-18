@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 // Pages marked `noindex` in their <Layout> (the footer easter eggs) are kept
 // out of the sitemap too, so crawlers get one consistent signal.
 // Unlisted notes (`unlisted: true` in their frontmatter) are added below.
-const NOINDEX = ['/puzzles/', '/books/', '/music/', ...unlistedNotes()];
+const NOINDEX = ['/puzzles/', '/books/', '/music/', '/colophon/', ...unlistedNotes()];
 
 /** /notes/<slug>/ for every note whose frontmatter says `unlisted: true`. */
 function unlistedNotes() {

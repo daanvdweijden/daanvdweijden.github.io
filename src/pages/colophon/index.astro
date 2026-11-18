@@ -1,0 +1,95 @@
+---
+// Colophon: how this site is made. Reached only from the name in the footer;
+// kept out of search engines and the sitemap (see NOINDEX in astro.config).
+import Layout from '../../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
+const gh = 'https://github.com/daanvdweijden';
+---
+
+<Layout title="Colophon" description="How this site is made." noindex>
+  <main class="wrap">
+    <section class="row page-head" data-reveal>
+      <div></div>
+      <div>
+        <h1 class="page-title">Colophon</h1>
+        <p class="page-intro">
+          How this site is made, for anyone who clicked my name to find out.
+        </p>
+      </div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Built with</h2>
+      <div class="prose">
+        <p>
+          <a href="https://astro.build">Astro</a>, as a fully static site: every page,
+          chart and number is worked out at build time, and nothing is fetched
+          from a server while you read. It is hosted on GitHub Pages.
+        </p>
+        <p>
+          Scrolling and the animations that come with it run on <a href="https://gsap.com">GSAP</a>. Charts are drawn with <a href="https://observablehq.com/plot/">Observable Plot</a>, and maps with d3-geo.
+        </p>
+        <p>
+          I built it together with <a href="https://claude.com/claude-code">Claude Code</a>, which wrote much of the code from my sketches, ideas and corrections.
+        </p>
+      </div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Type and colour</h2>
+      <div class="prose">
+        <p>
+          One typeface, <a href="https://fonts.google.com/specimen/Archivo">Archivo</a>,
+          in its variable cut, for everything.
+        </p>
+        <p>
+          Two colours, Burnt Orange and Grayish Blue, both named and paired in <a href="https://tokoro.ch/en/collections/vendors?q=Seigensha">Seigensha</a>'s <i>A Dictionary of Color Combinations</i>, Vol. 1. The work pages show orange on blue, the personal pages swap them, and the switch in the footer lets you pick one for the whole site.
+        </p>
+      </div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Where the content comes from</h2>
+      <div class="prose">
+        <p>
+          Publications are a BibTeX file, formatted with citation.js. The <a href={`${base}cv/`}>CV</a> page is a summary; the PDF is built from LaTeX
+          in its own repository, whose CI drops the result here.
+        </p>
+        <p>
+          The personal pages are logs that keep themselves:
+        </p>
+        <ul>
+          <li><a href={`${base}puzzles/`}>Puzzles</a>: scores from the NYT Games, NRC puzzles and Minute Cryptic, fetched every hour by a GitHub Action (<a href={`${gh}/nyt-games-tracker`}>nyt-games-tracker</a>, <a href={`${gh}/nrc-puzzel-tracker`}>nrc-puzzel-tracker</a>) and kept on a branch of their own.</li>
+          <li><a href={`${base}books/`}>Books</a>: my Goodreads shelf, read at build time.</li>
+          <li><a href={`${base}music/`}>Music</a>: my lifetime listening from stats.fm, read at build time.</li>
+        </ul>
+        <p>
+          The site rebuilds on every change, after new puzzle data, and once a
+          day regardless.
+        </p>
+      </div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">History</h2>
+      <div class="prose">
+        <p>
+          The first commit is from July 2024. The site has been Jekyll and Hugo
+          before it was Astro, and the current design went live in November 2026.
+        </p>
+      </div>
+    </section>
+
+    <section class="row" data-reveal>
+      <h2 class="label">Privacy</h2>
+      <div class="prose">
+        <p>
+          No analytics and no trackers. The one thing this site remembers about
+          you is your colour-scheme choice, if you make one, kept in your own
+          browser. Fonts and images are served from here, not from third parties.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
