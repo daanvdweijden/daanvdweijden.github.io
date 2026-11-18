@@ -693,7 +693,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
       const stretch = { sx: 0 as any, sy: 0 as any };
       // A bubble over link `a`, at (x, y) to start with (shared by hover and
       // the tap on touch screens, where it is what the text gradient follows).
-      const makeBubble = (a: HTMLAnchorElement, next: string, f: { r: number; cx: number; cy: number }, x: number, y: number) => {
+      const makeBubble = (a: HTMLAnchorElement, next: string, f: { r: number; cx: number; cy: number }, x: number, y: number, full = false) => {
         dropBubble();
         const el = document.createElement('div');
         el.className = 'ink-bubble';
@@ -704,7 +704,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         el.append(blob);
         document.body.append(el);
         gsap.set(el, { xPercent: -50, yPercent: -50, x: f.cx, y: f.cy, rotation: 0, scaleX: 1, scaleY: 1 });
-        gsap.fromTo(blob, { scale: 0 }, { scale: 1, duration: 0.35 });
+        if (full) gsap.set(blob, { scale: 1 }); else gsap.fromTo(blob, { scale: 0 }, { scale: 1, duration: 0.35 });
         InertiaPlugin.track(el, 'x,y');
         stretch.sx = gsap.quickTo(el, 'scaleX', { duration: 0.25 });
         stretch.sy = gsap.quickTo(el, 'scaleY', { duration: 0.25 });
@@ -789,7 +789,7 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
         // the gradient and the spill grows out of it like on desktop.
         if (bubble?.a !== a && !hover) {
           const f = fit(a);
-          if (f) { const [tx, ty] = origin(e, a); makeBubble(a, next, f, f.cx + (tx - f.cx) * PULL, f.cy + (ty - f.cy) * PULL); }
+          if (f) { const [tx, ty] = origin(e, a); makeBubble(a, next, f, f.cx + (tx - f.cx) * PULL, f.cy + (ty - f.cy) * PULL, true); }
         }
         // Grow out of the hover bubble when there is one, else from the click.
         let x: number, y: number, r0 = 0;
