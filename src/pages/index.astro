@@ -33,8 +33,8 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
         <img src={`${base}${site.avatar}`} alt={`Portrait of ${site.name}`} width="800" height="800" />
       </figure>
       <h1 class="lede">
-        I research how artificial intelligence can strengthen democracy, and
-        how it can undermine it.
+        I research how artificial intelligence can strengthen democracy,<br class="lede-break" />
+        and how it can undermine it.
       </h1>
     </section>
 
@@ -185,5 +185,6 @@ const personJson = jsonLd({ '@context': 'https://schema.org', ...personLd(Astro.
   @media (max-width: 760px) {
     .row.hero { row-gap: 2rem; }
     .portrait { width: min(100%, 20rem); }
+    .lede-break { display: none; }
   }
 </style>
