@@ -1,4 +1,7 @@
 #!/bin/sh
+# Keep the colophon's commit count current (see scripts/count_commits.sh).
+sh scripts/count_commits.sh || exit 1
+
 # Compress staged images (see scripts/compress_images.mjs) and re-stage them.
 files=$(git diff --cached --name-only --diff-filter=AM | grep -iE '\.(jpe?g|png|webp)$')
 [ -z "$files" ] && exit 0

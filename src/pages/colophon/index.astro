@@ -2,9 +2,15 @@
 // Colophon: how this site is made. Reached only from the name in the footer;
 // kept out of search engines and the sitemap (see NOINDEX in astro.config).
 import Layout from '../../layouts/Layout.astro';
+import commitData from '../../data/commits.json';
 
 const base = import.meta.env.BASE_URL;
 const gh = 'https://github.com/daanvdweijden';
+
+// Commits so far, leaving out the automated puzzle-data fetches. The number is
+// stored, not worked out at build time, so deploys need no git history: the
+// pre-commit hook rewrites it (scripts/count_commits.sh).
+const commits = commitData.count;
 ---
 
 <Layout title="Colophon" description="How this site is made." noindex>
@@ -77,6 +83,8 @@ const gh = 'https://github.com/daanvdweijden';
         <p>
           The first commit is from July 2024. The site has been Jekyll and Hugo
           before it was Astro, and the current design went live in November 2026.
+          It is {commits.toLocaleString('en-GB')} commits in, not counting the
+          automated puzzle fetches.
         </p>
       </div>
     </section>
