@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-18",
+  "generated": "2026-11-19",
   "mini_streak": 404,
   "game_meta": {
     "crux": {
@@ -60,10 +60,12 @@
       "date": "2026-11-18",
       "played": [
         "mini",
+        "midi",
         "wordle",
         "minutecryptic",
         "briljant",
-        "crux"
+        "crux",
+        "vorto"
       ]
     },
     {
@@ -565,7 +567,6 @@
       "played": [
         "mini",
         "minutecryptic",
-        "crux",
         "precies-vier",
         "sudoku"
       ]
