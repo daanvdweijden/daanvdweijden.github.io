@@ -109,6 +109,9 @@ def main() -> None:
     if not os.path.exists(os.path.join(DATA, ".git")):
         sys.exit("data/ isn't checked out. Run `npm run data:pull` first.")
     if not args.no_push:
+        # books.json is rewritten below anyway; drop a leftover from an earlier
+        # --no-push or failed run so the pull isn't blocked by it.
+        subprocess.run(["git", "-C", DATA, "checkout", "-q", "--", "books.json"], check=True)
         subprocess.run(["git", "-C", DATA, "pull", "-q", "--ff-only", "origin", "puzzle-data"], check=True)
 
     path = args.export or newest_export()
