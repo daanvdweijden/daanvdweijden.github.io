@@ -36,7 +36,9 @@ const formatDate = (dateStr: string | null) => {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 };
-const stars = (n: number) => (n > 0 ? `${'★'.repeat(n)}${'☆'.repeat(5 - n)}` : '');
+// Goodreads allows half stars (4.5), drawn as ★★★★½.
+const stars = (n: number) =>
+  n > 0 ? `${'★'.repeat(Math.floor(n))}${n % 1 ? '½' : ''}${'☆'.repeat(5 - Math.ceil(n))}` : '';
 
 let coverIndex = 0;
 ---
@@ -48,7 +50,7 @@ let coverIndex = 0;
       <div>
         <h1 class="page-title">Reading log</h1>
         <p class="page-intro">
-          A running list of books I've read, fetched straight from my Goodreads. Reviews are in Dutch only.
+          A running list of books I've read, exported from my Goodreads. Reviews are in Dutch only.
         </p>
       </div>
     </section>
@@ -154,8 +156,8 @@ let coverIndex = 0;
       tipAuthor.textContent = `by ${data.author || ''}`;
       tipDate.textContent = `Finished ${data.date || ''}`;
 
-      const rating = parseInt(data.rating || '0', 10);
-      tipRating.textContent = rating > 0 ? '★'.repeat(rating) : '';
+      const rating = parseFloat(data.rating || '0');
+      tipRating.textContent = rating > 0 ? '★'.repeat(Math.floor(rating)) + (rating % 1 ? '½' : '') : '';
 
       // Stays pointer-events: none (as the stylesheet has it): the tip is
       // parked right over the cover it describes, and anything clickable here
@@ -240,8 +242,10 @@ let coverIndex = 0;
       author.textContent = `by ${data.author || ''}`;
       date.textContent = `Finished ${data.date || ''}`;
 
-      const stars = parseInt(data.rating || '0', 10);
-      rating.textContent = stars > 0 ? '★'.repeat(stars) + '☆'.repeat(5 - stars) : '';
+      const stars = parseFloat(data.rating || '0');
+      rating.textContent = stars > 0
+        ? '★'.repeat(Math.floor(stars)) + (stars % 1 ? '½' : '') + '☆'.repeat(5 - Math.ceil(stars))
+        : '';
       rating.setAttribute('aria-label', stars > 0 ? `${stars} out of 5 stars` : '');
 
       // Already sanitized to an allowlist at build time (see lib/books.ts), so

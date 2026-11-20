@@ -66,6 +66,8 @@ export default defineConfig({
       { protocol: 'https', hostname: 'i.scdn.co' },
       { protocol: 'https', hostname: '**.gr-assets.com' },
       { protocol: 'https', hostname: '**.goodreads.com' },
+      // New Goodreads covers (og:image, see scripts/import_goodreads.py).
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
     ],
   },
   integrations: [

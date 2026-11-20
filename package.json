@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "thumbs": "python3 scripts/build_thumbs.py",
     "data:pull": "bash scripts/pull_data.sh",
+    "books": "python3 -I scripts/import_goodreads.py",
     "images": "node scripts/compress_images.mjs"
   },
   "dependencies": {

@@ -97,20 +97,22 @@ you need directly (from wherever you've cloned those two repos) with
 `puzzle-data` branch, commit any local results from inside it
 (`git -C data commit ...`).
 
-## Books cache
+## Books
 
-`/books` reads the Goodreads RSS feed at build time. That feed is flaky — rate
-limits, 5xx, and the occasional valid-but-empty shelf — and any of those used
-to blank the page until the next deploy.
+`/books` is built from `data/books.json`, on the **`puzzle-data` branch** with
+the puzzle data, so a commit per finished book doesn't clutter `main`.
 
-So `src/lib/books.ts` snapshots every good fetch to `data/books.json` and falls
-back to it when the feed misbehaves (an empty shelf counts as misbehaving; the
-read shelf is never legitimately empty). It rides on the **`puzzle-data`
-branch** with the puzzle data, for the same reason — a snapshot commit per
-finished book shouldn't clutter `main`. `deploy.yml` pushes the refreshed file
-back after each build, and that step is `continue-on-error`: a stale snapshot
-beats a skipped deploy.
+It used to read the Goodreads RSS feed at build time, but Goodreads switched its
+feeds off in November 2026 and shelf pages need a login, so the file now comes
+from a Goodreads library export:
 
-A fresh clone that skips `npm run data:pull` has no snapshot, so a failing feed
-there renders `/books` empty — same as before. Local builds write the file into
-the worktree; leave it uncommitted unless you want to seed the branch by hand.
+1. Goodreads → My Books → Import and export → Export Library, and download it.
+2. `npm run books` (newest `goodreads_library_export*.csv` in ~/Downloads), or
+   `npm run books -- path/to/export.csv`.
+
+`scripts/import_goodreads.py` keeps only the read shelf and the fields the page
+shows (private notes and other shelves stay on your machine), keeps the covers
+already in the file and looks up new ones on the public Goodreads book page,
+then commits and pushes `books.json` and starts a deploy. `--no-push` only
+writes the file. Review markup is sanitized at build time in
+`src/lib/books.ts`.
