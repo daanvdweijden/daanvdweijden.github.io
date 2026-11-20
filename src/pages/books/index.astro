@@ -85,7 +85,7 @@ let coverIndex = 0;
               </span>
               <span id="review-date">Finished {formatDate(latestReview.readAt || latestReview.addedAt)}</span>
             </p>
-            <div class="review-text" id="review-text" set:html={latestReview.reviewHtml} />
+            <div class="review-text" id="review-text" lang="nl" set:html={latestReview.reviewHtml} />
           </div>
         </div>
       </section>
@@ -128,7 +128,6 @@ let coverIndex = 0;
       <p id="tip-title" class="tip-title">Title</p>
       <p id="tip-author" class="tip-sub">Author</p>
       <p class="tip-sub"><span id="tip-rating" class="tip-rating"></span> <span id="tip-date">Date</span></p>
-      <p id="tip-hint" class="tip-hint">Click to read the review</p>
     </div>
   </main>
 </Layout>
@@ -146,9 +145,8 @@ let coverIndex = 0;
   const tipAuthor = document.getElementById('tip-author');
   const tipDate = document.getElementById('tip-date');
   const tipRating = document.getElementById('tip-rating');
-  const tipHint = document.getElementById('tip-hint');
 
-  if (tip && tipTitle && tipAuthor && tipDate && tipRating && tipHint) {
+  if (tip && tipTitle && tipAuthor && tipDate && tipRating) {
     const show = (el: Element) => {
       const data = (el as HTMLElement).dataset;
 
@@ -158,10 +156,6 @@ let coverIndex = 0;
 
       const rating = parseInt(data.rating || '0', 10);
       tipRating.textContent = rating > 0 ? '★'.repeat(rating) : '';
-
-      // The review itself lives in the review row — the tip just says
-      // whether there's one to open.
-      tipHint.textContent = data.reviewHtml ? 'Click to read the review' : 'No review for this one';
 
       // Stays pointer-events: none (as the stylesheet has it): the tip is
       // parked right over the cover it describes, and anything clickable here
@@ -254,11 +248,15 @@ let coverIndex = 0;
       // the markup — paragraph breaks, links, blockquotes — survives intact.
       const html = data.reviewHtml || '';
       text.innerHTML = html;
+      // Reviews are written in Dutch; the fallback line is English like the
+      // rest of the page, so the lang tag follows whichever is showing.
       if (!html) {
         text.textContent = "I didn't write a review for this one.";
         text.classList.add('is-empty');
+        text.setAttribute('lang', 'en');
       } else {
         text.classList.remove('is-empty');
+        text.setAttribute('lang', 'nl');
       }
 
       if (data.image) {
@@ -507,10 +505,6 @@ let coverIndex = 0;
   .tip-title { font-size: 1rem; line-height: 1.25; }
   .tip-sub { color: var(--muted); font-size: .85rem; margin-top: .2rem !important; }
   .tip-rating { color: var(--ink); }
-  .tip-hint {
-    color: var(--muted); font-size: .8rem;
-    border-top: 1px solid var(--line); margin-top: .6rem !important; padding-top: .5rem;
-  }
 
   @media (max-width: 760px) {
     .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
