@@ -226,3 +226,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-11-17,23563,midi,Avery Gee Katz and Aaron Gee,Finish First,485,8:05,100,True,1794915922,,,True,True,0,0,0,autocheck
 2026-11-18,24342,midi,Ian Livengood,Temps are Dropping,414,6:54,100,True,1795039755,,,False,False,0,0,0,clean
 2026-11-19,24449,midi,Victor Schmitt,Out of Thin Air,533,8:53,100,True,1795093403,,,True,True,0,1,0,checked
+2026-11-20,24224,midi,Nguhi Ross and Erik Agard,Now in Color,407,6:47,100,True,1795181547,,,False,False,0,0,0,clean
