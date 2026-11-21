@@ -1,9 +1,9 @@
 {
-  "snapshot_date": "2026-11-20",
-  "streak": 13,
+  "snapshot_date": "2026-11-21",
+  "streak": 0,
   "totalSolved": 229,
   "totalCommunitySolved": 143,
-  "crossWordBenchmarkStreakScore": -26,
+  "crossWordBenchmarkStreakScore": 0,
   "crossWordBenchmarkTotalScore": -261,
   "crossWordBenchmarkScoreDistribution": {
     "0": 10,
@@ -19,7 +19,7 @@
     "-3": 35,
     "-4": 3
   },
-  "communityStreakScore": -17,
+  "communityStreakScore": 0,
   "communityTotalScore": -156,
   "communityScoreDistribution": {
     "0": 15,
