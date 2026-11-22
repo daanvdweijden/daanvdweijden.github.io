@@ -29,6 +29,11 @@ export const LEAVE = 'power2.in';
 // #smooth-wrapper/#smooth-content elements are in Layout.astro.
 const root = document.documentElement;
 if (window.innerHeight === 0) root.classList.remove('smooth');
+// Some phone browsers (Brave on Android) report a fine pointer, so the head
+// script turned smooth on. ScrollSmoother does nothing on a touch-only device
+// (smoothTouch: false), but html.smooth would still switch the scrolly from
+// CSS sticky to a pin that never engages: the chart slides off the top.
+if (ScrollTrigger.isTouch === 1) root.classList.remove('smooth');
 if (root.classList.contains('smooth') && document.getElementById('smooth-content')) {
   ScrollSmoother.create({
     wrapper: '#smooth-wrapper',
