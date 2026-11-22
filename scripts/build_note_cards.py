@@ -26,7 +26,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 NOTES = ROOT / "src" / "content" / "notes"
 OUT = ROOT / "public" / "notes" / "og"
-FONT = ROOT / "node_modules" / "@fontsource-variable" / "archivo" / "files" / "archivo-latin-wght-normal.woff2"
+# Same file the site loads (allo-font, "friendly" cut); axes: optical size, weight.
+FONT = ROOT / "node_modules" / "allo-font" / "fonts" / "webfonts" / "AlloVariableFriendly.woff2"
 
 # Personal-side palette from src/layouts/Layout.astro (the swapped theme).
 BG = "#7d300e"     # --bg
@@ -37,9 +38,10 @@ DEK_SCALE = 0.7  # dek size relative to the title
 DEK_MAX_LINES = 2  # longer deks get a warning: shorten them in the note
 
 
-def font(size: int, weight: int = 400) -> ImageFont.FreeTypeFont:
+def font(size: int, weight: int = 410) -> ImageFont.FreeTypeFont:
+    """Allo at the site's display weight; optical size follows the size, like the browser's auto opsz."""
     f = ImageFont.truetype(str(FONT), size)
-    f.set_variation_by_axes([weight])
+    f.set_variation_by_axes([max(9, min(32, size)), weight])
     return f
 
 

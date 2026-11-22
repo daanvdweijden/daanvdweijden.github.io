@@ -1,0 +1,172 @@
+---
+title: "Going Down the Garden Path"
+dek: "Taking a trip down (linguistic) memory lane."
+date: 2026-11-22
+tags: [language, llm]
+draft: false
+---
+
+import { Image } from 'astro:assets';
+import Aside from '../../../components/notes/Aside.astro';
+import Chart from '../../../components/notes/Chart.astro';
+import Figure from '../../../components/notes/Figure.astro';
+import Hue from '../../../components/notes/Hue.astro';
+import Ref from '../../../components/notes/Ref.astro';
+import Scrolly from '../../../components/notes/Scrolly.astro';
+import Step from '../../../components/notes/Step.astro';
+import Own from '../../../components/notes/Own.astro';
+import Pic from '../../../components/notes/Pic.astro';
+import fatPeople from './data/fat-people.json';
+import nextWords from './data/next-words.json';
+import attention from './data/attention.json';
+import notesMargei from './img/notes-margei.jpg';
+import notesNoah from './img/notes-noah.jpg';
+import notesBart from './img/notes-bart.jpg';
+import uetliberg from './img/uetliberg.jpg';
+
+<p><Own>Try reading the following sentence:</Own></p>
+
+{/* Paragraph margins don't collapse here (grid), and the line above already has 1.1rem below it: 1.4rem + 1.1rem = 2.5rem, same as below. */}
+<p style={{ margin: '1.4rem 0 2.5rem', fontSize: '1.3em' }}><strong>Fat people eat accumulates.</strong></p>
+
+Now either you're wondering what snack is named 'accumulates', or you reread the sentence to figure out that it does actually make sense grammatically. It might take some time to unfold its meaning, but try to do so before reading further.
+
+Instead of talking about 'fat people' eating 'something', it's rather 'fat **that** people eat accumulates'. It's the fat that is accumulating, not the person. Reading this sentence for the first time threw me off guard, and it took me quite some brainpower to be able to reread it normally.
+
+This phenomenon is called a [*garden path sentence*](https://en.wikipedia.org/wiki/Garden-path_sentence), and it's something I encountered a lot in my studies. What makes it interesting is that it gives us some insight into how we parse sentences in our head, as we are making assumptions about what words are coming up, and grouping them on the fly instead of waiting for the whole sentence to finish.
+
+<Aside n={1}>
+At least what decoder-only models do. And of course not looking at the post-training steps (RLHF, DPO etc.).
+</Aside>
+
+Interestingly (to me at least), this predictive nature is exactly what most language models currently do as well.<Ref n={1} /> And in comparison to humans, we can actually look into the 'brain' of these models to see how surprised they are when they encounter this linguistic rarity.
+
+## Garden paths
+
+Back to garden path sentences (and for me back to my humble UU beginnings). In order to explain how these sentences work, we have to look at how sentences are usually constructed. Sentences are made up of individual parts that merge together through grammar to make a complete sentence. One way to visualise how such a sentence is constructed is through *constituency graphs*, which essentially show you to which group (or constituent) each word belongs. The easiest way is to just go through the example from before:
+
+<Scrolly>
+  <Chart slot="graphic" name="gardenTree" data={fatPeople} height={340} alt="A syntax tree for 'Fat people eat accumulates' that grows word by word, expects a noun like 'hamburgers' after 'eat', gets stuck on 'accumulates', falls apart, and is rebuilt as 'the fat (that) people eat accumulates'." />
+  <Step>*Fat*. An adjective. We need a bit more to form a sentence (unless you're insulting someone, I guess).</Step>
+  <Step>*people*. Fat people: an adjective and a noun, together a noun phrase.</Step>
+  <Step>*eat*: a verb, so fat people eat… something. You already have a slot ready for what they eat: hamburgers, salads, nuts…</Step>
+  <Step>*accumulates*. That's a verb, not a noun, and it <Hue>doesn't fit the slot</Hue>. This is where your brain has to stop, and has to go back to recover.</Step>
+  <Step>So you back up. The tree comes apart, and you start doubting the words you were sure of. What was *Fat* doing there?</Step>
+  <Step>*Fat* wasn't an adjective, it was the noun: <Hue>the fat (that) people eat</Hue>. *eat* moves down into a relative clause about the fat, and *accumulates* is the verb the sentence was waiting for.</Step>
+  <Step>Fat (that) people eat accumulates. You can finally rest again.</Step>
+</Scrolly>
+
+Isn't that fascinating? I always thought these sentences were super cool, and creating these graphs felt like solving a puzzle. At some point I would say the logic behind these graphs starts to fall apart, as there are a lot of clauses being swapped once you start with subsentences, relative clauses and internal references. I was able to dig up some of the (insane) graphs we had to create, all while having to convince everyone that linguistics was more than just learning grammar.
+
+<Figure width="text" caption="A selection of notes I could find in conversations with fellow linguistics students back in the day. Shoutout Moon People (Koen Maarten & Fleur)." source="My own notes, 2018">
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+    <Image src={notesMargei} alt="A hand-drawn syntax tree so long that it wraps onto a second line of the page, for a sentence about Margei asking whether Homer said that Lisa wanted to visit next week." style={{ gridColumn: '1 / -1', width: '100%', height: 'auto' }} />
+    <Image src={notesNoah} alt="A pen-drawn syntax tree on lined paper for 'Noah wonders which picture of himself Carlos likes best'." style={{ width: '100%', height: 'auto' }} />
+    <Image src={notesBart} alt="A pen-drawn syntax tree on lined paper for a sentence where Bart is coaxed to leave, with an arrow showing a moved word." style={{ width: '100%', height: 'auto' }} />
+  </div>
+</Figure>
+
+Anyway, back to garden paths. There are many more versions, and they don't only appear in English. English has a few different versions though, while languages like Dutch or German essentially only have one kind of structure that allows it: the so-called 'conjunction coordination', or simply using 'and' in a surprising manner.
+
+<div class="wide garden-table" style={{ margin: '3rem 0', padding: '1.25rem 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
+
+| Language | Garden path | With the right brackets |
+| --- | --- | --- |
+| English | The <Hue>old man</Hue> <Hue second>the</Hue> boat. | [The old] [man the boat]. |
+| Dutch | De sheriff zag de indiaan en <Hue>de cowboy</Hue> <Hue second>bespeurde</Hue> het paard. | [De sheriff zag de indiaan] en [de cowboy bespeurde het paard]. |
+| German | Der Tourist fotografiert den Kellner und <Hue>die Reiseleiterin</Hue> <Hue second>filmt</Hue> die Basilika. | [Der Tourist fotografiert den Kellner] und [die Reiseleiterin filmt die Basilika]. |
+
+</div>
+
+<Aside n={2}>
+I could technically look up a reference for these claims, but since I'm just writing this for fun, you just gotta believe me.
+</Aside>
+
+There has been a lot of psycholinguistic research about what goes on in the brain when people encounter such sentences.<Ref n={2} /> Now I thought I was the only one who had made the connection to the way current language models generate (token by token), but of course I was wrong. I was first a bit disappointed (like always, everything you thought of has already been done), but then I realised I could just use their work to explore for myself. Win-win.
+
+There were some English datasets available, but I ideally wanted to compare the results with Dutch and German, as I am (too) slowly turning into a true trilingual. Through some digging in OSF I found a Dutch dataset, and could just translate that into a German one to see how well it performs. Then my small experiment is quite simple: run these sentences through the model word for word, look at the probability of the next word, and see how 'surprised' the model is after seeing the unexpected word.
+
+<Figure
+  title="Model Gets Sent Down the Garden Path"
+  caption="The word in hue is the one that really comes; when it isn't among the top guesses, the list scrolls down to it (‘no.’ is its place on the list)."
+  source="Own analysis, EuroLLM-1.7B"
+  width="wide"
+>
+  <Chart name="nextWords" data={nextWords} height={330} alt="The sentence 'Fat people eat accumulates' builds up word by word. After each word, bars show the model's top guesses for the next one. After 'Fat people eat' the model expects 'more' (26%), and 'accumulates' has a chance of 1 in 16 million." />
+</Figure>
+
+### Looking inside the brain
+
+<Aside n={3}>
+Not that someone thought a model of 1.7B (or even 0.5B) parameters would be close, but still.
+</Aside>
+
+Well, turns out we're not yet near AGI.<Ref n={3} /> All models are surprised to see the word pop up, across languages and across types of garden paths. Some sentences worked better than others, which is probably due to the fact that some are just more famous examples ("The horse raced past the barn fell"). The one in our example is clearly not obvious though, as the expected next token is much less likely than in the control sentence.
+
+Now I realised I don't actually care about these numbers or the tables they produced. I just want to see what the model 'thinks' when it sees such sentences, and looking at the aggregate scores, or which model is better than the other, is something I just do in my job, but I (luckily) don't have to follow those rules here. So let's just stick with our example sentence for now.
+
+<Aside n={4}>
+Anthropic has gone to market for a whopping 1.5 million million.
+</Aside>
+
+<Aside n={5}>
+This is quite a claim, but my [<Pic id="chomsky">Chomskian</Pic>](https://en.wikipedia.org/wiki/Noam_Chomsky) education is biasing me towards the existence of a universal grammar. I don't think it's really the case, and I am sure models don't really use grammar but rather rely on distributional semantics, but it at least connects my graphs from earlier to the attention in transformer models.
+</Aside>
+
+The nice thing with models is that, similar to eye-tracking data in humans, we can actually see what the model is paying attention to. This 'attention' is what essentially started (or at least was quite a big turnaround in) the neural language model hype, which was the first domino to the largest IPO in the world.<Ref n={4} /> Anyway, attention is essentially the model linking words together, or you could argue it's creating its own *constituents* (like we had in the graph from before).<Ref n={5} />
+
+Let's look at our example again, and compare it to the version that has **that**. We look at the *attention* the model has related to each preceding word, which is essentially what the model is looking at when it reads the next word.
+
+<Scrolly>
+  <Chart slot="graphic" name="attentionArcs" data={{ ...attention, steps: ['people', 'eat', 'accumulates', 'body'] }} height={360} alt="Arcs from each word back to earlier words in 'Fat people eat accumulates in the body' and 'Fat that people eat accumulates in the body'. At 'accumulates', the garden path gives 36% of its attention to 'Fat' and 16% to 'people'; with 'that', 'people' gets 2%." />
+  <Step>The garden path on top, the version with *that* below. The thicker the arc, the more attention. *people* looks back at *Fat*: fat describes people.</Step>
+  <Step>*eat* looks back at *people*: people are the ones eating.</Step>
+  <Step>*accumulates* mostly finds *Fat*, the right answer. But <Hue>*people* still gets 16%</Hue>, against <Hue second>2%</Hue> with *that*.</Step>
+  <Step>By *body* it's mostly back on track, but *people* still hangs on.</Step>
+</Scrolly>
+
+<Aside n={6}>
+I think there is a joke here with memory **lane** and garden **path**, but I can't think of one. Be my guest!
+</Aside>
+
+### The real garden path
+
+What a trip down memory lane.<Ref n={6} /> I have to say that even though I miss the pre-LLM (computational) linguistics, I am also grateful I never have to draw these graphs anymore. Doing it now made me happy though, and being able to connect my current work a bit to my past made me realise how much this domain has changed. At the same time, I would never have had the time to set up the testing environment this quickly, or create the animations to visualise my intuition, if it wasn't for the field evolving the way that it has.
+
+Hope it was half as interesting to read as it was to write. I'm off touching grass (cringe) on a real garden path, climbing up the Uetliberg instead of spending more hours behind my screen.
+
+<Figure width="text" caption="The Uetliberg in fall, last year." source="My own photo, 2025">
+  <Image src={uetliberg} alt="A forest path of wooden steps covered in brown fallen leaves, winding down a steep slope between bare trees, with the city faintly visible below." style={{ width: '100%', height: 'auto' }} />
+</Figure>
+
+<p><Own>Here are the numbers of the analysis anyway, but as you can see the chosen sentence was chosen for a reason. Something something cherry picking?</Own></p>
+
+<Figure
+  title="Every model trips, in every language"
+  caption="How many times less likely the trap word is than without the trap. The 120 Dutch ‘and’ sentences from Frank & Hoeks, translated; the last column is our example. German ‘der’ gives the trap away (the object would be ‘den’), ‘die’ and ‘das’ don’t."
+  source="Own analysis"
+>
+
+<div style={{ padding: '1.25rem 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
+<table style={{ width: '100%' }}>
+  <thead>
+    <tr><th style={{ textAlign: 'left' }}>Model</th><th style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>English</th><th style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>Dutch</th><th style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>German (<em>die</em>/<em>das</em>)</th><th style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>German (<em>der</em>)</th><th style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}><em>Fat people eat accumulates</em></th></tr>
+  </thead>
+  <tbody>
+    <tr><td>EuroLLM-1.7B</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>3.2×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>4.7×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>6.2×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>1.3×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>31,000×</td></tr>
+    <tr><td>Qwen2.5-0.5B</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>8.0×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>5.0×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>13×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>8.5×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>48,000×</td></tr>
+    <tr><td>Qwen2.5-1.5B</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>6.2×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>7.0×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>11×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>7.4×</td><td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>30,000×</td></tr>
+  </tbody>
+</table>
+</div>
+
+</Figure>
+
+## Technical report
+
+- **Data**: Dutch sentences from [Frank & Hoeks](https://osf.io/zwucv/), translated into English and German; classic English sentences from [Jurayj et al.](https://github.com/wjurayj/garden-path-gpt2)
+- **Models**: [EuroLLM-1.7B](https://huggingface.co/utter-project/EuroLLM-1.7B) and [Qwen2.5](https://huggingface.co/Qwen/Qwen2.5-1.5B) (0.5B and 1.5B), base versions, run locally. The charts use EuroLLM; the attention is from the 8 heads that best link a verb to its subject.
+- **References**: [Ferreira et al. (2001)](https://link.springer.com/article/10.1023/A:1005290706460), [Jurayj et al. (2022)](https://aclanthology.org/2022.blackboxnlp-1.25.pdf), [Amouyal et al. (2025)](https://arxiv.org/pdf/2502.09307), [Lee & Shin (2025)](https://openurl.ebsco.com/EPDB%3Agcd%3A13%3A6496237/detailv2?sid=ebsco%3Aplink%3Acrawler-gcd&id=ebsco%3Agcd%3A190562211&crl=c&jrnl=12291374&link_origin=scholar.google.com), the [garden-path-SF dataset](https://github.com/wangdaphne/garden-path-SF-dataset) and a [Reddit thread](https://www.reddit.com/r/linguistics/comments/12bqpr/rlinguistics_give_me_your_best_garden_path/) of favourite garden paths
+- **Picture**: Chomsky from Wikimedia Commons
+- **Code**: Python (`transformers`), [Astro](https://astro.build) and [GSAP](https://gsap.com)
+- **Coding agent**: Claude Opus 5.5 (in Claude Code), which also wrote this technical report

@@ -1,0 +1,504 @@
+[
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat",
+    "tone": "accent"
+   },
+   {
+    "id": "people",
+    "text": "people",
+    "hidden": true
+   },
+   {
+    "id": "eat",
+    "text": "eat",
+    "hidden": true
+   },
+   {
+    "id": "acc",
+    "text": "accumulates.",
+    "hidden": true
+   }
+  ],
+  "roots": [
+   {
+    "depth": 4,
+    "node": {
+     "id": "fat",
+     "label": "Adj",
+     "word": "fat",
+     "tone": "accent",
+     "edge": "accent"
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat"
+   },
+   {
+    "id": "people",
+    "text": "people",
+    "tone": "accent"
+   },
+   {
+    "id": "eat",
+    "text": "eat",
+    "hidden": true
+   },
+   {
+    "id": "acc",
+    "text": "accumulates.",
+    "hidden": true
+   }
+  ],
+  "roots": [
+   {
+    "depth": 1,
+    "node": {
+     "id": "NP",
+     "label": "NP",
+     "kids": [
+      {
+       "id": "fat",
+       "label": "Adj",
+       "word": "fat"
+      },
+      {
+       "id": "people",
+       "label": "N",
+       "word": "people",
+       "tone": "accent",
+       "edge": "accent"
+      }
+     ],
+     "tone": "accent",
+     "edge": "accent"
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat"
+   },
+   {
+    "id": "people",
+    "text": "people"
+   },
+   {
+    "id": "eat",
+    "text": "eat",
+    "tone": "accent"
+   },
+   {
+    "id": "ghost",
+    "text": "hamburgers?",
+    "tone": "faint",
+    "italic": true
+   }
+  ],
+  "roots": [
+   {
+    "depth": 0,
+    "node": {
+     "id": "S",
+     "label": "S",
+     "kids": [
+      {
+       "id": "NP",
+       "label": "NP",
+       "kids": [
+        {
+         "id": "fat",
+         "label": "Adj",
+         "word": "fat"
+        },
+        {
+         "id": "people",
+         "label": "N",
+         "word": "people"
+        }
+       ]
+      },
+      {
+       "id": "VP",
+       "label": "VP",
+       "kids": [
+        {
+         "id": "eat",
+         "label": "V",
+         "word": "eat",
+         "tone": "accent",
+         "edge": "accent"
+        },
+        {
+         "id": "OBJ",
+         "label": "NP",
+         "kids": [
+          {
+           "id": "obj",
+           "label": "N",
+           "word": "ghost",
+           "tone": "faint",
+           "edge": "faint"
+          }
+         ],
+         "tone": "faint",
+         "edge": "faint",
+         "dash": true
+        }
+       ],
+       "tone": "accent",
+       "edge": "accent"
+      }
+     ],
+     "tone": "accent",
+     "edge": "accent"
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat"
+   },
+   {
+    "id": "people",
+    "text": "people"
+   },
+   {
+    "id": "eat",
+    "text": "eat"
+   },
+   {
+    "id": "acc",
+    "text": "accumulates.",
+    "tone": "accent"
+   }
+  ],
+  "roots": [
+   {
+    "depth": 0,
+    "node": {
+     "id": "S",
+     "label": "S",
+     "kids": [
+      {
+       "id": "NP",
+       "label": "NP",
+       "kids": [
+        {
+         "id": "fat",
+         "label": "Adj",
+         "word": "fat"
+        },
+        {
+         "id": "people",
+         "label": "N",
+         "word": "people"
+        }
+       ]
+      },
+      {
+       "id": "VP",
+       "label": "VP",
+       "kids": [
+        {
+         "id": "eat",
+         "label": "V",
+         "word": "eat"
+        },
+        {
+         "id": "OBJ",
+         "label": "NP?",
+         "kids": [
+          {
+           "id": "acc",
+           "label": "V",
+           "word": "acc",
+           "tone": "accent",
+           "edge": "accent"
+          }
+         ],
+         "tone": "accent",
+         "edge": "accent",
+         "dash": true
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat",
+    "tone": "accent"
+   },
+   {
+    "id": "people",
+    "text": "people"
+   },
+   {
+    "id": "eat",
+    "text": "eat"
+   },
+   {
+    "id": "acc",
+    "text": "accumulates."
+   }
+  ],
+  "roots": [
+   {
+    "depth": 4,
+    "node": {
+     "id": "fat",
+     "label": "?",
+     "word": "fat",
+     "tone": "accent",
+     "edge": "accent"
+    }
+   },
+   {
+    "depth": 4,
+    "node": {
+     "id": "people",
+     "label": "N",
+     "word": "people"
+    }
+   },
+   {
+    "depth": 4,
+    "node": {
+     "id": "eat",
+     "label": "V",
+     "word": "eat"
+    }
+   },
+   {
+    "depth": 4,
+    "node": {
+     "id": "acc",
+     "label": "V",
+     "word": "acc"
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat",
+    "tone": "accent"
+   },
+   {
+    "id": "that",
+    "text": "(that)",
+    "tone": "accent",
+    "italic": true
+   },
+   {
+    "id": "people",
+    "text": "people"
+   },
+   {
+    "id": "eat",
+    "text": "eat"
+   },
+   {
+    "id": "acc",
+    "text": "accumulates."
+   }
+  ],
+  "roots": [
+   {
+    "depth": 0,
+    "node": {
+     "id": "S",
+     "label": "S",
+     "kids": [
+      {
+       "id": "NP",
+       "label": "NP",
+       "kids": [
+        {
+         "id": "fat",
+         "label": "N",
+         "word": "fat",
+         "tone": "accent",
+         "edge": "accent"
+        },
+        {
+         "id": "RC",
+         "label": "RC",
+         "kids": [
+          {
+           "id": "that",
+           "label": "C",
+           "word": "that",
+           "tone": "accent",
+           "edge": "accent"
+          },
+          {
+           "id": "NP2",
+           "label": "NP",
+           "kids": [
+            {
+             "id": "people",
+             "label": "N",
+             "word": "people"
+            }
+           ],
+           "tone": "accent",
+           "edge": "accent"
+          },
+          {
+           "id": "VP",
+           "label": "VP",
+           "kids": [
+            {
+             "id": "eat",
+             "label": "V",
+             "word": "eat"
+            }
+           ],
+           "tone": "accent",
+           "edge": "accent"
+          }
+         ],
+         "tone": "accent",
+         "edge": "accent"
+        }
+       ],
+       "tone": "accent",
+       "edge": "accent"
+      },
+      {
+       "id": "VPm",
+       "label": "VP",
+       "kids": [
+        {
+         "id": "acc",
+         "label": "V",
+         "word": "acc",
+         "tone": "accent",
+         "edge": "accent"
+        }
+       ],
+       "tone": "accent",
+       "edge": "accent"
+      }
+     ],
+     "tone": "accent",
+     "edge": "accent"
+    }
+   }
+  ]
+ },
+ {
+  "words": [
+   {
+    "id": "fat",
+    "text": "Fat"
+   },
+   {
+    "id": "that",
+    "text": "(that)",
+    "tone": "faint",
+    "italic": true
+   },
+   {
+    "id": "people",
+    "text": "people"
+   },
+   {
+    "id": "eat",
+    "text": "eat"
+   },
+   {
+    "id": "acc",
+    "text": "accumulates."
+   }
+  ],
+  "roots": [
+   {
+    "depth": 0,
+    "node": {
+     "id": "S",
+     "label": "S",
+     "kids": [
+      {
+       "id": "NP",
+       "label": "NP",
+       "kids": [
+        {
+         "id": "fat",
+         "label": "N",
+         "word": "fat"
+        },
+        {
+         "id": "RC",
+         "label": "RC",
+         "kids": [
+          {
+           "id": "that",
+           "label": "C",
+           "word": "that"
+          },
+          {
+           "id": "NP2",
+           "label": "NP",
+           "kids": [
+            {
+             "id": "people",
+             "label": "N",
+             "word": "people"
+            }
+           ]
+          },
+          {
+           "id": "VP",
+           "label": "VP",
+           "kids": [
+            {
+             "id": "eat",
+             "label": "V",
+             "word": "eat"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "id": "VPm",
+       "label": "VP",
+       "kids": [
+        {
+         "id": "acc",
+         "label": "V",
+         "word": "acc"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ]
+ }
+]
