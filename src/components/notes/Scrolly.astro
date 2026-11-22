@@ -142,6 +142,38 @@
   }
   update();
   ready = true;
+
+  // TEMPORARY: on-phone readout, only with #scrolly-debug in the address.
+  if (location.hash === '#scrolly-debug') {
+    const box = document.createElement('pre');
+    box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;margin:0;padding:6px;font:11px/1.3 monospace;background:#000;color:#0f0;white-space:pre-wrap;pointer-events:none';
+    document.body.appendChild(box);
+    const anc = (el: Element | null) => {
+      const out: string[] = [];
+      for (; el && el !== document.documentElement; el = el.parentElement) {
+        const s = getComputedStyle(el);
+        const odd = [s.overflow !== 'visible' && `ov:${s.overflow}`, s.transform !== 'none' && 'tf', s.contain !== 'none' && `ct:${s.contain}`, s.filter !== 'none' && 'flt', s.display === 'contents' && 'contents'].filter(Boolean);
+        if (odd.length) out.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]}[${odd.join(',')}]`);
+      }
+      const h = getComputedStyle(document.documentElement), b = getComputedStyle(document.body);
+      out.push(`html ov:${h.overflow} body ov:${b.overflow}`);
+      return out.join(' ');
+    };
+    const show = () => {
+      const root = roots.find((r) => { const b = r.getBoundingClientRect(); return b.top < innerHeight && b.bottom > 0; });
+      const g = root?.querySelector<HTMLElement>('.scrolly-graphic');
+      const gs = g && getComputedStyle(g);
+      box.textContent = [
+        `w${innerWidth} h${innerHeight} vv${Math.round(visualViewport?.height ?? 0)}@${Math.round(visualViewport?.offsetTop ?? 0)} sy${Math.round(scrollY)}`,
+        `fine:${matchMedia('(pointer: fine)').matches} hover:${matchMedia('(hover: hover)').matches} touch:${ScrollTrigger.isTouch} cls:${document.documentElement.className}`,
+        g ? `graphic pos:${gs!.position} top:${gs!.top} rect:${Math.round(g.getBoundingClientRect().top)}..${Math.round(g.getBoundingClientRect().bottom)} root:${Math.round(root!.getBoundingClientRect().top)} step:${root!.dataset.step} parent:${g.parentElement?.className}` : 'no scrolly on screen',
+        g ? anc(g.parentElement) : '',
+      ].join('\n');
+    };
+    addEventListener('scroll', show, { passive: true });
+    setInterval(show, 500);
+    show();
+  }
 </script>
 
 <style>
