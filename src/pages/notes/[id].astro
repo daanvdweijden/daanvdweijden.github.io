@@ -85,6 +85,10 @@ const hasCard = existsSync(join(process.cwd(), 'public', card));
   .prose :global(h2) { font-size: 1.35rem; font-weight: var(--w-head); letter-spacing: -.01em; margin: 2.5rem 0 .8rem; }
   .prose :global(ul), .prose :global(ol) { margin: 0 0 1.1rem; padding-left: 1.2rem; }
   .prose > :global(img) { margin: 1.5rem 0; }
+  /* A table wider than the phone scrolls sideways on its own. Left to stick
+     out, it widens the whole page: the browser zooms out and the scrolly's
+     sticky chart ends up above the visible screen. */
+  .prose :global(table) { display: block; max-width: 100%; overflow-x: auto; }
   /* Placement of the note components (src/components/notes/). */
   .prose > :global(.wide) { grid-column: 1 / -1; max-width: none; }
   .prose > :global(.margin-note) { grid-column: 1; }
