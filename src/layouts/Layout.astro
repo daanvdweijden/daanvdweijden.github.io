@@ -83,6 +83,11 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
     <!-- Browser chrome in the page colour; the theme script below switches it
          with the footer choice. Keep in sync with --bg. -->
     <meta name="theme-color" content={personal ? '#7d300e' : '#c0d5ee'} />
+    <!-- Page-view counts (GoatCounter: no cookies, nothing personal stored).
+         Live site only, so local previews don't count. See the colophon. -->
+    {import.meta.env.PROD && (
+      <script is:inline async data-goatcounter="https://daanvdweijden.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
+    )}
     <script is:inline>
       (function () {
         // Colour scheme: by default the page's own palette (light for work
