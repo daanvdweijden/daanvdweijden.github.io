@@ -114,6 +114,28 @@
       });
     }
   }
+  // While a graphic is stuck, the page "pauses": the paper grain (Layout.astro)
+  // stays still and only the text moves. The grain is pushed down by however
+  // far you have scrolled inside stuck ranges so far, so after a scrolly it
+  // scrolls along again from where it stopped. Same range as the pin above.
+  const smoothContent = document.getElementById('smooth-content');
+  // (let + empty first: a trigger may call holdGrain while being created.)
+  let holds: ScrollTrigger[] = [];
+  holds = roots.map((root) => {
+    const graphic = root.querySelector<HTMLElement>('.scrolly-graphic')!;
+    return ScrollTrigger.create({
+      trigger: root,
+      start: () => (phone.matches ? 'top top' : 'top 12%'),
+      end: () => `+=${Math.max(0, root.offsetHeight - graphic.offsetHeight)}`,
+      invalidateOnRefresh: true,
+      onUpdate: holdGrain, onRefresh: holdGrain,
+    });
+  });
+  function holdGrain() {
+    const y = holds.reduce((sum, st) => sum + st.progress * (st.end - st.start), 0);
+    smoothContent?.style.setProperty('--grain-y', `${(y % 256).toFixed(1)}px`);
+  }
+  holdGrain();
   // Recompute only while a scrolly is on screen, on GSAP's ticker.
   for (const root of roots) {
     ScrollTrigger.create({ trigger: root, start: 'top bottom', end: 'bottom top', onUpdate: update, onRefresh: update });

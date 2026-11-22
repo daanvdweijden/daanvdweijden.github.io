@@ -18,7 +18,7 @@ interface Props {
   c?: 'orange' | 'blue' | 'terracotta' | 'sage' | 'teal' | 'rust';
 }
 const { second, c } = Astro.props;
-const text = (await Astro.slots.render('default')).trim();
+const text = Astro.slots.has('default') ? ((await Astro.slots.render('default')) ?? '').trim() : '';
 const role: Hue | undefined = second ? 'accent-2' : c ? hueClass(c) : undefined;
 const html = !text
   ? hueHtml(second ? 'hue2' : 'hue', role)

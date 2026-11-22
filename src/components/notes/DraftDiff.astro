@@ -9,6 +9,7 @@
 //   terracotta      = reworded (hover shows the draft words)
 //   terracotta line = added, not in the draft
 //   small caret     = cut from the draft
+//   second-colour tint = my own later edits (<Own>), counted apart from the AI's
 // Only prose is compared (paragraphs, headings, lists), not scrolly steps, figures, asides or
 // the technical report.
 interface Props {
@@ -28,6 +29,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
     <!-- One line for the counts and the key: each count is shown in the mark
          it stands for. Filled in when the toggle is first switched on. -->
     AI edits: <span class="dd dd-reworded" data-count="reworded" data-one="rewording" data-many="rewordings"></span>{' · '}<span class="dd dd-typo" data-count="typo" data-one="spelling fix" data-many="spelling fixes"></span>{' · '}<span class="dd dd-added" data-count="added" data-one="addition" data-many="additions"></span>{' · '}<span class="dd-cut-key">‸</span>&nbsp;<span data-count="cut" data-one="cut" data-many="cuts"></span><br />
+    Mine: <span class="dd dd-own" data-count="own" data-one="edit" data-many="edits"></span><br />
     Hover a mark to see my first draft.
   </p>
   <script type="application/json" class="dd-draft" set:html={JSON.stringify(draft)} />
@@ -35,10 +37,11 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
 
 <script>
   type Tok = { raw: string; key: string };
-  // own: link text or an <Own> span. Links are sources I collected and <Own>
-  // is text I wrote after the draft, so neither is marked as an AI edit.
-  type FTok = Tok & { node: Text; start: number; end: number; own: boolean };
-  type Hunk = { type: 'typo' | 'reworded' | 'added' | 'cut'; was: string; els: HTMLElement[] };
+  // own: link text or an <Own> span, never marked as an AI edit. Links are
+  // sources I collected. mine: an <Own> span, text I wrote after the draft;
+  // it is marked and counted as my own edit instead.
+  type FTok = Tok & { node: Text; start: number; end: number; own: boolean; mine: boolean };
+  type Hunk = { type: 'typo' | 'reworded' | 'added' | 'cut' | 'own'; was: string; els: HTMLElement[] };
 
   const key = (w: string) => w.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]/gu, '');
   const bare = (w: string) => w.replace(/[‘’]/g, "'").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
@@ -85,8 +88,18 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   }
 
   function draftTokens(md: string): Tok[] {
+    // Only the body text, like the final side: no technical report, code
+    // blocks (scrolly specs), image captions, tables, footnote texts (they
+    // become asides) or placeholder headings (#### or ALL CAPS).
     const text = md
       .replace(/%%[\s\S]*?%%/g, ' ')
+      .replace(/^#{1,6}\s*technical report\b[\s\S]*/im, ' ')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/^\[\^[^\]]+\]:.*$/gm, ' ')
+      .replace(/^\s*caption:.*$/gim, ' ')
+      .replace(/^\s*\|.*$/gm, ' ')
+      .replace(/^#{4,6}\s.*$/gm, ' ')
+      .replace(/^#{1,6}\s+[^a-z\n]*[A-Z][^a-z\n]*$/gm, ' ')
       .replace(/^#\s.*$/m, ' ')
       .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
       .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '$1')
@@ -111,9 +124,10 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
       });
       for (let n = walk.nextNode() as Text | null; n; n = walk.nextNode() as Text | null) {
         const own = !!n.parentElement?.closest('a, [data-own]');
+        const mine = !!n.parentElement?.closest('[data-own]');
         for (const m of n.data.matchAll(/\S+/g)) {
           const k = key(m[0]);
-          if (k) out.push({ raw: m[0], key: k, node: n, start: m.index!, end: m.index! + m[0].length, own });
+          if (k) out.push({ raw: m[0], key: k, node: n, start: m.index!, end: m.index! + m[0].length, own, mine });
         }
       }
     }
@@ -188,6 +202,16 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
         if (o[0] === '-') del.push(o[1]); else ins.push((o as ['+', number])[1]);
       }
       const was = del.map((i) => D[i].raw).join(' ');
+      // My own words: one "own" hunk (showing the draft words they replaced,
+      // when all the new words are mine); the AI's words around them as usual.
+      const mine = ins.filter((j) => F[j].mine);
+      if (mine.length) {
+        const all = mine.length === ins.length;
+        const h = hunks.push({ type: 'own', was: all ? was : '', els: [] }) - 1;
+        mine.forEach((j) => wordHunk.set(j, h));
+        if (all) continue;
+        ins.splice(0, ins.length, ...ins.filter((j) => !F[j].mine));
+      }
       if (!ins.length) {
         const at = k < ops.length ? (ops[k] as ['=', number, number])[2] : F.length - 1;
         cutBefore.set(at, hunks.push({ type: 'cut', was, els: [] }) - 1);
@@ -257,7 +281,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
     tip.hidden = true;
     document.body.append(tip);
 
-    const label = { typo: 'Spelling or contraction', reworded: 'My first draft', added: 'Added', cut: 'Cut' };
+    const label = { typo: 'Spelling or contraction', reworded: 'My first draft', added: 'Added', cut: 'Cut', own: 'My own edit, after the draft' };
     let active: number | null = null;
     const show = (h: number) => {
       if (!hunks) return;
@@ -355,7 +379,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   .dd-cut-key { color: var(--accent); font-weight: var(--w-strong); }
 
   /* Marks: invisible until the toggle is on (the legend shows them always). */
-  .dd-reworded, .dd-typo, .dd-added { transition: background-color .2s, text-decoration-color .2s; }
+  .dd-reworded, .dd-typo, .dd-added, .dd-own { transition: background-color .2s, text-decoration-color .2s; }
   :is(html.dd-on .prose, .dd-legend) .dd-reworded {
     background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: 2px;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -366,6 +390,10 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   :is(html.dd-on .prose, .dd-legend) .dd-added {
     text-decoration: underline var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: .2em;
   }
+  :is(html.dd-on .prose, .dd-legend) .dd-own {
+    background: color-mix(in srgb, var(--accent-2) 16%, transparent); border-radius: 2px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-2) 16%, transparent);
+  }
   .dd-cut { display: none; }
   /* Zero-width, so a caret never re-wraps the line it sits in. */
   html.dd-on .prose .dd-cut { display: inline-block; position: relative; width: 0; }
@@ -375,6 +403,7 @@ const draft = Astro.props.draft.replace(/%%[\s\S]*?%%/g, ' ');
   }
   html.dd-on .prose .dd[data-h] { cursor: help; }
   html.dd-on .prose .dd.is-hot.dd-reworded { background: color-mix(in srgb, var(--accent) 36%, transparent); }
+  html.dd-on .prose .dd.is-hot.dd-own { background: color-mix(in srgb, var(--accent-2) 34%, transparent); }
   html.dd-on .prose .dd.is-hot:is(.dd-typo, .dd-added) { background: color-mix(in srgb, var(--accent-2) 18%, transparent); }
 
   .dd-tip {

@@ -301,9 +301,11 @@ const otherNav = (personal ? workNav : personalNav).map((l) => l.name);
       /* Short pages (notes on tall, narrow screens): the footer stays at the
          bottom of the viewport; the space goes above it. */
       #smooth-content > footer { margin-top: auto; padding-top: clamp(4rem, 10vw, 8rem); }
+      /* --grain-y: set by notes' Scrolly.astro, so the grain stands still
+         while a scrollytelling graphic is stuck and only the text moves. */
       #smooth-content::before {
         content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-        background: url(/noise.png) 0 0 / 256px 256px; opacity: .35;
+        background: url(/noise.png) 0 var(--grain-y, 0px) / 256px 256px; opacity: .35;
       }
       /* The grain sits under the content, on the paper only; the coloured
          squares get their own copy, and text and photos stay clean. */
