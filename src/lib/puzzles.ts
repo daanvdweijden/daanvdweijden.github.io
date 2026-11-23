@@ -259,16 +259,16 @@ export const GAME_COLORS: Record<string, string> = {
   cijferblok: '#dd246f',
   'precies-vier': '#dc246f',
   briljant: '#31d1ff',
+  io: '#ea961b',
   sudoku: '#8a8f98',
   'aan-zet': '#8a8f98',
   koprol: '#8a8f98',
-  io: '#8a8f98',
 };
 
 /** Games we ship a real inline icon for (see src/assets/puzzle-icons). */
 export const ICON_SLUGS = new Set([
   'mini', 'midi', 'wordle', 'connections', 'crux', 'cijferblok', 'vorto', 'precies-vier',
-  'briljant', 'minutecryptic',
+  'briljant', 'io', 'minutecryptic',
 ]);
 
 /** Longest run of consecutive days ending at `generated` on which anything was solved. */
