@@ -262,6 +262,7 @@ export const GAME_COLORS: Record<string, string> = {
   sudoku: '#8a8f98',
   'aan-zet': '#8a8f98',
   koprol: '#8a8f98',
+  io: '#8a8f98',
 };
 
 /** Games we ship a real inline icon for (see src/assets/puzzle-icons). */
