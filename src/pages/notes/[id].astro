@@ -87,8 +87,18 @@ const hasCard = existsSync(join(process.cwd(), 'public', card));
   .prose > :global(img) { margin: 1.5rem 0; }
   /* A table wider than the phone scrolls sideways on its own. Left to stick
      out, it widens the whole page: the browser zooms out and the scrolly's
-     sticky chart ends up above the visible screen. */
-  .prose :global(table) { display: block; max-width: 100%; overflow-x: auto; }
+     sticky chart ends up above the visible screen.
+     The scrolling sits on the table's wrapper, so the table itself stays a
+     real table and fills the width on desktop (a display: block table only
+     hugs its content). A bare table with no wrapper scrolls on its own. */
+  .prose :global(table) { width: 100%; }
+  .prose :global(div:has(> table)) { max-width: 100%; overflow-x: auto; }
+  .prose > :global(table) { display: block; max-width: 100%; overflow-x: auto; }
+  /* Room between columns, none at the outer edges; headers sit on the rows. */
+  .prose :global(th), .prose :global(td) { padding: .3rem .7rem; vertical-align: top; }
+  .prose :global(th) { vertical-align: bottom; }
+  .prose :global(:is(th, td):first-child) { padding-left: 0; }
+  .prose :global(:is(th, td):last-child) { padding-right: 0; }
   /* Placement of the note components (src/components/notes/). */
   .prose > :global(.wide) { grid-column: 1 / -1; max-width: none; }
   .prose > :global(.margin-note) { grid-column: 1; }
