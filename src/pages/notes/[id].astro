@@ -88,11 +88,14 @@ const hasCard = existsSync(join(process.cwd(), 'public', card));
   /* A table wider than the phone scrolls sideways on its own. Left to stick
      out, it widens the whole page: the browser zooms out and the scrolly's
      sticky chart ends up above the visible screen.
-     The scrolling sits on the table's wrapper, so the table itself stays a
-     real table and fills the width on desktop (a display: block table only
-     hugs its content). A bare table with no wrapper scrolls on its own. */
+     The scrolling sits on the table's wrapper (<div class="table-scroll">),
+     so the table itself stays a real table and fills the width on desktop
+     (a display: block table only hugs its content). A bare table with no
+     wrapper scrolls on its own. A class, not div:has(> table): :has() can
+     make the browser recheck styles on every DOM change, and the scrollies
+     change the DOM on every scroll frame. */
   .prose :global(table) { width: 100%; }
-  .prose :global(div:has(> table)) { max-width: 100%; overflow-x: auto; }
+  .prose :global(.table-scroll) { max-width: 100%; overflow-x: auto; }
   .prose > :global(table) { display: block; max-width: 100%; overflow-x: auto; }
   /* Room between columns, none at the outer edges; headers sit on the rows. */
   .prose :global(th), .prose :global(td) { padding: .3rem .7rem; vertical-align: top; }
