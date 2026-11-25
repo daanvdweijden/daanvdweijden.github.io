@@ -229,3 +229,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-11-20,24224,midi,Nguhi Ross and Erik Agard,Now in Color,407,6:47,100,True,1795181547,,,False,False,0,0,0,clean
 2026-11-22,23590,midi,Adrianne Baik,Metal Detector,324,5:24,81,False,,,,False,False,0,0,0,clean
 2026-11-24,24054,midi,Rena Cohen,Gateway to the West,1,0:01,0,False,,,,False,False,0,0,0,clean
+2026-11-25,24414,midi,Aidan Deshong,Short-Term Growth,256,4:16,100,True,1795612177,,,True,True,0,7,0,checked
