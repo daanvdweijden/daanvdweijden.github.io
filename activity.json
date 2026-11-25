@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-24",
+  "generated": "2026-11-25",
   "mini_streak": 410,
   "game_meta": {
     "crux": {
@@ -69,7 +69,8 @@
         "minutecryptic",
         "briljant",
         "crux",
-        "io"
+        "io",
+        "vorto"
       ]
     },
     {
@@ -581,8 +582,7 @@
       "date": "2026-10-06",
       "played": [
         "mini",
-        "minutecryptic",
-        "crux"
+        "minutecryptic"
       ]
     },
     {
