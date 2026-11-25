@@ -266,7 +266,10 @@ export const nextWords: ChartFn<NextWordData> = async (data, ctx) => {
         maskImage: 'linear-gradient(to bottom, transparent, #000 45%)',
         webkitMaskImage: 'linear-gradient(to bottom, transparent, #000 45%)',
       } as Partial<CSSStyleDeclaration>);
-      const inner = div({ position: 'relative', height: `${(above.length + 1) * ROW}px`, filter: `url(#${blurId})` });
+      // No blur filter here: Safari draws url(#…) filters without the GPU,
+      // so on this tall list it was redrawn on every scroll frame. The blur
+      // goes on the small window instead, and only while the list moves.
+      const inner = div({ position: 'relative', height: `${(above.length + 1) * ROW}px` });
       above.forEach((x, j) => {
         const r = row(x.word, x.p, j * ROW);
         r.w.style.color = c.faint;
@@ -342,7 +345,11 @@ export const nextWords: ChartFn<NextWordData> = async (data, ctx) => {
       const go = 2.2;
       // Blur follows the speed: none at the ends, most in the middle.
       const mb = { v: 0 };
-      const setBlur = () => blur.setAttribute('stdDeviation', `0 ${mb.v.toFixed(2)}`);
+      const win = p.reel.win;
+      const setBlur = () => {
+        blur.setAttribute('stdDeviation', `0 ${mb.v.toFixed(2)}`);
+        win.style.filter = mb.v > 0.05 ? `url(#${blurId})` : '';
+      };
       st.set(p.reel.inner, { y: 0 }, t)
         .set(p.reel.win, { opacity: 0 }, t)
         .to(p.reel.win, { opacity: 1, duration: 0.4 }, at(1.8))
