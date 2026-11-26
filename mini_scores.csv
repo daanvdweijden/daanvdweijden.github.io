@@ -410,3 +410,4 @@ date,puzzle_id,puzzle_type,constructor,title,seconds,time,percent_filled,solved,
 2026-11-23,24762,mini,Joel Fagliano,,55,0:55,100,True,1795416971,,,False,False,0,0,0,clean
 2026-11-24,24759,mini,Joel Fagliano,,188,3:08,100,True,1795509354,,,True,True,0,1,0,checked
 2026-11-25,24706,mini,Sam Ezersky,,188,3:08,100,True,1795592383,,,True,True,0,0,0,autocheck
+2026-11-26,24692,mini,Tracy Bennett,,93,1:33,100,True,1795677337,,,False,False,0,0,0,clean

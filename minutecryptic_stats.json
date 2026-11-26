@@ -1,10 +1,10 @@
 {
   "snapshot_date": "2026-11-26",
-  "streak": 3,
-  "totalSolved": 232,
-  "totalCommunitySolved": 146,
-  "crossWordBenchmarkStreakScore": -3,
-  "crossWordBenchmarkTotalScore": -264,
+  "streak": 4,
+  "totalSolved": 233,
+  "totalCommunitySolved": 147,
+  "crossWordBenchmarkStreakScore": -7,
+  "crossWordBenchmarkTotalScore": -268,
   "crossWordBenchmarkScoreDistribution": {
     "0": 10,
     "1": 9,
@@ -14,13 +14,13 @@
     "5": 3,
     "6": 1,
     "7": 1,
+    "-4": 4,
     "-2": 84,
     "-1": 68,
-    "-3": 35,
-    "-4": 3
+    "-3": 35
   },
-  "communityStreakScore": -1,
-  "communityTotalScore": -157,
+  "communityStreakScore": -3,
+  "communityTotalScore": -159,
   "communityScoreDistribution": {
     "0": 15,
     "1": 4,
@@ -28,8 +28,8 @@
     "3": 3,
     "4": 2,
     "5": 1,
+    "-2": 43,
     "-1": 65,
-    "-2": 42,
     "-3": 10,
     "-4": 2
   }
