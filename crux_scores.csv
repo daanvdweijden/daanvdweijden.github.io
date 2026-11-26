@@ -199,7 +199,7 @@ date,puzzle_id,puzzle_type,constructor,width,height,solved,seconds,time,global_a
 2026-10-04,nrc-gsEQF7O4H4nwP7QYHR2j-557c8d5f87da-20261004,crux,steenhuis,7,7,True,,,,
 2026-10-05,nrc-gsEQF7O4H4nwP7QYHR2j-a5c0e3e3c33d-20261005,crux,steenhuis,5,5,False,,,,
 2026-10-06,nrc-gsEQF7O4H4nwP7QYHR2j-9833665b337c-20261006,crux,steenhuis,5,5,False,,,,
-2026-10-07,nrc-gsEQF7O4H4nwP7QYHR2j-78251b57a369-20261007,crux,steenhuis,6,4,True,,,,
+2026-10-07,nrc-gsEQF7O4H4nwP7QYHR2j-78251b57a369-20261007,crux,steenhuis,6,4,False,,,,
 2026-10-08,nrc-gsEQF7O4H4nwP7QYHR2j-9515bcd96897-20261008,crux,steenhuis,7,4,True,,,,
 2026-10-09,nrc-gsEQF7O4H4nwP7QYHR2j-e7a5908237cc-20261009,crux,steenhuis,6,4,True,,,,
 2026-10-10,nrc-gsEQF7O4H4nwP7QYHR2j-c88cf083b3b4-20261010,crux,steenhuis,6,6,True,,,,
@@ -249,3 +249,4 @@ date,puzzle_id,puzzle_type,constructor,width,height,solved,seconds,time,global_a
 2026-11-23,nrc-gsEQF7O4H4nwP7QYHR2j-25bd72e56a18-20261123,crux,steenhuis,7,4,True,,,,
 2026-11-24,nrc-gsEQF7O4H4nwP7QYHR2j-9c3bf335636f-20261124,crux,steenhuis,4,6,True,,,,
 2026-11-25,nrc-gsEQF7O4H4nwP7QYHR2j-1c2fa95054bd-20261125,crux,steenhuis,4,6,True,,,,
+2026-11-26,nrc-gsEQF7O4H4nwP7QYHR2j-2d7f74af339a-20261126,crux,steenhuis,7,4,False,,,,
